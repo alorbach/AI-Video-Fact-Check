@@ -23,7 +23,7 @@ This file is the **overall roadmap and status board**. Level detail: [`levels/`]
 | Level | Name | Status | Detail file |
 |:---:|---|---|---|
 | L0 | Foundation | **done** | [`levels/L0-foundation.md`](levels/L0-foundation.md) |
-| L1 | Extension skeleton | **in_progress** | [`levels/L1-local-skeleton.md`](levels/L1-local-skeleton.md) |
+| L1 | Extension skeleton | **done** | [`levels/L1-local-skeleton.md`](levels/L1-local-skeleton.md) |
 | L2 | Captions & paste package | todo | [`levels/L2-capture-transcript.md`](levels/L2-capture-transcript.md) |
 | L3 | Custom GPT handoff MVP | todo | [`levels/L3-fact-check-mvp.md`](levels/L3-fact-check-mvp.md) |
 | L4 | Guide UX + a11y | todo | [`levels/L4-mode-b-polish.md`](levels/L4-mode-b-polish.md) |
@@ -32,9 +32,9 @@ This file is the **overall roadmap and status board**. Level detail: [`levels/`]
 | L7 | Handoff hardening | todo | [`levels/L7-hardening.md`](levels/L7-hardening.md) |
 | L8 | Chrome Web Store | todo | [`levels/L8-store-release.md`](levels/L8-store-release.md) |
 
-**Current level:** L1 — Extension skeleton  
+**Current level:** L2 — Captions & paste package  
 **Last updated:** 2026-07-20  
-**Next action:** Align L1 code with extension-only handoff (drop analysis-backend assumptions); then L2 captions + paste package.
+**Next action:** Platform detector + YouTube captions → PastePackage (L2).
 
 Status values: `todo` · `in_progress` · `done` · `blocked`
 
@@ -77,7 +77,7 @@ L8  Store release        Privacy, assets, publish
 | In-browser captions when possible | Automate typing into chat DOM |
 | Free end-user chat products only | Paid developer APIs |
 
-The existing `backend/` folder from early scaffolding is **not part of the product path**; remove or ignore it in L1 cleanup (no health-check dependency for MVP).
+No analysis backend in the repo. Extension-only product path.
 
 ---
 

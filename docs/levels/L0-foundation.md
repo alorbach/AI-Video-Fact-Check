@@ -13,7 +13,7 @@ Repo, agent rules, and product docs exist for the **chat-handoff** product (no a
 - [x] Product + specs (`PRODUCT.md`, `SPEC-TRANSCRIPT.md`, `SPEC-FACT-CHECK.md`)
 - [x] Multilevel plan + `docs/levels/`
 - [x] `README.md`, `AGENTS.md`, `CLAUDE.md`, `.gitignore`
-- [x] `extension/`, `shared/`, `docs/` (early `backend/` is legacy — remove in L1)
+- [x] `extension/`, `shared/`, `docs/`
 - [x] Local `git init` + staged files
 - [ ] Optional: first commit + remote
 

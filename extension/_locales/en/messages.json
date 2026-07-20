@@ -3,7 +3,7 @@
     "message": "Video Fact-Check"
   },
   "extDescription": {
-    "message": "Prepare a video link and open ChatGPT Video Fact-Check or free Gemini — no API keys."
+    "message": "Prepare a video link and open ChatGPT Video Fact-Check or free Gemini — no setup needed."
   },
   "actionTitle": {
     "message": "Check this video"

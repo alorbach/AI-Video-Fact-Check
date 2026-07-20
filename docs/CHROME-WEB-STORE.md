@@ -6,8 +6,8 @@ Fill before **Level 8**.
 
 - **Name (EN):** Video Fact-Check  
 - **Name (DE):** Video-Faktencheck  
-- **Summary (EN):** Prepare a video link and open ChatGPT Video-Faktencheck (or free Gemini) — plain language, no API keys.  
-- **Summary (DE):** Video-Link vorbereiten und ChatGPT Video-Faktencheck (oder kostenloses Gemini) öffnen — verständlich, ohne API-Schlüssel.  
+- **Summary (EN):** Prepare a video link and open ChatGPT Video-Faktencheck (or free Gemini) — plain language, no setup.  
+- **Summary (DE):** Video-Link vorbereiten und ChatGPT Video-Faktencheck (oder kostenloses Gemini) öffnen — verständlich, ohne Setup.  
 - **Homepage:** https://github.com/alorbach/AI-Video-Fact-Check  
 - **Author:** Andre Lorbach — https://github.com/alorbach/
 

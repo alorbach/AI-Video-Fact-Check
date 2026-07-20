@@ -26,7 +26,7 @@ YouTube · TikTok · X · Facebook · Instagram
 
 ## Status
 
-**Level 1 — Extension skeleton** (in progress). Product direction: chat handoff only, no analysis backend.
+**Level 2 — Captions & paste package** (next). L1 skeleton done; chat handoff only, no analysis backend.
 
 ## Local development
 
@@ -37,7 +37,7 @@ cd extension && npm run build
 
 Chrome → `chrome://extensions` → Developer mode → **Load unpacked** → `extension/dist`.
 
-No server and no API keys required.
+No server required — uses your normal ChatGPT or Google login.
 
 ## Credits
 

@@ -22,7 +22,6 @@ Chrome MV3 extension that helps everyday users (esp. older adults) fact-check vi
 extension/   Chrome MV3 (primary product)
 shared/      Shared types (PastePackage, ChatTarget, …)
 docs/        Plans and specs
-backend/     LEGACY scaffold — do not use for analysis; remove in L1
 ```
 
 ## Non-negotiables

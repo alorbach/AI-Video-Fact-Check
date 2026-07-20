@@ -17,7 +17,7 @@ Publish an extension that only prepares content and opens ChatGPT Custom GPT / f
 - [ ] Permission justifications (contextMenus, clipboardWrite/storage, optional hosts for captions, sidePanel)
 - [ ] Icons + 1280×800 screenshots (large guide UI)
 - [ ] Store listing DE + EN — mention Custom GPT + optional Gemini; no “API”
-- [ ] Clean ZIP (no `.env`, no unused `backend/`)
+- [ ] Clean ZIP (no `.env`, no `node_modules`)
 - [ ] [`../CHROME-WEB-STORE.md`](../CHROME-WEB-STORE.md) updated
 
 ## Exit criteria
