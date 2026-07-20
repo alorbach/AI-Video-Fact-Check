@@ -1,0 +1,23 @@
+LICENSE
+  s_10ef36f1dbd4a1::t_fb87221b9f7a57 1-21
+package.json
+  s_10ef36f1dbd4a1::t_cf33138f8a0736 7
+README.md
+  s_10ef36f1dbd4a1::t_e3b0cf8cf1c018 48
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "7c07fbe6207f79a70d67347d97299cf1738d488e",
+  "prompts": {},
+  "sessions": {
+    "s_10ef36f1dbd4a1": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "62611d74-6793-4945-9659-3aa8a1ab4025",
+        "model": "grok-4.5"
+      },
+      "human_author": "Andre Lorbach <alorbach@adiscon.com>"
+    }
+  }
+}
