@@ -45,4 +45,4 @@ Created by **Andre Lorbach** — [github.com/alorbach](https://github.com/alorba
 
 ## License
 
-To be decided before Chrome Web Store publication.
+[GPL-2.0](LICENSE) © [Andre Lorbach](https://github.com/alorbach/)

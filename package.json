@@ -4,7 +4,7 @@
   "private": true,
   "description": "Chrome extension: hand off video URL/captions to ChatGPT Video-Faktencheck or free Gemini (de/en)",
   "author": "Andre Lorbach",
-  "license": "UNLICENSED",
+  "license": "GPL-2.0-or-later",
   "workspaces": [
     "extension",
     "shared"
