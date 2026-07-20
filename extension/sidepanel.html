@@ -14,6 +14,27 @@
 
     <main>
       <section class="status-card" aria-live="polite">
+        <h2 id="captureHeading"></h2>
+        <p id="captureStatus" class="capture-status"></p>
+        <pre id="captureDetails" class="capture-details"></pre>
+        <button type="button" id="btnScan" class="btn"></button>
+      </section>
+
+      <section class="status-card">
+        <h2 id="manualHeading"></h2>
+        <p id="manualHelp" class="muted"></p>
+        <label class="sr-only" for="manualTranscript" id="manualLabel"></label>
+        <textarea
+          id="manualTranscript"
+          class="manual-input"
+          rows="5"
+          autocomplete="off"
+        ></textarea>
+        <button type="button" id="btnSaveManual" class="btn"></button>
+        <p id="manualMsg" class="inline-msg" aria-live="polite"></p>
+      </section>
+
+      <section class="status-card">
         <h2 id="stepsHeading"></h2>
         <ol id="stepsList" class="steps">
           <li id="step1"></li>
@@ -24,13 +45,17 @@
 
       <section class="hint-card">
         <p id="hintText"></p>
+        <p id="handoffMsg" class="inline-msg" aria-live="polite"></p>
       </section>
 
       <div class="actions">
         <button type="button" id="btnOpenGpt" class="btn primary"></button>
         <button type="button" id="btnOpenGemini" class="btn"></button>
+        <button type="button" id="btnCopyAgain" class="btn"></button>
         <button type="button" id="btnOptions" class="btn"></button>
       </div>
+
+      <textarea id="clipboardFallback" class="sr-only" hidden aria-hidden="true"></textarea>
     </main>
 
     <footer class="footer">

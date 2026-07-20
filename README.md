@@ -26,7 +26,7 @@ YouTube · TikTok · X · Facebook · Instagram
 
 ## Status
 
-**Level 2 — Captions & paste package** (next). L1 skeleton done; chat handoff only, no analysis backend.
+**Level 4 — Guide UX + a11y** (next). L2–L3 done: capture + Custom GPT clipboard handoff; no analysis backend.
 
 ## Local development
 

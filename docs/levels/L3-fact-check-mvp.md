@@ -1,6 +1,6 @@
 # Level 3 — Custom GPT handoff MVP
 
-**Status:** `todo`  
+**Status:** `done`  
 **Parent:** [`../MULTILEVEL-IMPLEMENTATION-PLAN.md`](../MULTILEVEL-IMPLEMENTATION-PLAN.md)  
 **Estimate:** 2–4 days  
 **Depends on:** [L2](L2-capture-transcript.md)  
@@ -15,14 +15,14 @@ One-click (or few-click) handoff to the Video-Faktencheck Custom GPT in the user
 
 ## Tasks
 
-1. [ ] Copy `PastePackage` text to clipboard
-2. [ ] Open Custom GPT URL in a new tab
-3. [ ] Side Panel steps: “Copied → Chat opened → Paste (Ctrl+V) → Send”
-4. [ ] Context menu / primary button: “Mit Video-Faktencheck GPT öffnen”
-5. [ ] “Copy again” if clipboard failed
+1. [x] Copy `PastePackage` text to clipboard
+2. [x] Open Custom GPT URL in a new tab
+3. [x] Side Panel steps: “Copied → Chat opened → Paste (Ctrl+V) → Send”
+4. [x] Context menu / primary button: “Mit Video-Faktencheck GPT öffnen”
+5. [x] “Copy again” if clipboard failed
 
 ## Exit criteria
 
-- [ ] From a supported page (start with YouTube; all five platforms by L5), user can complete a fact-check in the Custom GPT without typing the URL/transcript by hand (paste only)
-- [ ] Works with a normal free/logged-in ChatGPT account (no API key screens)
-- [ ] No own analysis backend called
+- [x] From a supported page (start with YouTube; all five platforms by L5), user can complete a fact-check in the Custom GPT without typing the URL/transcript by hand (paste only)
+- [x] Works with a normal free/logged-in ChatGPT account (no API key screens)
+- [x] No own analysis backend called

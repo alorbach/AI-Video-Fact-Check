@@ -12,13 +12,13 @@
     "message": "Check video with AI"
   },
   "sidepanelSubtitle": {
-    "message": "We open a free chat you already know. You paste and send."
+    "message": "We prepare the link and captions. Then you open a free chat and paste."
   },
   "stepsHeading": {
-    "message": "How it works"
+    "message": "Next steps"
   },
   "step1": {
-    "message": "We prepare the video link (and captions when available)."
+    "message": "Check what we found on this page (link and captions)."
   },
   "step2": {
     "message": "Open Video Fact-Check GPT or free Gemini."
@@ -27,7 +27,148 @@
     "message": "Paste (Ctrl+V) in the chat and send."
   },
   "sidepanelHint": {
-    "message": "No developer setup. Use your normal ChatGPT or Google login. Captions + auto-copy come in the next steps."
+    "message": "No developer setup. Use your normal ChatGPT or Google login."
+  },
+  "guideStepReady": {
+    "message": "Link (and captions) are ready."
+  },
+  "guideStepOpen": {
+    "message": "Tap Open Video Fact-Check GPT — we copy and open the chat."
+  },
+  "guideStepPaste": {
+    "message": "In the chat: Paste (Ctrl+V) and send."
+  },
+  "guideStepCopied": {
+    "message": "Copied to the clipboard."
+  },
+  "guideStepOpening": {
+    "message": "Opening the chat…"
+  },
+  "guideStepChatOpened": {
+    "message": "Chat opened in a new tab."
+  },
+  "guideStepPasteNow": {
+    "message": "Paste now (Ctrl+V) and send."
+  },
+  "guideStepCopyFailed": {
+    "message": "Could not copy automatically."
+  },
+  "guideStepCopyAgain": {
+    "message": "Tap Copy again, then paste in the chat."
+  },
+  "hintAfterCopy": {
+    "message": "The text is on your clipboard. The chat will open next."
+  },
+  "hintPasteNow": {
+    "message": "Click in the chat box, press Ctrl+V, then send."
+  },
+  "hintCopyFailed": {
+    "message": "Could not copy — tap Copy again, then paste in the chat."
+  },
+  "handoffWorking": {
+    "message": "Preparing copy and chat…"
+  },
+  "handoffOpenedGpt": {
+    "message": "Video Fact-Check GPT is open — paste and send."
+  },
+  "handoffOpenedGemini": {
+    "message": "Gemini is open — paste and send."
+  },
+  "copyAgainOk": {
+    "message": "Copied again. Paste in the chat (Ctrl+V)."
+  },
+  "btnCopyAgain": {
+    "message": "Copy again"
+  },
+  "contextOpenGpt": {
+    "message": "Open with Video Fact-Check GPT"
+  },
+  "contextCopyOnly": {
+    "message": "Copy link / transcript only"
+  },
+  "captureHeading": {
+    "message": "This page"
+  },
+  "captureIdle": {
+    "message": "Open a video page, then tap Scan page."
+  },
+  "captureWorking": {
+    "message": "Looking for the video link and captions…"
+  },
+  "captureFound": {
+    "message": "Recognized: $1$",
+    "placeholders": {
+      "1": {
+        "content": "$1",
+        "example": "YouTube"
+      }
+    }
+  },
+  "captureUnsupported": {
+    "message": "No supported video site detected. You can still copy the page link or paste your own transcript."
+  },
+  "captureFailed": {
+    "message": "Could not read this page. Try again on YouTube, TikTok, X, Facebook, or Instagram."
+  },
+  "labelPlatform": {
+    "message": "Platform"
+  },
+  "labelUrl": {
+    "message": "Link"
+  },
+  "labelCaptions": {
+    "message": "Captions"
+  },
+  "captionsYes": {
+    "message": "Yes — included"
+  },
+  "captionsNo": {
+    "message": "No — chat can still use the link"
+  },
+  "captionsManual": {
+    "message": "Using your pasted transcript"
+  },
+  "btnScan": {
+    "message": "Scan page"
+  },
+  "manualHeading": {
+    "message": "Your own transcript (optional)"
+  },
+  "manualHelp": {
+    "message": "If captions are missing, paste text here. We will include it when you open the chat."
+  },
+  "manualLabel": {
+    "message": "Paste your own transcript here"
+  },
+  "btnSaveManual": {
+    "message": "Save transcript"
+  },
+  "manualSaved": {
+    "message": "Transcript saved for the next chat open."
+  },
+  "platformYoutube": {
+    "message": "YouTube"
+  },
+  "platformTiktok": {
+    "message": "TikTok"
+  },
+  "platformX": {
+    "message": "X"
+  },
+  "platformFacebook": {
+    "message": "Facebook"
+  },
+  "platformInstagram": {
+    "message": "Instagram"
+  },
+  "platformVimeo": {
+    "message": "Vimeo"
+  },
+  "platformGeneric": {
+    "message": "Video page"
+  },
+  "platformUnknown": {
+    "message": "Unknown"
   },
   "btnOpenGpt": {
     "message": "Open Video Fact-Check GPT"

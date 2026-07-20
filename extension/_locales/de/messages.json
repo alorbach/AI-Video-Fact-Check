@@ -12,13 +12,13 @@
     "message": "Video mit KI prüfen"
   },
   "sidepanelSubtitle": {
-    "message": "Wir öffnen einen kostenlosen Chat, den Sie schon kennen. Sie fügen ein und senden."
+    "message": "Wir bereiten Link und Untertitel vor. Dann öffnen Sie einen kostenlosen Chat und fügen ein."
   },
   "stepsHeading": {
-    "message": "So funktioniert es"
+    "message": "Nächste Schritte"
   },
   "step1": {
-    "message": "Wir bereiten den Video-Link vor (und Untertitel, wenn vorhanden)."
+    "message": "Prüfen Sie, was wir auf der Seite gefunden haben (Link und Untertitel)."
   },
   "step2": {
     "message": "Öffnen Sie den Video-Faktencheck-GPT oder kostenloses Gemini."
@@ -27,7 +27,148 @@
     "message": "Im Chat einfügen (Strg+V) und senden."
   },
   "sidepanelHint": {
-    "message": "Kein Technik-Setup. Einfach mit Ihrem normalen ChatGPT- oder Google-Konto. Untertitel und automatisches Kopieren folgen als Nächstes."
+    "message": "Kein Technik-Setup. Einfach mit Ihrem normalen ChatGPT- oder Google-Konto."
+  },
+  "guideStepReady": {
+    "message": "Link (und Untertitel) sind bereit."
+  },
+  "guideStepOpen": {
+    "message": "Tippen Sie auf Video-Faktencheck GPT öffnen — wir kopieren und öffnen den Chat."
+  },
+  "guideStepPaste": {
+    "message": "Im Chat: Einfügen (Strg+V) und senden."
+  },
+  "guideStepCopied": {
+    "message": "In die Zwischenablage kopiert."
+  },
+  "guideStepOpening": {
+    "message": "Chat wird geöffnet…"
+  },
+  "guideStepChatOpened": {
+    "message": "Chat ist in einem neuen Tab geöffnet."
+  },
+  "guideStepPasteNow": {
+    "message": "Jetzt einfügen (Strg+V) und senden."
+  },
+  "guideStepCopyFailed": {
+    "message": "Automatisches Kopieren hat nicht geklappt."
+  },
+  "guideStepCopyAgain": {
+    "message": "Tippen Sie auf Nochmal kopieren, dann im Chat einfügen."
+  },
+  "hintAfterCopy": {
+    "message": "Der Text ist in der Zwischenablage. Der Chat öffnet sich als Nächstes."
+  },
+  "hintPasteNow": {
+    "message": "Klicken Sie in das Chat-Feld, drücken Sie Strg+V und senden Sie."
+  },
+  "hintCopyFailed": {
+    "message": "Kopieren fehlgeschlagen — tippen Sie auf Nochmal kopieren, dann im Chat einfügen."
+  },
+  "handoffWorking": {
+    "message": "Kopieren und Chat werden vorbereitet…"
+  },
+  "handoffOpenedGpt": {
+    "message": "Video-Faktencheck GPT ist offen — bitte einfügen und senden."
+  },
+  "handoffOpenedGemini": {
+    "message": "Gemini ist offen — bitte einfügen und senden."
+  },
+  "copyAgainOk": {
+    "message": "Erneut kopiert. Im Chat einfügen (Strg+V)."
+  },
+  "btnCopyAgain": {
+    "message": "Nochmal kopieren"
+  },
+  "contextOpenGpt": {
+    "message": "Mit Video-Faktencheck GPT öffnen"
+  },
+  "contextCopyOnly": {
+    "message": "Nur Link / Transkript kopieren"
+  },
+  "captureHeading": {
+    "message": "Diese Seite"
+  },
+  "captureIdle": {
+    "message": "Öffnen Sie eine Video-Seite und tippen Sie auf Seite prüfen."
+  },
+  "captureWorking": {
+    "message": "Suche Video-Link und Untertitel…"
+  },
+  "captureFound": {
+    "message": "Erkannt: $1$",
+    "placeholders": {
+      "1": {
+        "content": "$1",
+        "example": "YouTube"
+      }
+    }
+  },
+  "captureUnsupported": {
+    "message": "Keine unterstützte Video-Seite erkannt. Sie können den Seiten-Link trotzdem nutzen oder Ihr eigenes Transkript einfügen."
+  },
+  "captureFailed": {
+    "message": "Diese Seite konnte nicht gelesen werden. Bitte erneut auf YouTube, TikTok, X, Facebook oder Instagram versuchen."
+  },
+  "labelPlatform": {
+    "message": "Plattform"
+  },
+  "labelUrl": {
+    "message": "Link"
+  },
+  "labelCaptions": {
+    "message": "Untertitel"
+  },
+  "captionsYes": {
+    "message": "Ja — enthalten"
+  },
+  "captionsNo": {
+    "message": "Nein — der Chat kann den Link trotzdem prüfen"
+  },
+  "captionsManual": {
+    "message": "Ihr eingefügtes Transkript wird verwendet"
+  },
+  "btnScan": {
+    "message": "Seite prüfen"
+  },
+  "manualHeading": {
+    "message": "Eigenes Transkript (optional)"
+  },
+  "manualHelp": {
+    "message": "Wenn Untertitel fehlen, Texten Sie den Text hier ein. Wir nehmen ihn mit, wenn Sie den Chat öffnen."
+  },
+  "manualLabel": {
+    "message": "Eigenes Transkript hier einfügen"
+  },
+  "btnSaveManual": {
+    "message": "Transkript speichern"
+  },
+  "manualSaved": {
+    "message": "Transkript für den nächsten Chat-Start gespeichert."
+  },
+  "platformYoutube": {
+    "message": "YouTube"
+  },
+  "platformTiktok": {
+    "message": "TikTok"
+  },
+  "platformX": {
+    "message": "X"
+  },
+  "platformFacebook": {
+    "message": "Facebook"
+  },
+  "platformInstagram": {
+    "message": "Instagram"
+  },
+  "platformVimeo": {
+    "message": "Vimeo"
+  },
+  "platformGeneric": {
+    "message": "Video-Seite"
+  },
+  "platformUnknown": {
+    "message": "Unbekannt"
   },
   "btnOpenGpt": {
     "message": "Video-Faktencheck GPT öffnen"
