@@ -1,0 +1,91 @@
+shared/package.json
+  s_42e162f0645e31::t_d3cc431394904b 17
+  s_42e162f0645e31::t_dba54fbb16c5cf 16,20-21
+README.md
+  s_42e162f0645e31::t_1ff4243261bbb2 29
+shared/src/types.ts
+  s_42e162f0645e31::t_4578e434261639 1-68,70-72,75-84
+  s_42e162f0645e31::t_e5e0d2087cb6b4 73
+  s_42e162f0645e31::t_98975c00c5f7a6 69
+  s_42e162f0645e31::t_0ea9d644ca645e 74
+shared/src/pastePackage.test.ts
+  s_42e162f0645e31::t_7e29c959b570fe 1-39
+extension/sidepanel.html
+  s_42e162f0645e31::t_f0c48952c58e6a 48,54,57-58
+  s_42e162f0645e31::t_4e5316d3543e19 17-37
+extension/package.json
+  s_42e162f0645e31::t_5a581ab5a10b08 3,7-16
+extension/src/options.ts
+  s_42e162f0645e31::t_a1e55992c99b62 1-3,7-23,26,28-30,33-35,37-38,41
+docs/levels/L2-capture-transcript.md
+  s_42e162f0645e31::t_7b767ebec21a6d 3,19-24,28-31
+shared/src/youtube.ts
+  s_42e162f0645e31::t_bf435a425c90b7 1-136
+shared/src/platform.ts
+  s_42e162f0645e31::t_724edbd6fdad3c 1-73
+extension/src/background.ts
+  s_42e162f0645e31::t_5052869132d131 2-3,6-11,13-22,54-87,89-92,94-100,102-103,105-106,108-164,171-175,177,203,205-278,297-303
+  s_42e162f0645e31::t_d8ecaa503260a6 182,187
+  s_42e162f0645e31::t_3247f1ae3028e4 12,24-46,88,93,101,104,107,165-169,176,178-181,183-186,188-202,279-296
+extension/scripts/build.mjs
+  s_42e162f0645e31::t_d09982aa99372f 4,12-41
+shared/src/pastePackage.ts
+  s_42e162f0645e31::t_785db509cf7785 1-109
+shared/src/platform.test.ts
+  s_42e162f0645e31::t_5998cba7692b3c 1-47
+extension/src/content.ts
+  s_42e162f0645e31::t_173fbe439737fe 50
+  s_42e162f0645e31::t_96d4e8e533197d 1-23,27-49,51-75,77-79,82-83,85-86,89-90,92-93
+  s_42e162f0645e31::t_6d20ca3f582107 24-26,76,80-81,84,87-88,91
+shared/src/youtube.test.ts
+  s_42e162f0645e31::t_361935b59d6daf 1-54
+extension/src/youtubeCaptions.ts
+  s_42e162f0645e31::t_801a45ab3ebc0a 1-25,42,48-49,63-167,172-193
+  s_42e162f0645e31::t_6d9f800687f3bf 168-171
+  s_42e162f0645e31::t_d3f86f9fd9a4a4 26-41,43-47,50-62
+extension/manifest.json
+  s_42e162f0645e31::t_a1567cb69c49f3 5,9-13,16-27,46-62
+  s_42e162f0645e31::t_26df0c78d2add6 14-15
+shared/src/index.ts
+  s_42e162f0645e31::t_d042591dbe30f0 1-28
+extension/_locales/en/messages.json
+  s_42e162f0645e31::t_c4d73a40081324 15,18,21,88-98,106-168
+  s_42e162f0645e31::t_ac57a005ff9a0d 30-87
+  s_42e162f0645e31::t_5f5a43222fbfaf 99-105
+docs/levels/L3-fact-check-mvp.md
+  s_42e162f0645e31::t_9a5f4889722d82 3,18-22,26-28
+docs/MULTILEVEL-IMPLEMENTATION-PLAN.md
+  s_42e162f0645e31::t_0de02c597ce0b2 27-28,35,37
+extension/src/sidepanel.ts
+  s_42e162f0645e31::t_d7acbab300c8c9 3,15-16,19-20,39-79,90,114-115,125,132-200,204-213,215-216,249-252,282,286,298,302,305-308,321-324
+  s_42e162f0645e31::t_2d04bea4438211 99-102
+  s_42e162f0645e31::t_040f6ff2bc1896 1-2,4-14,17-18,21-22,26-33,36-38,80-89,91-98,103-113,116-121,127,201-203,218-224,226-241,244-248,253-281,283-285,289-297,301,309,315-317,320,329-331,333-340
+  s_42e162f0645e31::t_232aa1bbc65a12 325-328
+extension/tsconfig.json
+  s_42e162f0645e31::t_4cc0dea4cc5ca3 1-15
+extension/sidepanel.css
+  s_42e162f0645e31::t_133d71237074bc 134,136-139
+  s_42e162f0645e31::t_b2690e56c0842d 87-133,135,140-157
+extension/_locales/de/messages.json
+  s_42e162f0645e31::t_8d7341f7e5bf64 15,18,21,88-98,106-168
+  s_42e162f0645e31::t_7c2ebac0d5260e 30-87
+  s_42e162f0645e31::t_bdb800fd3acb6d 99-105
+package-lock.json
+  s_42e162f0645e31::t_156117fe4e40b7 35-43,53-549,563-568,573
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "0a2977dae09507be07188b08ba4b9ae97bf0d709",
+  "prompts": {},
+  "sessions": {
+    "s_42e162f0645e31": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "2c8fd63f-8bcb-49df-ae92-f55f365f219f",
+        "model": "cursor-grok-4.5-high-fast"
+      },
+      "human_author": "Andre Lorbach <alorbach@adiscon.com>"
+    }
+  }
+}
