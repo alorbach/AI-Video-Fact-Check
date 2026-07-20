@@ -1,0 +1,43 @@
+extension/_locales/de/messages.json
+  s_10ef36f1dbd4a1::t_205343e114552a 6
+docs/CHROME-WEB-STORE.md
+  s_10ef36f1dbd4a1::t_f306bfddff3486 9-10
+docs/levels/L0-foundation.md
+  s_10ef36f1dbd4a1::t_3c4090bb70d1a1 16
+docs/levels/L8-store-release.md
+  s_10ef36f1dbd4a1::t_8b249bc4172aff 20
+extension/_locales/en/messages.json
+  s_10ef36f1dbd4a1::t_1162748bfebc2e 6
+docs/MULTILEVEL-IMPLEMENTATION-PLAN.md
+  s_10ef36f1dbd4a1::t_f9113803ab3272 26
+  s_10ef36f1dbd4a1::t_3ae95139d4c816 35,37
+  s_10ef36f1dbd4a1::t_5aa2dae951b533 80
+.cursor/rules/project.mdc
+  s_10ef36f1dbd4a1::t_4dc75e32c6c9dc 13
+docs/levels/L1-local-skeleton.md
+  s_10ef36f1dbd4a1::t_465b5e25e51629 3
+  s_10ef36f1dbd4a1::t_6fc86271750883 18,22-23,30-31
+README.md
+  s_10ef36f1dbd4a1::t_58f322c07835e3 29
+  s_10ef36f1dbd4a1::t_4ee8f524151996 40
+extension/sidepanel.js
+  s_10ef36f1dbd4a1::t_e4986c2ec47c3c 1-12,18-44,63,67,74-78,80-82
+package-lock.json
+  s_10ef36f1dbd4a1::t_4e5f636dd88f76 10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "31118a6d79b433cbfe058f6c1bff9b9ee789a4a1",
+  "prompts": {},
+  "sessions": {
+    "s_10ef36f1dbd4a1": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "62611d74-6793-4945-9659-3aa8a1ab4025",
+        "model": "grok-4.5"
+      },
+      "human_author": "Andre Lorbach <alorbach@adiscon.com>"
+    }
+  }
+}
