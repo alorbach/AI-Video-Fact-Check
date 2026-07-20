@@ -1,0 +1,59 @@
+{
+  "extName": {
+    "message": "Video Fact-Check"
+  },
+  "extDescription": {
+    "message": "Prepare a video link and open ChatGPT Video Fact-Check or free Gemini — no API keys."
+  },
+  "actionTitle": {
+    "message": "Check this video"
+  },
+  "contextCheckVideo": {
+    "message": "Check video with AI"
+  },
+  "sidepanelSubtitle": {
+    "message": "We open a free chat you already know. You paste and send."
+  },
+  "stepsHeading": {
+    "message": "How it works"
+  },
+  "step1": {
+    "message": "We prepare the video link (and captions when available)."
+  },
+  "step2": {
+    "message": "Open Video Fact-Check GPT or free Gemini."
+  },
+  "step3": {
+    "message": "Paste (Ctrl+V) in the chat and send."
+  },
+  "sidepanelHint": {
+    "message": "No developer setup. Use your normal ChatGPT or Google login. Captions + auto-copy come in the next steps."
+  },
+  "btnOpenGpt": {
+    "message": "Open Video Fact-Check GPT"
+  },
+  "btnOpenGemini": {
+    "message": "Open Gemini (free)"
+  },
+  "btnOptions": {
+    "message": "Settings"
+  },
+  "creditsLabel": {
+    "message": "Created by "
+  },
+  "optionsTitle": {
+    "message": "Video Fact-Check settings"
+  },
+  "optionsSubtitle": {
+    "message": "Which free chat should be the default?"
+  },
+  "labelDefaultChat": {
+    "message": "Default chat"
+  },
+  "btnSave": {
+    "message": "Save"
+  },
+  "saveOk": {
+    "message": "Saved."
+  }
+}

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Video Fact-Check — Options</title>
+    <link rel="stylesheet" href="sidepanel.css" />
+    <style>
+      body {
+        max-width: 40rem;
+        margin: 0 auto;
+      }
+      .field {
+        margin-bottom: 1.25rem;
+      }
+      select {
+        width: 100%;
+        min-height: 48px;
+        font: inherit;
+        padding: 0.5rem 0.75rem;
+        border: 2px solid var(--border);
+        border-radius: var(--radius);
+      }
+      #saveMsg {
+        margin-top: 0.75rem;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="header">
+      <h1 id="optTitle">Options</h1>
+      <p id="optSubtitle" class="subtitle"></p>
+    </header>
+
+    <main class="status-card">
+      <div class="field">
+        <label for="defaultChat" id="labelDefaultChat"></label>
+        <select id="defaultChat">
+          <option value="chatgpt_video_faktencheck" id="optGpt"></option>
+          <option value="gemini_web" id="optGemini"></option>
+        </select>
+      </div>
+      <button type="button" id="btnSave" class="btn primary"></button>
+      <p id="saveMsg" aria-live="polite"></p>
+    </main>
+
+    <footer class="footer">
+      <p>
+        <span id="creditsLabel"></span>
+        <a
+          href="https://github.com/alorbach/"
+          target="_blank"
+          rel="noopener noreferrer"
+          >Andre Lorbach</a
+        >
+        ·
+        <a
+          href="https://github.com/alorbach/AI-Video-Fact-Check"
+          target="_blank"
+          rel="noopener noreferrer"
+          >AI-Video-Fact-Check</a
+        >
+      </p>
+    </footer>
+
+    <script type="module" src="options.js"></script>
+  </body>
+</html>

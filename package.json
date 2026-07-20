@@ -1,0 +1,21 @@
+{
+  "name": "ai-video-fact-check",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Chrome extension: hand off video URL/captions to ChatGPT Video-Faktencheck or free Gemini (de/en)",
+  "author": "Andre Lorbach",
+  "license": "UNLICENSED",
+  "workspaces": [
+    "extension",
+    "shared"
+  ],
+  "scripts": {
+    "build": "npm run build -w shared && npm run build -w extension",
+    "dev:extension": "npm run dev -w extension",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

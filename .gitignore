@@ -1,0 +1,55 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build
+dist/
+build/
+*.tsbuildinfo
+extension/dist/
+backend/dist/
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+*.pem
+credentials.json
+
+# Captured / runtime data
+tmp/
+.tmp/
+data/
+uploads/
+*.webm
+*.wav
+*.mp3
+*.mp4
+transcripts/
+jobs/
+
+# Logs & OS
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+
+# Test / coverage
+coverage/
+.nyc_output/
+
+# Chrome pack
+*.crx
+*.pem
+web-ext-artifacts/
+
+# Agent / local
+.cursor/plans/
+.claude/settings.local.json

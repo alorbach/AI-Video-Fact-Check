@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Video Fact-Check</title>
+    <link rel="stylesheet" href="sidepanel.css" />
+  </head>
+  <body>
+    <header class="header">
+      <h1 id="title">Video Fact-Check</h1>
+      <p id="subtitle" class="subtitle"></p>
+    </header>
+
+    <main>
+      <section class="status-card" aria-live="polite">
+        <h2 id="stepsHeading"></h2>
+        <ol id="stepsList" class="steps">
+          <li id="step1"></li>
+          <li id="step2"></li>
+          <li id="step3"></li>
+        </ol>
+      </section>
+
+      <section class="hint-card">
+        <p id="hintText"></p>
+      </section>
+
+      <div class="actions">
+        <button type="button" id="btnOpenGpt" class="btn primary"></button>
+        <button type="button" id="btnOpenGemini" class="btn"></button>
+        <button type="button" id="btnOptions" class="btn"></button>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p>
+        <span id="creditsLabel"></span>
+        <a
+          href="https://github.com/alorbach/"
+          target="_blank"
+          rel="noopener noreferrer"
+          >Andre Lorbach</a
+        >
+      </p>
+    </footer>
+
+    <script type="module" src="sidepanel.js"></script>
+  </body>
+</html>

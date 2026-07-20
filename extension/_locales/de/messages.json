@@ -1,0 +1,59 @@
+{
+  "extName": {
+    "message": "Video-Faktencheck"
+  },
+  "extDescription": {
+    "message": "Video-Link vorbereiten und ChatGPT Video-Faktencheck oder kostenloses Gemini öffnen — ohne API-Schlüssel."
+  },
+  "actionTitle": {
+    "message": "Dieses Video prüfen"
+  },
+  "contextCheckVideo": {
+    "message": "Video mit KI prüfen"
+  },
+  "sidepanelSubtitle": {
+    "message": "Wir öffnen einen kostenlosen Chat, den Sie schon kennen. Sie fügen ein und senden."
+  },
+  "stepsHeading": {
+    "message": "So funktioniert es"
+  },
+  "step1": {
+    "message": "Wir bereiten den Video-Link vor (und Untertitel, wenn vorhanden)."
+  },
+  "step2": {
+    "message": "Öffnen Sie den Video-Faktencheck-GPT oder kostenloses Gemini."
+  },
+  "step3": {
+    "message": "Im Chat einfügen (Strg+V) und senden."
+  },
+  "sidepanelHint": {
+    "message": "Kein Technik-Setup. Einfach mit Ihrem normalen ChatGPT- oder Google-Konto. Untertitel und automatisches Kopieren folgen als Nächstes."
+  },
+  "btnOpenGpt": {
+    "message": "Video-Faktencheck GPT öffnen"
+  },
+  "btnOpenGemini": {
+    "message": "Gemini öffnen (kostenlos)"
+  },
+  "btnOptions": {
+    "message": "Einstellungen"
+  },
+  "creditsLabel": {
+    "message": "Erstellt von "
+  },
+  "optionsTitle": {
+    "message": "Video-Faktencheck Einstellungen"
+  },
+  "optionsSubtitle": {
+    "message": "Welcher kostenlose Chat soll Standard sein?"
+  },
+  "labelDefaultChat": {
+    "message": "Standard-Chat"
+  },
+  "btnSave": {
+    "message": "Speichern"
+  },
+  "saveOk": {
+    "message": "Gespeichert."
+  }
+}

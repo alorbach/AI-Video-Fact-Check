@@ -1,0 +1,10 @@
+{
+  "name": "@ai-video-fact-check/extension",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "echo \"Level 1: wire Vite/CRX HMR here. For now load the static files from extension/ (or dist after copy).\"",
+    "build": "node ./scripts/copy-static.mjs"
+  }
+}
