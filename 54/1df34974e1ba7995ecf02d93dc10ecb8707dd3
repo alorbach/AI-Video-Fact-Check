@@ -1,0 +1,89 @@
+docs/MULTILEVEL-IMPLEMENTATION-PLAN.md
+  s_b0d21b08067915::t_25f8250a227621 31,35,37
+extension/sidepanel.css
+  s_ade21bde696617::t_47f1288add8cc0 135-136
+  s_b0d21b08067915::t_b6d8e28ec0845b 104,112,117-118,121-122,133-134
+shared/src/index.ts
+  s_b0d21b08067915::t_214fdcafed058a 63-67
+extension/src/background.ts
+  s_61406e451529c6::t_506b8c2ddc6342 68
+  s_b0d21b08067915::t_83fb2db22fbfd8 552-555
+  s_b0d21b08067915::t_4594407f62035b 69-75
+shared/src/pastePackage.ts
+  s_b0d21b08067915::t_eeb980a09880c3 10
+  s_b0d21b08067915::t_58eaaaab264843 1,4
+  s_b0d21b08067915::t_83fa01c422002e 75-79,85-106,110,118
+extension/src/adapters/tiktok.ts
+  s_b0d21b08067915::t_06324c06184ad5 56-101,108-110,112-125,127-128,131,135,143,158-159
+extension/src/sidepanel.ts
+  s_b0d21b08067915::t_b1dbc635f84498 27
+  s_b0d21b08067915::t_0476d2df4df0d5 336,346-349,358
+  s_b0d21b08067915::t_d8c5c6a1f60f58 507
+  s_b0d21b08067915::t_db807fb79e4d32 296-297,329-330,338-339,357
+  s_b0d21b08067915::t_bb41ae09c053a1 155
+  s_b0d21b08067915::t_9e965247789dcd 260-264,306,316
+  s_b0d21b08067915::t_b412c116d53753 28
+  s_b0d21b08067915::t_91cefd548cef3a 72-73,75-82,86,90,94-97,101,105
+  s_b0d21b08067915::t_ed9b933949ed06 518-522
+extension/sidepanel.html
+  s_b0d21b08067915::t_eadda15990fa5f 41-48
+shared/src/types.ts
+  s_b0d21b08067915::t_ac84719622c63f 39-40,51,59
+docs/levels/L6-multi-model.md
+  s_b0d21b08067915::t_dbd73f5823e5fd 3,18-22,26-28
+extension/_locales/en/messages.json
+  s_b0d21b08067915::t_c531f10a563b01 15,21,23-24,26-27,29-30,32-33,35-36,38-39,41-42,63
+  s_b0d21b08067915::t_2b96b90e30fef5 86-88
+shared/src/pastePackage.test.ts
+  s_b0d21b08067915::t_d8e27ee8f719a8 52-110
+docs/PRODUCT.md
+  s_10277b4b5e2556::t_13a2e53d318944 90
+  s_b0d21b08067915::t_7f70c7eedff7d6 66
+  s_b0d21b08067915::t_e6724a47bb3666 74-75,89
+docs/SPEC-FACT-CHECK.md
+  s_b0d21b08067915::t_1e8c8ce4e656a4 56-59
+  s_b0d21b08067915::t_6cf53cb5a14fe4 32-33
+extension/_locales/de/messages.json
+  s_b0d21b08067915::t_1b7fa798fd9fd0 86-88
+  s_b0d21b08067915::t_85622465a5f5ed 15,21,23-24,26-27,29-30,32-33,35-36,38-39,41-42,63
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "541df34974e1ba7995ecf02d93dc10ecb8707dd3",
+  "prompts": {},
+  "sessions": {
+    "s_10277b4b5e2556": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "05beac9f-eb9b-4529-9f56-1ad2461f770e",
+        "model": "grok-4.5"
+      },
+      "human_author": "Andre Lorbach <alorbach@adiscon.com>"
+    },
+    "s_61406e451529c6": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f7f67-a565-7213-9257-b81c63b99cc9",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "Andre Lorbach <alorbach@adiscon.com>"
+    },
+    "s_ade21bde696617": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "660d6888-7a08-4692-b5ca-1a83dbbaf908",
+        "model": "grok-4.5"
+      },
+      "human_author": null
+    },
+    "s_b0d21b08067915": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "0bd791ca-3453-450e-a28e-31f5f24de797",
+        "model": "grok-4.5"
+      },
+      "human_author": null
+    }
+  }
+}
