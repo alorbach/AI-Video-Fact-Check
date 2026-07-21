@@ -35,7 +35,7 @@ const SUPPORTED: PlatformId[] = [
   "instagram",
 ];
 
-/** Hosts that already load content.js via manifest content_scripts. */
+/** Hosts that load content.js via manifest content_scripts. */
 function hasDeclaredContentScript(url: string): boolean {
   return SUPPORTED.includes(detectPlatform(url));
 }

@@ -1,12 +1,27 @@
 import {
   captureToPastePackage,
-  canonicalizeYouTubeUrl,
+  canonicalizeVideoUrl,
   detectPlatform,
   type CaptureResult,
   type ExtensionMessage,
   type Locale,
+  type PlatformId,
 } from "@ai-video-fact-check/shared";
+import {
+  captureFacebookExtras,
+  captureInstagramExtras,
+  captureTikTokExtras,
+  captureXExtras,
+} from "./adapters/index.js";
 import { captureYouTubeExtras } from "./youtubeCaptions.js";
+
+const SUPPORTED: PlatformId[] = [
+  "youtube",
+  "tiktok",
+  "x",
+  "facebook",
+  "instagram",
+];
 
 function uiLocale(): Locale {
   const lang = (chrome.i18n?.getUILanguage?.() || navigator.language || "en")
@@ -21,35 +36,46 @@ function stablePageUrl(): string {
   return location.href;
 }
 
-function videoUrlForPlatform(
-  platform: ReturnType<typeof detectPlatform>,
-): string {
-  const href = stablePageUrl();
-  if (platform === "youtube") return canonicalizeYouTubeUrl(href);
-  return href;
-}
-
 async function capturePage(): Promise<CaptureResult> {
   const pageUrl = stablePageUrl();
   const platform = detectPlatform(pageUrl);
   const locale = uiLocale();
-  const supported = [
-    "youtube",
-    "tiktok",
-    "x",
-    "facebook",
-    "instagram",
-  ].includes(platform);
+  const supported = SUPPORTED.includes(platform);
 
   let title: string | undefined;
   let transcript: string | undefined;
   let transcriptSource: CaptureResult["transcriptSource"] = "none";
+  let videoUrl = canonicalizeVideoUrl(pageUrl);
 
   if (platform === "youtube") {
     const extras = await captureYouTubeExtras(pageUrl, locale);
     title = extras.title || document.title || undefined;
     transcript = extras.transcript;
     transcriptSource = extras.transcriptSource;
+  } else if (platform === "tiktok") {
+    const extras = captureTikTokExtras(pageUrl);
+    title = extras.title;
+    transcript = extras.transcript;
+    transcriptSource = extras.transcriptSource;
+    if (extras.videoUrl) videoUrl = extras.videoUrl;
+  } else if (platform === "x") {
+    const extras = captureXExtras(pageUrl);
+    title = extras.title;
+    transcript = extras.transcript;
+    transcriptSource = extras.transcriptSource;
+    if (extras.videoUrl) videoUrl = extras.videoUrl;
+  } else if (platform === "facebook") {
+    const extras = captureFacebookExtras(pageUrl);
+    title = extras.title;
+    transcript = extras.transcript;
+    transcriptSource = extras.transcriptSource;
+    if (extras.videoUrl) videoUrl = extras.videoUrl;
+  } else if (platform === "instagram") {
+    const extras = captureInstagramExtras(pageUrl);
+    title = extras.title;
+    transcript = extras.transcript;
+    transcriptSource = extras.transcriptSource;
+    if (extras.videoUrl) videoUrl = extras.videoUrl;
   } else {
     title = document.title || undefined;
   }
@@ -57,7 +83,7 @@ async function capturePage(): Promise<CaptureResult> {
   return {
     platform,
     pageUrl,
-    videoUrl: videoUrlForPlatform(platform),
+    videoUrl,
     title,
     transcript,
     transcriptSource,

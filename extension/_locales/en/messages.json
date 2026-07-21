@@ -152,6 +152,9 @@
   "captionsNo": {
     "message": "No — chat can still use the link"
   },
+  "captionsPost": {
+    "message": "Yes — post text included"
+  },
   "captionsManual": {
     "message": "Using your pasted transcript"
   },

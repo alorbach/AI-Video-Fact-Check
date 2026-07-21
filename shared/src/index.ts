@@ -25,6 +25,35 @@ export {
   type CaptionTrack,
 } from "./youtube.js";
 export {
+  canonicalizeTikTokUrl,
+  canonicalizeXUrl,
+  canonicalizeFacebookUrl,
+  canonicalizeInstagramUrl,
+  canonicalizeSocialVideoUrl,
+  extractTikTokVideoId,
+  extractInstagramShortcode,
+  extractFacebookVideoId,
+  jsonMentionsId,
+} from "./socialUrls.js";
+export {
+  normalizeWhitespace,
+  pickLongestText,
+  metaContent,
+  ogDescription,
+  ogTitle,
+  metaDescription,
+  twitterDescription,
+  extractBalancedJson,
+  parseJsonAssignment,
+  jsonLdTexts,
+  findStringByKeys,
+  findStringByKeysNearId,
+  findSubtreeMentioningId,
+  pageMetaPostText,
+  textMentionsExactId,
+  unwrapInstagramOgCaption,
+} from "./pageMeta.js";
+export {
   buildPastePackage,
   captureToPastePackage,
   withManualTranscript,

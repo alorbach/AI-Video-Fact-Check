@@ -15,7 +15,12 @@ export type PlatformId =
   | "generic"
   | "unknown";
 
-export type TranscriptSource = "captions" | "track" | "manual" | "none";
+export type TranscriptSource =
+  | "captions"
+  | "track"
+  | "post"
+  | "manual"
+  | "none";
 
 export interface PastePackage {
   videoUrl: string;

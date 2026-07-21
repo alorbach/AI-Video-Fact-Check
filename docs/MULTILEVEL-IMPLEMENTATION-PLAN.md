@@ -27,14 +27,14 @@ This file is the **overall roadmap and status board**. Level detail: [`levels/`]
 | L2 | Captions & paste package | **done** | [`levels/L2-capture-transcript.md`](levels/L2-capture-transcript.md) |
 | L3 | Custom GPT handoff MVP | **done** | [`levels/L3-fact-check-mvp.md`](levels/L3-fact-check-mvp.md) |
 | L4 | Guide UX + a11y | **done** | [`levels/L4-mode-b-polish.md`](levels/L4-mode-b-polish.md) |
-| L5 | Required platforms (YT, TikTok, X, FB, IG) | todo | [`levels/L5-platforms.md`](levels/L5-platforms.md) |
+| L5 | Required platforms (YT, TikTok, X, FB, IG) | **done** | [`levels/L5-platforms.md`](levels/L5-platforms.md) |
 | L6 | Free Gemini (+ more free chats) | todo | [`levels/L6-multi-model.md`](levels/L6-multi-model.md) |
 | L7 | Handoff hardening | todo | [`levels/L7-hardening.md`](levels/L7-hardening.md) |
 | L8 | Chrome Web Store | todo | [`levels/L8-store-release.md`](levels/L8-store-release.md) |
 
-**Current level:** L5 — Required platforms  
+**Current level:** L6 — Free Gemini  
 **Last updated:** 2026-07-21  
-**Next action:** Harden capture for YouTube, TikTok, X, Facebook, Instagram (L5).
+**Next action:** Start L6 — Gemini web handoff (secondary free chat).
 
 Status values: `todo` · `in_progress` · `done` · `blocked`
 

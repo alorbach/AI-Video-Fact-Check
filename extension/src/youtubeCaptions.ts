@@ -3,6 +3,7 @@ import {
   parseTimedTextJson3,
   parseTimedTextXml,
   pickCaptionTrack,
+  textMentionsExactId,
   type CaptionTrack,
   type Locale,
 } from "@ai-video-fact-check/shared";
@@ -20,7 +21,11 @@ interface PlayerResponse {
       captionTracks?: PlayerCaptionTrack[];
     };
   };
-  videoDetails?: { title?: string; videoId?: string };
+  videoDetails?: {
+    title?: string;
+    videoId?: string;
+    shortDescription?: string;
+  };
 }
 
 function playerMatchesVideo(
@@ -121,14 +126,187 @@ async function fetchCaptionText(baseUrl: string): Promise<string> {
   if (!url.searchParams.has("fmt")) {
     url.searchParams.set("fmt", "json3");
   }
+  // YouTube often requires client hint; PoToken may still be needed (empty 200).
+  if (!url.searchParams.has("c")) {
+    url.searchParams.set("c", "WEB");
+  }
   const res = await fetch(url.toString(), { credentials: "same-origin" });
   if (!res.ok) return "";
   const body = await res.text();
+  if (!body.trim()) return "";
   if (url.searchParams.get("fmt") === "json3") {
     const parsed = parseTimedTextJson3(body);
     if (parsed) return parsed;
   }
-  return parseTimedTextXml(body);
+  if (body.includes("<text") || body.includes("<p ")) {
+    return parseTimedTextXml(body);
+  }
+  // WebVTT
+  if (body.includes("WEBVTT") || body.includes("-->")) {
+    return body
+      .split(/\r?\n/)
+      .filter(
+        (line) =>
+          line &&
+          !line.startsWith("WEBVTT") &&
+          !line.includes("-->") &&
+          !/^\d+$/.test(line.trim()),
+      )
+      .join(" ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+  return "";
+}
+
+function readScriptJsonAssignment(
+  marker: string,
+  videoId?: string,
+): unknown | null {
+  for (const script of Array.from(document.scripts)) {
+    const text = script.textContent ?? "";
+    if (!text.includes(marker)) continue;
+    // After SPA navigation, older scripts linger — require this video id.
+    if (videoId && !textMentionsExactId(text, videoId)) continue;
+    const idx = text.indexOf(marker);
+    const eq = text.indexOf("=", idx);
+    if (eq === -1) continue;
+    const start = text.indexOf("{", eq);
+    if (start === -1) continue;
+    const json = extractBalancedJson(text, start);
+    if (!json) continue;
+    try {
+      const parsed = JSON.parse(json) as unknown;
+      if (videoId && !textMentionsExactId(JSON.stringify(parsed), videoId)) {
+        continue;
+      }
+      return parsed;
+    } catch {
+      /* try next script */
+    }
+  }
+  return null;
+}
+
+function findTranscriptParams(node: unknown, videoId: string, depth = 0): string {
+  if (!node || depth > 20) return "";
+  if (Array.isArray(node)) {
+    for (const item of node) {
+      const found = findTranscriptParams(item, videoId, depth + 1);
+      if (found) return found;
+    }
+    return "";
+  }
+  if (typeof node !== "object") return "";
+  const obj = node as Record<string, unknown>;
+  const endpoint = obj.getTranscriptEndpoint;
+  if (endpoint && typeof endpoint === "object") {
+    const params = (endpoint as { params?: unknown }).params;
+    if (typeof params === "string" && params.length > 10) {
+      // Only accept params that decode to this exact video id.
+      try {
+        const decoded = atob(params.replace(/-/g, "+").replace(/_/g, "/"));
+      // Only accept params that decode to this exact video id token.
+      try {
+        const decoded = atob(params.replace(/-/g, "+").replace(/_/g, "/"));
+        if (textMentionsExactId(decoded, videoId)) return params;
+      } catch {
+        /* ignore undecodable params */
+      }
+      } catch {
+        /* ignore undecodable params */
+      }
+    }
+  }
+  for (const value of Object.values(obj)) {
+    if (value && typeof value === "object") {
+      const found = findTranscriptParams(value, videoId, depth + 1);
+      if (found) return found;
+    }
+  }
+  return "";
+}
+
+function readInnertubeClientVersion(): string {
+  for (const script of Array.from(document.scripts)) {
+    const text = script.textContent ?? "";
+    const m = text.match(/"INNERTUBE_CLIENT_VERSION":"([^"]+)"/);
+    if (m?.[1]) return m[1];
+  }
+  return "2.20240701.00.00";
+}
+
+function collectTranscriptSegments(node: unknown, out: string[], depth = 0): void {
+  if (!node || depth > 24) return;
+  if (Array.isArray(node)) {
+    for (const item of node) collectTranscriptSegments(item, out, depth + 1);
+    return;
+  }
+  if (typeof node !== "object") return;
+  const obj = node as Record<string, unknown>;
+  const renderer = obj.transcriptSegmentRenderer;
+  if (renderer && typeof renderer === "object") {
+    const snippet = (renderer as { snippet?: { runs?: Array<{ text?: string }> } })
+      .snippet;
+    const text = (snippet?.runs ?? [])
+      .map((r) => r.text ?? "")
+      .join("")
+      .trim();
+    if (text) out.push(text);
+  }
+  for (const value of Object.values(obj)) {
+    if (value && typeof value === "object") {
+      collectTranscriptSegments(value, out, depth + 1);
+    }
+  }
+}
+
+/**
+ * Engagement-panel transcript (same-origin youtubei). Works when timedtext
+ * returns empty without a PoToken.
+ */
+async function fetchEngagementTranscript(videoId: string): Promise<string> {
+  const initialData = readScriptJsonAssignment("ytInitialData", videoId);
+  const params = findTranscriptParams(initialData, videoId);
+  if (!params) return "";
+
+  const version = readInnertubeClientVersion();
+  try {
+    const res = await fetch(
+      "https://www.youtube.com/youtubei/v1/get_transcript?prettyPrint=false",
+      {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Youtube-Client-Name": "1",
+          "X-Youtube-Client-Version": version,
+        },
+        body: JSON.stringify({
+          context: {
+            client: {
+              clientName: "WEB",
+              clientVersion: version,
+              hl: (chrome.i18n?.getUILanguage?.() || "en").slice(0, 2),
+            },
+          },
+          params,
+        }),
+      },
+    );
+    if (!res.ok) return "";
+    const data = (await res.json()) as unknown;
+    const lines: string[] = [];
+    collectTranscriptSegments(data, lines);
+    return lines.join("\n").trim();
+  } catch {
+    return "";
+  }
+}
+
+function descriptionFromPlayer(player: PlayerResponse | null): string {
+  const desc = player?.videoDetails?.shortDescription?.trim() ?? "";
+  return desc;
 }
 
 /** True when a <track> src is clearly for this video (not a stale SPA leftover). */
@@ -177,7 +355,29 @@ async function captionsFromTrackElement(videoId: string): Promise<string> {
 export interface YouTubeCaptureExtras {
   title?: string;
   transcript?: string;
-  transcriptSource: "captions" | "track" | "none";
+  transcriptSource: "captions" | "track" | "post" | "none";
+}
+
+function shortsDomTitle(videoId: string): string | undefined {
+  // Shorts SPA: only accept a title tied to this video id — never the
+  // globally "active" reel (often a different clip after swipe).
+  const link = document.querySelector(
+    `ytd-reel-video-renderer a[href*="/shorts/${videoId}"], ytd-reel-video-renderer a[href*="${videoId}"]`,
+  );
+  return (
+    link
+      ?.closest("ytd-reel-video-renderer")
+      ?.querySelector("#video-title, h2")
+      ?.textContent?.trim() || undefined
+  );
+}
+
+function isShortsUrl(url: string): boolean {
+  try {
+    return new URL(url).pathname.toLowerCase().includes("/shorts/");
+  } catch {
+    return /youtube\.com\/shorts\//i.test(url);
+  }
 }
 
 export async function captureYouTubeExtras(
@@ -197,26 +397,47 @@ export async function captureYouTubeExtras(
     player = null;
   }
 
-  const title = playerMatchesVideo(player, videoId)
+  let title = playerMatchesVideo(player, videoId)
     ? player?.videoDetails?.title
     : undefined;
+  if (!title && isShortsUrl(pageUrl)) {
+    title = shortsDomTitle(videoId);
+  }
+
   const tracks = player ? tracksFromPlayer(player) : [];
   const preferred = pickCaptionTrack(tracks, locale);
+  const ordered = preferred
+    ? [preferred, ...tracks.filter((t) => t.baseUrl !== preferred.baseUrl)]
+    : tracks;
 
-  if (preferred) {
+  for (const track of ordered) {
     try {
-      const transcript = await fetchCaptionText(preferred.baseUrl);
+      const transcript = await fetchCaptionText(track.baseUrl);
       if (transcript) {
         return { title, transcript, transcriptSource: "captions" };
       }
     } catch {
-      /* fall through */
+      /* try next track */
     }
   }
 
   const fromTrack = await captionsFromTrackElement(videoId);
   if (fromTrack) {
     return { title, transcript: fromTrack, transcriptSource: "track" };
+  }
+
+  const fromPanel = await fetchEngagementTranscript(videoId);
+  if (fromPanel) {
+    return { title, transcript: fromPanel, transcriptSource: "captions" };
+  }
+
+  const description = descriptionFromPlayer(player);
+  if (description) {
+    return {
+      title,
+      transcript: description,
+      transcriptSource: "post",
+    };
   }
 
   return { title, transcriptSource: "none" };

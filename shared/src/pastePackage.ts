@@ -5,8 +5,7 @@ import type {
   PlatformId,
   TranscriptSource,
 } from "./types.js";
-import { detectPlatform } from "./platform.js";
-import { canonicalizeYouTubeUrl } from "./youtube.js";
+import { canonicalizeVideoUrl, detectPlatform } from "./platform.js";
 
 export interface BuildPastePackageInput {
   videoUrl: string;
@@ -19,10 +18,7 @@ export interface BuildPastePackageInput {
 /** Normalize URL and build a PastePackage. */
 export function buildPastePackage(input: BuildPastePackageInput): PastePackage {
   const platform = input.platform ?? detectPlatform(input.videoUrl);
-  const videoUrl =
-    platform === "youtube"
-      ? canonicalizeYouTubeUrl(input.videoUrl)
-      : input.videoUrl;
+  const videoUrl = canonicalizeVideoUrl(input.videoUrl);
 
   const trimmed = input.transcript?.trim();
   const hasTranscript = Boolean(trimmed);
@@ -88,7 +84,9 @@ export function formatPastePackageText(pkg: PastePackage): string {
       "Video-URL:",
       pkg.videoUrl,
       "",
-      "Transkript / Untertitel (falls vorhanden):",
+      pkg.transcriptSource === "post"
+        ? "Beitragstext / Untertitel (falls vorhanden):"
+        : "Transkript / Untertitel (falls vorhanden):",
       transcriptBlock,
       "",
       "Bitte führe einen verständlichen Faktencheck durch (Bewertung 1–10,",
@@ -100,7 +98,9 @@ export function formatPastePackageText(pkg: PastePackage): string {
     "Video URL:",
     pkg.videoUrl,
     "",
-    "Transcript / captions (if available):",
+    pkg.transcriptSource === "post"
+      ? "Post text / captions (if available):"
+      : "Transcript / captions (if available):",
     transcriptBlock,
     "",
     "Please run a clear fact-check (score 1–10, short summary,",

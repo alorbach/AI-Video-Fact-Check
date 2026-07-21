@@ -152,6 +152,9 @@
   "captionsNo": {
     "message": "Nein — der Chat kann den Link trotzdem prüfen"
   },
+  "captionsPost": {
+    "message": "Ja — Beitragstext enthalten"
+  },
   "captionsManual": {
     "message": "Ihr eingefügtes Transkript wird verwendet"
   },

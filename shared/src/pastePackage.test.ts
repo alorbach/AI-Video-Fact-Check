@@ -36,4 +36,17 @@ describe("PastePackage", () => {
     assert.equal(manual.transcript, "user text");
     assert.match(formatPastePackageText(manual), /user text/);
   });
+
+  it("keeps post text source for social captions", () => {
+    const pkg = buildPastePackage({
+      videoUrl: "https://www.instagram.com/reel/AbCdEfGhIjK/?utm_source=ig",
+      locale: "de",
+      platform: "instagram",
+      transcript: "Beitragstext hier",
+      transcriptSource: "post",
+    });
+    assert.equal(pkg.transcriptSource, "post");
+    assert.equal(pkg.videoUrl, "https://www.instagram.com/reel/AbCdEfGhIjK/");
+    assert.match(formatPastePackageText(pkg), /Beitragstext hier/);
+  });
 });

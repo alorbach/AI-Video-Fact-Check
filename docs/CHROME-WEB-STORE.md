@@ -19,8 +19,20 @@ Fill before **Level 8**.
 | `storage` | Language / last chat choice / optional last package |
 | `contextMenus` | “Check video with AI” |
 | `clipboardWrite` (if declared) | Copy URL + captions for paste into chat |
-| Host permissions (optional) | Captions/metadata on YouTube, TikTok, X, Facebook, Instagram |
+| `host_permissions` (YouTube, TikTok, X, Facebook, Instagram) | Read captions/metadata on those video pages; required for Side Panel “Scan” without an extra permission prompt |
 | Opens chatgpt.com / gemini.google.com | User’s fact-check happens there |
+
+### Host patterns (manifest)
+
+Declared under `host_permissions` for the five required platforms:
+
+- `*://*.youtube.com/*`, `*://youtu.be/*`
+- `*://*.tiktok.com/*`
+- `*://*.x.com/*`, `*://*.twitter.com/*`
+- `*://*.facebook.com/*`, `*://*.fb.com/*`, `*://*.fb.watch/*`
+- `*://*.instagram.com/*`
+
+(`optional_host_permissions` alone broke Side Panel Scan — no `activeTab` gesture — so required hosts are used for MVP.)
 
 ## Privacy policy must say
 

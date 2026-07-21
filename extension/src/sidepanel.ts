@@ -172,10 +172,17 @@ function renderCapture(): void {
       ) || t("captureFound")
     : t("captureUnsupported");
 
+  let captionsLabel = captionsYes ? t("captionsYes") : t("captionsNo");
+  if (lastPackage.transcriptSource === "post") {
+    captionsLabel = t("captionsPost");
+  } else if (lastPackage.transcriptSource === "manual") {
+    captionsLabel = t("captionsYes");
+  }
+
   const lines = [
     `${t("labelPlatform")}: ${platformName(lastResult.platform)}`,
     `${t("labelUrl")}: ${lastPackage.videoUrl}`,
-    `${t("labelCaptions")}: ${captionsYes ? t("captionsYes") : t("captionsNo")}`,
+    `${t("labelCaptions")}: ${captionsLabel}`,
   ];
   if (lastPackage.transcriptSource === "manual") {
     lines.push(t("captionsManual"));
@@ -390,20 +397,31 @@ async function copyAgain(): Promise<void> {
 async function requestCapture(opts?: { force?: boolean }): Promise<void> {
   const force = opts?.force === true;
   setText("captureStatus", t("captureWorking"));
-  const response = (await chrome.runtime.sendMessage({
-    type: "CAPTURE_ACTIVE_TAB",
-    force,
-  } satisfies ExtensionMessage)) as ExtensionMessage;
+  try {
+    const response = (await chrome.runtime.sendMessage({
+      type: "CAPTURE_ACTIVE_TAB",
+      force,
+    } satisfies ExtensionMessage)) as ExtensionMessage;
 
-  if (response.type === "HANDOFF_FAILED") {
+    if (response.type === "HANDOFF_FAILED") {
+      setText("captureStatus", t("captureFailed"));
+      setText("captureDetails", "");
+      return;
+    }
+    if (response.type === "LAST_CAPTURE") {
+      if (!response.result || !response.package) {
+        // No capture yet — idle, not an error (e.g. first open / empty store).
+        applyCapture(null, null);
+        return;
+      }
+      applyCapture(response.result, response.package, {
+        resetGuide: force,
+      });
+    }
+  } catch (err) {
+    console.error(err);
     setText("captureStatus", t("captureFailed"));
     setText("captureDetails", "");
-    return;
-  }
-  if (response.type === "LAST_CAPTURE") {
-    applyCapture(response.result, response.package, {
-      resetGuide: force,
-    });
   }
 }
 

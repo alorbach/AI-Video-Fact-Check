@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "__MSG_extName__",
   "description": "__MSG_extDescription__",
-  "version": "0.0.2",
+  "version": "0.0.5",
   "default_locale": "en",
   "author": "Andre Lorbach",
   "homepage_url": "https://github.com/alorbach/AI-Video-Fact-Check",
@@ -12,6 +12,7 @@
     "contextMenus",
     "scripting",
     "activeTab",
+    "tabs",
     "clipboardWrite"
   ],
   "host_permissions": [

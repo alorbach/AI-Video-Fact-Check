@@ -1,21 +1,11 @@
 import type { PlatformId } from "./types.js";
+import { extractYouTubeVideoId } from "./youtube.js";
 import {
-  canonicalizeYouTubeUrl,
-  extractYouTubeVideoId,
-} from "./youtube.js";
-
-const TRACKING_PARAMS = [
-  "si",
-  "feature",
-  "pp",
-  "fbclid",
-  "gclid",
-  "utm_source",
-  "utm_medium",
-  "utm_campaign",
-  "utm_term",
-  "utm_content",
-];
+  canonicalizeSocialVideoUrl,
+  extractFacebookVideoId,
+  extractInstagramShortcode,
+  extractTikTokVideoId,
+} from "./socialUrls.js";
 
 /**
  * Detect a supported video platform from a page or media URL.
@@ -67,17 +57,21 @@ export function detectPlatform(url: string): PlatformId {
   return "unknown";
 }
 
-/** Stable URL for packaging / comparison (YouTube → watch?v=). */
+/** Stable URL for packaging / comparison (YouTube → watch?v=; social share paths). */
 export function canonicalizeVideoUrl(url: string): string {
-  if (detectPlatform(url) === "youtube") {
-    return canonicalizeYouTubeUrl(url);
+  const platform = detectPlatform(url);
+  if (
+    platform === "youtube" ||
+    platform === "tiktok" ||
+    platform === "x" ||
+    platform === "facebook" ||
+    platform === "instagram"
+  ) {
+    return canonicalizeSocialVideoUrl(platform, url);
   }
   try {
     const parsed = new URL(url);
     parsed.hash = "";
-    for (const key of TRACKING_PARAMS) {
-      parsed.searchParams.delete(key);
-    }
     return parsed.toString();
   } catch {
     return url;
@@ -99,7 +93,44 @@ export function sameVideoUrl(a: string, b: string): boolean {
     return Boolean(idA && idA === idB);
   }
 
+  if (platformA === "tiktok") {
+    const idA = extractTikTokVideoId(a);
+    const idB = extractTikTokVideoId(b);
+    if (idA && idB) return idA === idB;
+  }
+
+  if (platformA === "x") {
+    const idA = extractXStatusId(a);
+    const idB = extractXStatusId(b);
+    if (idA && idB) return idA === idB;
+  }
+
+  if (platformA === "instagram") {
+    const idA = extractInstagramShortcode(a);
+    const idB = extractInstagramShortcode(b);
+    if (idA && idB) return idA === idB;
+  }
+
+  if (platformA === "facebook") {
+    const idA = extractFacebookVideoId(a);
+    const idB = extractFacebookVideoId(b);
+    if (idA && idB) return idA === idB;
+  }
+
   return canonicalizeVideoUrl(a) === canonicalizeVideoUrl(b);
+}
+
+function extractXStatusId(url: string): string | null {
+  try {
+    const parts = new URL(url).pathname.split("/").filter(Boolean);
+    const statusIdx = parts.indexOf("status");
+    if (statusIdx >= 0 && parts[statusIdx + 1] && /^\d+$/.test(parts[statusIdx + 1]!)) {
+      return parts[statusIdx + 1]!;
+    }
+  } catch {
+    /* ignore */
+  }
+  return null;
 }
 
 /** Human-readable platform label for UI (not i18n — Side Panel maps via chrome.i18n). */
