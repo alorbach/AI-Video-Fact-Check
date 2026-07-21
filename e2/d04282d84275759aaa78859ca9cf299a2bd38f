@@ -1,0 +1,75 @@
+shared/src/pastePackage.ts
+  s_b0d21b08067915::t_58eaaaab264843 1,4
+  s_b0d21b08067915::t_eeb980a09880c3 10
+  s_b0d21b08067915::t_83fa01c422002e 75-79,85-106,110,118
+docs/MULTILEVEL-IMPLEMENTATION-PLAN.md
+  s_b0d21b08067915::t_25f8250a227621 31,35,37
+shared/src/index.ts
+  s_b0d21b08067915::t_214fdcafed058a 63-67
+extension/src/adapters/tiktok.ts
+  s_b0d21b08067915::t_06324c06184ad5 56-101,108-110,112-125,127-128,131,135,143,158-159
+docs/PRODUCT.md
+  s_10277b4b5e2556::t_13a2e53d318944 90
+  s_b0d21b08067915::t_e6724a47bb3666 74-75,89
+  s_b0d21b08067915::t_7f70c7eedff7d6 66
+extension/src/background.ts
+  s_b0d21b08067915::t_4594407f62035b 69-75
+  s_b0d21b08067915::t_83fb2db22fbfd8 552-555
+  s_61406e451529c6::t_506b8c2ddc6342 68
+shared/src/pastePackage.test.ts
+  s_b0d21b08067915::t_d8e27ee8f719a8 52-110
+extension/_locales/de/messages.json
+  s_b0d21b08067915::t_1b7fa798fd9fd0 113-115
+  s_b0d21b08067915::t_57a1c65bf2d6db 24,27,36,39
+extension/_locales/en/messages.json
+  s_b0d21b08067915::t_42ea1e2281fcab 24,27,36,39
+  s_b0d21b08067915::t_2b96b90e30fef5 113-115
+shared/src/types.ts
+  s_b0d21b08067915::t_ac84719622c63f 39-40,51,59
+docs/SPEC-FACT-CHECK.md
+  s_b0d21b08067915::t_1e8c8ce4e656a4 56-59
+  s_b0d21b08067915::t_6cf53cb5a14fe4 32-33
+extension/src/sidepanel.ts
+  s_b0d21b08067915::t_9b97dbc21c2de9 387-389
+  s_b0d21b08067915::t_b412c116d53753 29-33
+  s_b0d21b08067915::t_ed9b933949ed06 573-577
+  s_b0d21b08067915::t_d8c5c6a1f60f58 562
+  s_b0d21b08067915::t_bb41ae09c053a1 202
+  s_b0d21b08067915::t_72a303044e844d 514,526
+  s_b0d21b08067915::t_9e965247789dcd 307-311,351,361-362
+  s_b0d21b08067915::t_0476d2df4df0d5 375-379,385,396-399,407-408
+docs/levels/L6-multi-model.md
+  s_b0d21b08067915::t_dbd73f5823e5fd 3,18-22,26-28
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "e2d04282d84275759aaa78859ca9cf299a2bd38f",
+  "prompts": {},
+  "sessions": {
+    "s_10277b4b5e2556": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "05beac9f-eb9b-4529-9f56-1ad2461f770e",
+        "model": "grok-4.5"
+      },
+      "human_author": "Andre Lorbach <alorbach@adiscon.com>"
+    },
+    "s_61406e451529c6": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f7f67-a565-7213-9257-b81c63b99cc9",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "Andre Lorbach <alorbach@adiscon.com>"
+    },
+    "s_b0d21b08067915": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "0bd791ca-3453-450e-a28e-31f5f24de797",
+        "model": "grok-4.5"
+      },
+      "human_author": null
+    }
+  }
+}
