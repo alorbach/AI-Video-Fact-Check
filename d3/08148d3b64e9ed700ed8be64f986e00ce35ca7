@@ -1,0 +1,154 @@
+extension/_locales/en/messages.json
+  s_fe8b6d68ba1de9::t_2cc09557dbb4d2 155-157
+shared/src/socialUrls.ts
+  s_fe8b6d68ba1de9::t_cad8ead1567013 98,102
+  s_fe8b6d68ba1de9::t_7e07546657373d 33-97,99-101,103-107
+  s_fe8b6d68ba1de9::t_cddf69399d9bc6 1-4,6-32,108-272
+  s_fe8b6d68ba1de9::t_3427c78c1f42ef 5
+shared/src/pastePackage.test.ts
+  s_fe8b6d68ba1de9::t_28e5bc8b1cfc62 39-51
+extension/src/adapters/types.ts
+  s_fe8b6d68ba1de9::t_ae37125313e9ee 1-13
+extension/src/adapters/index.ts
+  s_fe8b6d68ba1de9::t_a3ae9b53fc94b7 1-5
+extension/_locales/de/messages.json
+  s_fe8b6d68ba1de9::t_5b5e6cfed2c945 155-157
+docs/test-urls.md
+  s_fe8b6d68ba1de9::t_85f8361d20dacd 12-13,15,17,21,26,29-33
+  s_fe8b6d68ba1de9::t_04bf7cf2f52ec3 6-7,14,16,18-20,22-25
+  s_fe8b6d68ba1de9::t_fda1354e140ebb 27-28
+shared/src/platform.ts
+  s_fe8b6d68ba1de9::t_f4a87358a17ca2 60,62-70
+  s_fe8b6d68ba1de9::t_9e1017bf43f4cc 4-8
+  s_fe8b6d68ba1de9::t_1fbe1e1151099a 2
+  s_fe8b6d68ba1de9::t_ccf231ea1106f3 109-110,114-117,119
+  s_fe8b6d68ba1de9::t_92b3fcebae8d28 96-108,111-113,118,123-134
+  s_429184e27ad6cb::t_b89b8208981d4a 135
+shared/src/pastePackage.ts
+  s_fe8b6d68ba1de9::t_8810228c7b2132 87-89,101-103
+  s_fe8b6d68ba1de9::t_214bfa608f3686 8,21
+shared/src/pageMeta.ts
+  s_fe8b6d68ba1de9::t_2d28786baaa1eb 280-293
+  s_fe8b6d68ba1de9::t_3bc1a66f8ac6dd 251
+  s_fe8b6d68ba1de9::t_339388dfdef882 296-310,315
+  s_fe8b6d68ba1de9::t_792f74454407c8 311-314
+  s_fe8b6d68ba1de9::t_ac752ae8673494 225-250,252-269
+  s_fe8b6d68ba1de9::t_c994287df56cdc 1-164,167-179,183-189,203-204,206-211,215,219-224,270-279,294-295
+  s_fe8b6d68ba1de9::t_885c3dbe6840f7 165-166,180-182,190-202,205,212-214,216-218
+extension/src/adapters/instagram.ts
+  s_fe8b6d68ba1de9::t_bcd273d72ba5e6 41-46,48-51
+  s_fe8b6d68ba1de9::t_764dad7b5daeaf 14
+  s_fe8b6d68ba1de9::t_1ca336fd1a5c4a 33-35
+  s_fe8b6d68ba1de9::t_8509b9f3e33fba 7,9,36,63,72
+  s_fe8b6d68ba1de9::t_50e7666e34feab 1-6,10-12,15-17,29-31,37-38,40,52-62,85,89,93-105
+  s_fe8b6d68ba1de9::t_a055fc34635cdd 13
+  s_fe8b6d68ba1de9::t_f290ce507d6a73 8,28,64-71,73-84,90
+  s_fe8b6d68ba1de9::t_c833bfedd99958 18-27,86-88,91-92
+  s_fe8b6d68ba1de9::t_ad406b05aa67ae 47
+  s_fe8b6d68ba1de9::t_87295615dc3759 32,39
+docs/CHROME-WEB-STORE.md
+  s_fe8b6d68ba1de9::t_b5abb366273eef 22,25,27,35
+  s_fe8b6d68ba1de9::t_13cb7fee08e0ac 26,28-34
+  s_fe8b6d68ba1de9::t_dd643ad3d7bd5e 36
+docs/MULTILEVEL-IMPLEMENTATION-PLAN.md
+  s_fe8b6d68ba1de9::t_e7b5040b496575 30
+  s_fe8b6d68ba1de9::t_ce528de5810cea 35,37
+shared/src/index.ts
+  s_fe8b6d68ba1de9::t_126696ed1889fd 54
+  s_fe8b6d68ba1de9::t_cf297823e078b9 27-32,37-49,52,55
+  s_fe8b6d68ba1de9::t_f8dcfa3f517b5d 50-51
+  s_fe8b6d68ba1de9::t_93b642122ffd2a 33-36
+  s_fe8b6d68ba1de9::t_4c1958654ee0c1 53
+shared/src/socialUrls.test.ts
+  s_fe8b6d68ba1de9::t_6a30e4604bc558 1-74,82-86
+  s_fe8b6d68ba1de9::t_22edf3a4b87a3e 75-81
+extension/src/adapters/x.ts
+  s_fe8b6d68ba1de9::t_71b11628ff50d8 12-24,26-35,37-38,44,52-53,55-57,62-64,68-69,71,83
+  s_fe8b6d68ba1de9::t_45dae63bf5c709 1,3-11,41-43,51,54,66-67,70,72-76,78,84-96
+  s_fe8b6d68ba1de9::t_f50d2fed49f1a8 2,25,36,39-40,45-50,58-61,65,77,79-82
+extension/package.json
+  s_fe8b6d68ba1de9::t_2f80cbc562e8f0 3
+extension/manifest.json
+  s_fe8b6d68ba1de9::t_b842db0684599d 15
+  s_fe8b6d68ba1de9::t_7afc8c5706f908 5
+extension/src/sidepanel.ts
+  s_fe8b6d68ba1de9::t_84bc244443f51b 175-181,185
+  s_fe8b6d68ba1de9::t_78eaae0f8e84d9 400-412,415-422
+  s_fe8b6d68ba1de9::t_7b7ee828489e8d 413-414
+shared/src/pageMeta.test.ts
+  s_fe8b6d68ba1de9::t_4a78f1e86deb8c 1-4,6-10,12-46,48,61,83-93
+  s_fe8b6d68ba1de9::t_e8e5be2db276a0 47,50-59
+  s_fe8b6d68ba1de9::t_e9b5fdba01b6f6 60,63-82
+  s_fe8b6d68ba1de9::t_58c5e7e67d7457 5
+  s_fe8b6d68ba1de9::t_ebdd85a28a2a29 11
+  s_fe8b6d68ba1de9::t_265919b4f21598 49
+  s_fe8b6d68ba1de9::t_323bd4a25320b6 62
+extension/src/content.ts
+  s_fe8b6d68ba1de9::t_a08acf0d4e2f26 3,8,10-15,18-25,43,48,55-78,86
+shared/package.json
+  s_fe8b6d68ba1de9::t_a0da496087dd93 17
+shared/src/types.ts
+  s_fe8b6d68ba1de9::t_2676cf569ffae6 18-23
+extension/src/adapters/tiktok.ts
+  s_fe8b6d68ba1de9::t_d125165b65e2c2 1-6,10-12,14-16,28-30,32-35,39-42,44-46,48,52-80,92-93,96,101-112
+  s_fe8b6d68ba1de9::t_f6d6f3b8eacca3 7,9,36,38,49,51,81,90-91
+  s_fe8b6d68ba1de9::t_9118cddf913b5b 13
+  s_fe8b6d68ba1de9::t_65a9b492c671f4 17-26,97-100
+  s_fe8b6d68ba1de9::t_9555940f5fbc9c 37,50
+  s_fe8b6d68ba1de9::t_52f8731a2b466d 8,27,43,82-89,94-95
+  s_fe8b6d68ba1de9::t_9628b55f166788 31,47
+docs/levels/L5-platforms.md
+  s_fe8b6d68ba1de9::t_f2f156b5aeec5f 3,39-40
+  s_fe8b6d68ba1de9::t_e62953db77dea2 47-53
+  s_fe8b6d68ba1de9::t_6234316b982a43 26-30,33,41-46,54
+  s_fe8b6d68ba1de9::t_5c668943226e25 31-32
+extension/src/background.ts
+  s_fe8b6d68ba1de9::t_912ab8fa932176 38
+extension/src/adapters/facebook.ts
+  s_fe8b6d68ba1de9::t_b981ad9f4158c7 13
+  s_fe8b6d68ba1de9::t_d3f080aaf19b67 24
+  s_fe8b6d68ba1de9::t_02283f7203b291 82,84-88
+  s_fe8b6d68ba1de9::t_2f90de535aa860 83
+  s_fe8b6d68ba1de9::t_642c9a6ea651b8 1-6,9-12,14-16,21-23,25-39,45-47,64-71,89-100
+  s_fe8b6d68ba1de9::t_9def1f4595758b 7,17,19,72
+  s_fe8b6d68ba1de9::t_bf13e0fa55eec6 8,18,40-44,48-63
+  s_fe8b6d68ba1de9::t_96bcb6db73726e 20,73-81
+extension/src/youtubeCaptions.ts
+  s_fe8b6d68ba1de9::t_4f500ac6aef124 129-132,136,141-161,166-168,171-178,184-205,216,218-268,270-309
+  s_fe8b6d68ba1de9::t_0d7b5214e6f851 162-165,169,179,183
+  s_fe8b6d68ba1de9::t_00092a72e25ce1 170,180-182
+  s_fe8b6d68ba1de9::t_6efb5c286602d2 207-215
+  s_fe8b6d68ba1de9::t_191c67ce7baba3 24-28
+  s_fe8b6d68ba1de9::t_ca269a6c84eaba 358,409-411,413,415,420,429-441
+  s_fe8b6d68ba1de9::t_9721a1bb1aa444 362-363,367,371-372
+  s_fe8b6d68ba1de9::t_1080b4a41e47ac 6
+  s_fe8b6d68ba1de9::t_bb97d4a9636884 269
+  s_fe8b6d68ba1de9::t_98e9cd78f1abec 359,361,366,373-380,400,403-406
+  s_fe8b6d68ba1de9::t_79bc26b93faae1 206,217
+  s_429184e27ad6cb::t_42a419adb2389b 360,442
+  s_fe8b6d68ba1de9::t_b86ce13e96dc36 364-365,368-370
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "d308148d3b64e9ed700ed8be64f986e00ce35ca7",
+  "prompts": {},
+  "sessions": {
+    "s_429184e27ad6cb": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f8307-706d-7092-8dc1-133e345b1d59",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "Andre Lorbach <alorbach@adiscon.com>"
+    },
+    "s_fe8b6d68ba1de9": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "63dc028e-22bd-4a5b-8e84-1fd5a6a12a69",
+        "model": "grok-4.5"
+      },
+      "human_author": null
+    }
+  }
+}
