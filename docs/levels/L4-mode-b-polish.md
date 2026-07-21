@@ -1,6 +1,6 @@
 # Level 4 — Guide UX + accessibility
 
-**Status:** `todo`  
+**Status:** `done`  
 **Parent:** [`../MULTILEVEL-IMPLEMENTATION-PLAN.md`](../MULTILEVEL-IMPLEMENTATION-PLAN.md)  
 **Estimate:** 2–3 days  
 **Depends on:** [L3](L3-fact-check-mvp.md)  
@@ -12,15 +12,22 @@ Make the handoff understandable for older / non-technical users. Still only Cust
 
 ## Tasks
 
-1. [ ] Numbered steps with large buttons (Copy / Open chat / Copy again)
-2. [ ] Font-size preference (normal / large)
-3. [ ] Keyboard navigation + focus rings
-4. [ ] Error copy in plain language (“Could not copy — tap Copy again”)
-5. [ ] Short “How to read the answer” tip (score 1–10, sources)
-6. [ ] de + en complete for all guide strings
+1. [x] Numbered steps with large buttons (Copy / Open chat / Copy again)
+2. [x] Font-size preference (normal / large)
+3. [x] Keyboard navigation + focus rings
+4. [x] Error copy in plain language (“Could not copy — tap Copy again”)
+5. [x] Short “How to read the answer” tip (score 1–10, sources)
+6. [x] de + en complete for all guide strings
 
 ## Exit criteria
 
-- [ ] a11y smoke: keyboard-only + zoom 200%
-- [ ] No jargon (API, backend, token) in the UI
-- [ ] A first-time user can finish paste/send without extra docs
+- [x] a11y smoke: keyboard-only + zoom 200%
+- [x] No jargon (API, backend, token) in the UI
+- [x] A first-time user can finish paste/send without extra docs
+
+## Notes
+
+- Side Panel guide: three numbered step cards with Copy → Open chat → Copy again.
+- Options: default chat + text size (`chrome.storage.sync.fontSize`).
+- Skip link + `:focus-visible` on buttons, inputs, selects, and links.
+- Tip card explains score 1–10, traffic-light bands, and sources (de/en).

@@ -13,6 +13,11 @@
       .field {
         margin-bottom: 1.25rem;
       }
+      .field label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.45rem;
+      }
       select {
         width: 100%;
         min-height: 48px;
@@ -20,20 +25,30 @@
         padding: 0.5rem 0.75rem;
         border: 2px solid var(--border);
         border-radius: var(--radius);
+        background: var(--surface);
+        color: var(--text);
+      }
+      .field-help {
+        margin: 0.45rem 0 0;
+        color: var(--muted);
+        font-size: 0.95rem;
       }
       #saveMsg {
         margin-top: 0.75rem;
         font-weight: 600;
+        min-height: 1.4em;
       }
     </style>
   </head>
   <body>
+    <a class="skip-link" href="#main" id="skipLink"></a>
+
     <header class="header">
       <h1 id="optTitle">Options</h1>
       <p id="optSubtitle" class="subtitle"></p>
     </header>
 
-    <main class="status-card">
+    <main id="main" class="status-card">
       <div class="field">
         <label for="defaultChat" id="labelDefaultChat"></label>
         <select id="defaultChat">
@@ -41,6 +56,16 @@
           <option value="gemini_web" id="optGemini"></option>
         </select>
       </div>
+
+      <div class="field">
+        <label for="fontSize" id="labelFontSize"></label>
+        <select id="fontSize">
+          <option value="normal" id="optFontNormal"></option>
+          <option value="large" id="optFontLarge"></option>
+        </select>
+        <p id="fontSizeHelp" class="field-help"></p>
+      </div>
+
       <button type="button" id="btnSave" class="btn primary"></button>
       <p id="saveMsg" aria-live="polite"></p>
     </main>

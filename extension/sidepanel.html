@@ -7,12 +7,14 @@
     <link rel="stylesheet" href="sidepanel.css" />
   </head>
   <body>
+    <a class="skip-link" href="#main" id="skipLink"></a>
+
     <header class="header">
       <h1 id="title">Video Fact-Check</h1>
       <p id="subtitle" class="subtitle"></p>
     </header>
 
-    <main>
+    <main id="main">
       <section class="status-card" aria-live="polite">
         <h2 id="captureHeading"></h2>
         <p id="captureStatus" class="capture-status"></p>
@@ -34,24 +36,48 @@
         <p id="manualMsg" class="inline-msg" aria-live="polite"></p>
       </section>
 
-      <section class="status-card">
+      <section class="status-card guide-card" aria-labelledby="stepsHeading">
         <h2 id="stepsHeading"></h2>
         <ol id="stepsList" class="steps">
-          <li id="step1"></li>
-          <li id="step2"></li>
-          <li id="step3"></li>
+          <li id="stepItem1" class="step-item">
+            <div class="step-row">
+              <span class="step-num" aria-hidden="true">1</span>
+              <p id="step1" class="step-text"></p>
+            </div>
+            <button type="button" id="btnCopy" class="btn step-btn"></button>
+          </li>
+          <li id="stepItem2" class="step-item">
+            <div class="step-row">
+              <span class="step-num" aria-hidden="true">2</span>
+              <p id="step2" class="step-text"></p>
+            </div>
+            <div class="step-actions">
+              <button type="button" id="btnOpenGpt" class="btn primary"></button>
+              <button type="button" id="btnOpenGemini" class="btn"></button>
+            </div>
+          </li>
+          <li id="stepItem3" class="step-item">
+            <div class="step-row">
+              <span class="step-num" aria-hidden="true">3</span>
+              <p id="step3" class="step-text"></p>
+            </div>
+            <button type="button" id="btnCopyAgain" class="btn step-btn"></button>
+          </li>
         </ol>
-      </section>
-
-      <section class="hint-card">
-        <p id="hintText"></p>
         <p id="handoffMsg" class="inline-msg" aria-live="polite"></p>
       </section>
 
+      <section class="hint-card" aria-labelledby="readAnswerHeading">
+        <h2 id="readAnswerHeading" class="hint-heading"></h2>
+        <p id="hintText"></p>
+        <ul id="readAnswerList" class="tip-list">
+          <li id="readAnswerScore"></li>
+          <li id="readAnswerTraffic"></li>
+          <li id="readAnswerSources"></li>
+        </ul>
+      </section>
+
       <div class="actions">
-        <button type="button" id="btnOpenGpt" class="btn primary"></button>
-        <button type="button" id="btnOpenGemini" class="btn"></button>
-        <button type="button" id="btnCopyAgain" class="btn"></button>
         <button type="button" id="btnOptions" class="btn"></button>
       </div>
 

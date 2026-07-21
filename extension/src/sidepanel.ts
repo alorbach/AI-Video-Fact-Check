@@ -12,8 +12,17 @@ import {
 } from "@ai-video-fact-check/shared";
 
 const DEFAULT_CHAT: ChatTargetId = "chatgpt_video_faktencheck";
+type FontSizePref = "normal" | "large";
 
-type GuidePhase = "idle" | "ready" | "copied" | "opened" | "clipboard_failed";
+type GuidePhase =
+  | "idle"
+  | "ready"
+  /** Manual Copy / Copy again — text ready, user must open chat. */
+  | "awaiting_open"
+  /** Handoff in progress — copy succeeded, chat tab is opening. */
+  | "copied"
+  | "opened"
+  | "clipboard_failed";
 
 let lastResult: CaptureResult | null = null;
 let lastPackage: PastePackage | null = null;
@@ -41,6 +50,56 @@ function setText(id: string, value: string): void {
   if (el) el.textContent = value;
 }
 
+function setMsg(
+  id: string,
+  value: string,
+  kind?: "ok" | "error" | "neutral",
+): void {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = value;
+  el.classList.toggle("is-ok", kind === "ok");
+  el.classList.toggle("is-error", kind === "error");
+}
+
+function applyFontSize(size: FontSizePref): void {
+  document.documentElement.dataset.fontSize =
+    size === "large" ? "large" : "normal";
+}
+
+function setStepHighlight(phase: GuidePhase): void {
+  const item1 = document.getElementById("stepItem1");
+  const item2 = document.getElementById("stepItem2");
+  const item3 = document.getElementById("stepItem3");
+  if (!item1 || !item2 || !item3) return;
+
+  const items = [item1, item2, item3];
+  for (const item of items) {
+    item.classList.remove("is-current", "is-done");
+  }
+
+  switch (phase) {
+    case "ready":
+      item1.classList.add("is-current");
+      break;
+    case "awaiting_open":
+    case "copied":
+      item1.classList.add("is-done");
+      item2.classList.add("is-current");
+      break;
+    case "opened":
+      item1.classList.add("is-done");
+      item2.classList.add("is-done");
+      item3.classList.add("is-current");
+      break;
+    case "clipboard_failed":
+      item1.classList.add("is-current");
+      break;
+    default:
+      break;
+  }
+}
+
 function setGuidePhase(phase: GuidePhase): void {
   guidePhase = phase;
   const step1 = document.getElementById("step1");
@@ -55,6 +114,12 @@ function setGuidePhase(phase: GuidePhase): void {
       step2.textContent = t("guideStepOpen");
       step3.textContent = t("guideStepPaste");
       hint.textContent = t("sidepanelHint");
+      break;
+    case "awaiting_open":
+      step1.textContent = t("guideStepCopied");
+      step2.textContent = t("guideStepOpenNext");
+      step3.textContent = t("guideStepPaste");
+      hint.textContent = t("hintAwaitingOpen");
       break;
     case "copied":
       step1.textContent = t("guideStepCopied");
@@ -80,6 +145,8 @@ function setGuidePhase(phase: GuidePhase): void {
       step3.textContent = t("step3");
       hint.textContent = t("sidepanelHint");
   }
+
+  setStepHighlight(phase);
 }
 
 function renderCapture(): void {
@@ -120,23 +187,19 @@ function applyDefaultChat(defaultChat: string): void {
   const id = (
     defaultChat in CHAT_TARGETS ? defaultChat : DEFAULT_CHAT
   ) as ChatTargetId;
-  const actions = document.querySelector(".actions");
+  const actions = document.querySelector(".step-actions");
   const gptBtn = document.getElementById("btnOpenGpt");
   const geminiBtn = document.getElementById("btnOpenGemini");
-  const copyBtn = document.getElementById("btnCopyAgain");
-  const optionsBtn = document.getElementById("btnOptions");
-  if (!actions || !gptBtn || !geminiBtn || !optionsBtn) return;
+  if (!actions || !gptBtn || !geminiBtn) return;
 
   gptBtn.classList.toggle("primary", id === "chatgpt_video_faktencheck");
   geminiBtn.classList.toggle("primary", id === "gemini_web");
 
-  // Order: default chat, other chat, copy again, settings
-  const ordered =
-    id === "gemini_web"
-      ? [geminiBtn, gptBtn, copyBtn, optionsBtn]
-      : [gptBtn, geminiBtn, copyBtn, optionsBtn];
-  for (const btn of ordered) {
-    if (btn) actions.append(btn);
+  // Put the user's default chat first.
+  if (id === "gemini_web") {
+    actions.append(geminiBtn, gptBtn);
+  } else {
+    actions.append(gptBtn, geminiBtn);
   }
 }
 
@@ -169,7 +232,7 @@ function applyCapture(
       manual.value = lastPackage.transcript ?? "";
     } else if (urlChanged) {
       manual.value = "";
-      setText("manualMsg", "");
+      setMsg("manualMsg", "");
     }
   }
 }
@@ -261,10 +324,10 @@ async function handoffToChat(
   if (!opts?.force && Date.now() < handoffCooldownUntil) return;
   handoffBusy = true;
   try {
-    setText("handoffMsg", t("handoffWorking"));
+    setMsg("handoffMsg", t("handoffWorking"));
     const pkg = await ensurePackage();
     if (!pkg?.videoUrl) {
-      setText("handoffMsg", t("captureFailed"));
+      setMsg("handoffMsg", t("captureFailed"), "error");
       setGuidePhase("idle");
       return;
     }
@@ -272,7 +335,7 @@ async function handoffToChat(
     const copied = await copyPackageToClipboard(pkg);
     if (!copied) {
       setGuidePhase("clipboard_failed");
-      setText("handoffMsg", t("hintCopyFailed"));
+      setMsg("handoffMsg", t("hintCopyFailed"), "error");
       return;
     }
 
@@ -280,9 +343,10 @@ async function handoffToChat(
     const chat = CHAT_TARGETS[target] ?? CHAT_TARGETS[DEFAULT_CHAT];
     await chrome.tabs.create({ url: chat.openUrl });
     setGuidePhase("opened");
-    setText(
+    setMsg(
       "handoffMsg",
       target === "gemini_web" ? t("handoffOpenedGemini") : t("handoffOpenedGpt"),
+      "ok",
     );
     handoffCooldownUntil = Date.now() + 2500;
   } finally {
@@ -290,20 +354,36 @@ async function handoffToChat(
   }
 }
 
-async function copyAgain(): Promise<void> {
+async function copyOnly(): Promise<void> {
   const pkg = await ensurePackage();
   if (!pkg?.videoUrl) {
-    setText("handoffMsg", t("captureFailed"));
+    setMsg("handoffMsg", t("captureFailed"), "error");
     return;
   }
   const copied = await copyPackageToClipboard(pkg);
   if (copied) {
-    // Copy-only / Copy again does not open chat — avoid "Opening the chat…" steps.
-    setGuidePhase(guidePhase === "opened" ? "opened" : "ready");
-    setText("handoffMsg", t("copyAgainOk"));
+    setGuidePhase("awaiting_open");
+    setMsg("handoffMsg", t("copyOk"), "ok");
   } else {
     setGuidePhase("clipboard_failed");
-    setText("handoffMsg", t("hintCopyFailed"));
+    setMsg("handoffMsg", t("hintCopyFailed"), "error");
+  }
+}
+
+async function copyAgain(): Promise<void> {
+  const pkg = await ensurePackage();
+  if (!pkg?.videoUrl) {
+    setMsg("handoffMsg", t("captureFailed"), "error");
+    return;
+  }
+  const copied = await copyPackageToClipboard(pkg);
+  if (copied) {
+    // After a successful open, keep paste guidance; otherwise wait for Open chat.
+    setGuidePhase(guidePhase === "opened" ? "opened" : "awaiting_open");
+    setMsg("handoffMsg", t("copyAgainOk"), "ok");
+  } else {
+    setGuidePhase("clipboard_failed");
+    setMsg("handoffMsg", t("hintCopyFailed"), "error");
   }
 }
 
@@ -354,14 +434,15 @@ async function applyManualTranscript(): Promise<void> {
 
   if (response.type === "LAST_CAPTURE") {
     applyCapture(response.result, response.package);
-    setText("manualMsg", t("manualSaved"));
+    setMsg("manualMsg", t("manualSaved"), "ok");
   } else if (response.type === "HANDOFF_FAILED") {
-    setText("manualMsg", t("captureFailed"));
+    setMsg("manualMsg", t("captureFailed"), "error");
   }
 }
 
 function initCopy(): void {
   document.documentElement.lang = uiLocale();
+  setText("skipLink", t("skipToContent"));
   setText("title", t("extName"));
   setText("subtitle", t("sidepanelSubtitle"));
   setText("stepsHeading", t("stepsHeading"));
@@ -371,12 +452,17 @@ function initCopy(): void {
   setText("manualHelp", t("manualHelp"));
   setText("manualLabel", t("manualLabel"));
   setText("btnSaveManual", t("btnSaveManual"));
+  setText("btnCopy", t("btnCopy"));
   setText("btnOpenGpt", t("btnOpenGpt"));
   setText("btnOpenGemini", t("btnOpenGemini"));
   setText("btnCopyAgain", t("btnCopyAgain"));
   setText("btnOptions", t("btnOptions"));
   setText("creditsLabel", t("creditsLabel"));
   setText("captureStatus", t("captureIdle"));
+  setText("readAnswerHeading", t("readAnswerHeading"));
+  setText("readAnswerScore", t("readAnswerScore"));
+  setText("readAnswerTraffic", t("readAnswerTraffic"));
+  setText("readAnswerSources", t("readAnswerSources"));
   setGuidePhase("idle");
 }
 
@@ -386,6 +472,10 @@ document.getElementById("btnScan")?.addEventListener("click", () => {
 
 document.getElementById("btnSaveManual")?.addEventListener("click", () => {
   void applyManualTranscript();
+});
+
+document.getElementById("btnCopy")?.addEventListener("click", () => {
+  void copyOnly();
 });
 
 document.getElementById("btnOpenGpt")?.addEventListener("click", () => {
@@ -405,11 +495,17 @@ document.getElementById("btnOptions")?.addEventListener("click", () => {
 });
 
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === "sync" && changes.defaultChat) {
-    applyDefaultChat(
-      (changes.defaultChat.newValue as string | undefined) ?? DEFAULT_CHAT,
-    );
-    return;
+  if (area === "sync") {
+    if (changes.defaultChat) {
+      applyDefaultChat(
+        (changes.defaultChat.newValue as string | undefined) ?? DEFAULT_CHAT,
+      );
+    }
+    if (changes.fontSize) {
+      const next = changes.fontSize.newValue as FontSizePref | undefined;
+      applyFontSize(next === "large" ? "large" : "normal");
+    }
+    if (changes.defaultChat || changes.fontSize) return;
   }
   // Context-menu capture writes session storage — keep the panel in sync.
   if (
@@ -433,8 +529,12 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage) => {
 
 initCopy();
 void chrome.storage.sync
-  .get({ defaultChat: DEFAULT_CHAT })
-  .then(({ defaultChat }) => {
+  .get({
+    defaultChat: DEFAULT_CHAT,
+    fontSize: "normal" satisfies FontSizePref,
+  })
+  .then(({ defaultChat, fontSize }) => {
     applyDefaultChat(defaultChat as string);
+    applyFontSize(fontSize === "large" ? "large" : "normal");
   });
 void initCaptureState();

@@ -14,11 +14,14 @@
   "sidepanelSubtitle": {
     "message": "Wir bereiten Link und Untertitel vor. Dann öffnen Sie einen kostenlosen Chat und fügen ein."
   },
+  "skipToContent": {
+    "message": "Zum Hauptinhalt springen"
+  },
   "stepsHeading": {
-    "message": "Nächste Schritte"
+    "message": "Drei einfache Schritte"
   },
   "step1": {
-    "message": "Prüfen Sie, was wir auf der Seite gefunden haben (Link und Untertitel)."
+    "message": "Kopieren Sie den vorbereiteten Text (Link und Untertitel)."
   },
   "step2": {
     "message": "Öffnen Sie den Video-Faktencheck-GPT oder kostenloses Gemini."
@@ -27,13 +30,16 @@
     "message": "Im Chat einfügen (Strg+V) und senden."
   },
   "sidepanelHint": {
-    "message": "Kein Technik-Setup. Einfach mit Ihrem normalen ChatGPT- oder Google-Konto."
+    "message": "Kein besonderes Setup. Einfach mit Ihrem normalen ChatGPT- oder Google-Konto."
   },
   "guideStepReady": {
-    "message": "Link (und Untertitel) sind bereit."
+    "message": "Link (und Untertitel) sind bereit — tippen Sie auf Kopieren."
   },
   "guideStepOpen": {
-    "message": "Tippen Sie auf Video-Faktencheck GPT öffnen — wir kopieren und öffnen den Chat."
+    "message": "Öffnen Sie einen kostenlosen Chat. Beim Öffnen wird der Text auch kopiert."
+  },
+  "guideStepOpenNext": {
+    "message": "Als Nächstes: unten auf Chat öffnen tippen."
   },
   "guideStepPaste": {
     "message": "Im Chat: Einfügen (Strg+V) und senden."
@@ -59,6 +65,9 @@
   "hintAfterCopy": {
     "message": "Der Text ist in der Zwischenablage. Der Chat öffnet sich als Nächstes."
   },
+  "hintAwaitingOpen": {
+    "message": "Der Text ist in der Zwischenablage. Tippen Sie auf Chat öffnen, dann einfügen (Strg+V)."
+  },
   "hintPasteNow": {
     "message": "Klicken Sie in das Chat-Feld, drücken Sie Strg+V und senden Sie."
   },
@@ -74,11 +83,29 @@
   "handoffOpenedGemini": {
     "message": "Gemini ist offen — bitte einfügen und senden."
   },
+  "copyOk": {
+    "message": "Kopiert. Als Nächstes: Chat öffnen, dann einfügen (Strg+V)."
+  },
   "copyAgainOk": {
     "message": "Erneut kopiert. Im Chat einfügen (Strg+V)."
   },
+  "btnCopy": {
+    "message": "Kopieren"
+  },
   "btnCopyAgain": {
     "message": "Nochmal kopieren"
+  },
+  "readAnswerHeading": {
+    "message": "So lesen Sie die Antwort"
+  },
+  "readAnswerScore": {
+    "message": "Achten Sie auf eine Note von 1 bis 10 (1 = sehr unzuverlässig, 10 = gut belegt)."
+  },
+  "readAnswerTraffic": {
+    "message": "Schnellhilfe: 1–3 Vorsicht, 4–6 gemischt, 7–10 weitgehend zuverlässig."
+  },
+  "readAnswerSources": {
+    "message": "Prüfen Sie die genannten Quellen und Hinweise, was noch unsicher ist."
   },
   "contextOpenGpt": {
     "message": "Mit Video-Faktencheck GPT öffnen"
@@ -186,10 +213,22 @@
     "message": "Video-Faktencheck Einstellungen"
   },
   "optionsSubtitle": {
-    "message": "Welcher kostenlose Chat soll Standard sein?"
+    "message": "Wählen Sie Standard-Chat und Schriftgröße."
   },
   "labelDefaultChat": {
     "message": "Standard-Chat"
+  },
+  "labelFontSize": {
+    "message": "Schriftgröße"
+  },
+  "fontSizeNormal": {
+    "message": "Normal"
+  },
+  "fontSizeLarge": {
+    "message": "Groß"
+  },
+  "fontSizeHelp": {
+    "message": "Groß macht Buttons und Schritte leichter lesbar. Sie können die Seite in Chrome auch zoomen."
   },
   "btnSave": {
     "message": "Speichern"

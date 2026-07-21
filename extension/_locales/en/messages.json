@@ -14,11 +14,14 @@
   "sidepanelSubtitle": {
     "message": "We prepare the link and captions. Then you open a free chat and paste."
   },
+  "skipToContent": {
+    "message": "Skip to main content"
+  },
   "stepsHeading": {
-    "message": "Next steps"
+    "message": "Three easy steps"
   },
   "step1": {
-    "message": "Check what we found on this page (link and captions)."
+    "message": "Copy the prepared text (link and captions)."
   },
   "step2": {
     "message": "Open Video Fact-Check GPT or free Gemini."
@@ -27,13 +30,16 @@
     "message": "Paste (Ctrl+V) in the chat and send."
   },
   "sidepanelHint": {
-    "message": "No developer setup. Use your normal ChatGPT or Google login."
+    "message": "No special setup. Use your normal ChatGPT or Google login."
   },
   "guideStepReady": {
-    "message": "Link (and captions) are ready."
+    "message": "Link (and captions) are ready — tap Copy."
   },
   "guideStepOpen": {
-    "message": "Tap Open Video Fact-Check GPT — we copy and open the chat."
+    "message": "Open a free chat. Opening also copies the text for you."
+  },
+  "guideStepOpenNext": {
+    "message": "Next: tap Open chat below."
   },
   "guideStepPaste": {
     "message": "In the chat: Paste (Ctrl+V) and send."
@@ -59,6 +65,9 @@
   "hintAfterCopy": {
     "message": "The text is on your clipboard. The chat will open next."
   },
+  "hintAwaitingOpen": {
+    "message": "The text is on your clipboard. Tap Open chat, then paste (Ctrl+V)."
+  },
   "hintPasteNow": {
     "message": "Click in the chat box, press Ctrl+V, then send."
   },
@@ -74,11 +83,29 @@
   "handoffOpenedGemini": {
     "message": "Gemini is open — paste and send."
   },
+  "copyOk": {
+    "message": "Copied. Next: open the chat, then paste (Ctrl+V)."
+  },
   "copyAgainOk": {
     "message": "Copied again. Paste in the chat (Ctrl+V)."
   },
+  "btnCopy": {
+    "message": "Copy"
+  },
   "btnCopyAgain": {
     "message": "Copy again"
+  },
+  "readAnswerHeading": {
+    "message": "How to read the answer"
+  },
+  "readAnswerScore": {
+    "message": "Look for a score from 1 to 10 (1 = very unreliable, 10 = well supported)."
+  },
+  "readAnswerTraffic": {
+    "message": "Quick guide: 1–3 caution, 4–6 mixed, 7–10 mostly reliable."
+  },
+  "readAnswerSources": {
+    "message": "Check the listed sources and any notes about what is still uncertain."
   },
   "contextOpenGpt": {
     "message": "Open with Video Fact-Check GPT"
@@ -186,10 +213,22 @@
     "message": "Video Fact-Check settings"
   },
   "optionsSubtitle": {
-    "message": "Which free chat should be the default?"
+    "message": "Choose your default chat and text size."
   },
   "labelDefaultChat": {
     "message": "Default chat"
+  },
+  "labelFontSize": {
+    "message": "Text size"
+  },
+  "fontSizeNormal": {
+    "message": "Normal"
+  },
+  "fontSizeLarge": {
+    "message": "Large"
+  },
+  "fontSizeHelp": {
+    "message": "Large makes buttons and steps easier to read. You can also zoom the page in Chrome."
   },
   "btnSave": {
     "message": "Save"
