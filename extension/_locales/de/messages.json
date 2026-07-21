@@ -12,85 +12,73 @@
     "message": "Video mit KI prüfen"
   },
   "sidepanelSubtitle": {
-    "message": "Wir bereiten Link und Untertitel vor. Dann öffnen Sie einen kostenlosen Chat und fügen ein."
+    "message": "Wir bereiten Link und Untertitel vor. Ein Tipp öffnet den Chat und startet die Prüfung."
   },
   "skipToContent": {
     "message": "Zum Hauptinhalt springen"
   },
   "stepsHeading": {
-    "message": "Drei einfache Schritte"
+    "message": "Chat öffnen"
   },
-  "step1": {
-    "message": "Kopieren Sie den vorbereiteten Text (Link und Untertitel)."
+  "guideIdle": {
+    "message": "Zuerst eine Video-Seite prüfen — dann unten einen Chat tippen."
   },
-  "step2": {
-    "message": "Öffnen Sie den Video-Faktencheck-GPT oder kostenloses Gemini."
+  "guideReady": {
+    "message": "Tippen Sie auf einen Chat: Text wird eingefügt und die Prüfung startet."
   },
-  "step3": {
-    "message": "Im Chat einfügen (Strg+V) und senden."
+  "guideOpening": {
+    "message": "Text bereit — Chat wird geöffnet…"
+  },
+  "guideOpenedGpt": {
+    "message": "Video-Faktencheck GPT ist offen — Text wird eingefügt und gesendet…"
+  },
+  "guideOpenedGemini": {
+    "message": "Gemini ist offen — Text wird eingefügt und gesendet…"
+  },
+  "guideInjectOk": {
+    "message": "Text eingefügt und gesendet. Die Antwort erscheint im Chat."
+  },
+  "guideInjectFailed": {
+    "message": "Automatisches Einfügen hat nicht geklappt. Tippen Sie im Chat auf das Feld, Strg+V, und senden."
+  },
+  "guideCopyFailed": {
+    "message": "Kopieren hat nicht geklappt — tippen Sie auf Nochmal kopieren."
   },
   "sidepanelHint": {
     "message": "Kein besonderes Setup. Einfach mit Ihrem normalen ChatGPT- oder Google-Konto."
   },
-  "guideStepReady": {
-    "message": "Link (und Untertitel) sind bereit — tippen Sie auf Kopieren."
-  },
-  "guideStepOpen": {
-    "message": "Öffnen Sie einen kostenlosen Chat. Beim Öffnen wird der Text auch kopiert."
-  },
-  "guideStepOpenNext": {
-    "message": "Als Nächstes: unten auf Chat öffnen tippen."
-  },
-  "guideStepPaste": {
-    "message": "Im Chat: Einfügen (Strg+V) und senden."
-  },
-  "guideStepCopied": {
-    "message": "In die Zwischenablage kopiert."
-  },
-  "guideStepOpening": {
-    "message": "Chat wird geöffnet…"
-  },
-  "guideStepChatOpened": {
-    "message": "Chat ist in einem neuen Tab geöffnet."
-  },
-  "guideStepPasteNow": {
-    "message": "Jetzt einfügen (Strg+V) und senden."
-  },
-  "guideStepCopyFailed": {
-    "message": "Automatisches Kopieren hat nicht geklappt."
-  },
-  "guideStepCopyAgain": {
-    "message": "Tippen Sie auf Nochmal kopieren, dann im Chat einfügen."
-  },
   "hintAfterCopy": {
-    "message": "Der Text ist in der Zwischenablage. Der Chat öffnet sich als Nächstes."
+    "message": "Der Chat öffnet sich. Der Text wird dort eingefügt und gesendet."
   },
-  "hintAwaitingOpen": {
-    "message": "Der Text ist in der Zwischenablage. Tippen Sie auf Chat öffnen, dann einfügen (Strg+V)."
+  "hintInjecting": {
+    "message": "Einen Moment — der Text wird im Chat eingefügt und gesendet."
   },
   "hintPasteNow": {
-    "message": "Klicken Sie in das Chat-Feld, drücken Sie Strg+V und senden Sie."
+    "message": "Falls nichts passiert: im Chat-Feld Strg+V und senden."
   },
   "hintCopyFailed": {
     "message": "Kopieren fehlgeschlagen — tippen Sie auf Nochmal kopieren, dann im Chat einfügen."
   },
   "handoffWorking": {
-    "message": "Kopieren und Chat werden vorbereitet…"
+    "message": "Chat und Text werden vorbereitet…"
   },
   "handoffOpenedGpt": {
-    "message": "Video-Faktencheck GPT ist offen — bitte einfügen und senden."
+    "message": "Video-Faktencheck GPT ist offen — Einfügen und Senden läuft…"
   },
   "handoffOpenedGemini": {
-    "message": "Gemini ist offen — bitte einfügen und senden."
+    "message": "Gemini ist offen — Einfügen und Senden läuft…"
+  },
+  "handoffInjectOk": {
+    "message": "Fertig: Text eingefügt und gesendet."
+  },
+  "handoffInjectFailed": {
+    "message": "Einfügen fehlgeschlagen — bitte Strg+V im Chat und senden (Text ist in der Zwischenablage)."
   },
   "copyOk": {
-    "message": "Kopiert. Als Nächstes: Chat öffnen, dann einfügen (Strg+V)."
+    "message": "Kopiert. Tippen Sie auf einen Chat zum Öffnen, oder fügen Sie selbst ein."
   },
   "copyAgainOk": {
     "message": "Erneut kopiert. Im Chat einfügen (Strg+V)."
-  },
-  "btnCopy": {
-    "message": "Kopieren"
   },
   "btnCopyAgain": {
     "message": "Nochmal kopieren"
@@ -109,6 +97,9 @@
   },
   "contextOpenGpt": {
     "message": "Mit Video-Faktencheck GPT öffnen"
+  },
+  "contextOpenGemini": {
+    "message": "Mit Gemini öffnen (kostenlos)"
   },
   "contextCopyOnly": {
     "message": "Nur Link / Transkript kopieren"

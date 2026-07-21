@@ -28,13 +28,13 @@ This file is the **overall roadmap and status board**. Level detail: [`levels/`]
 | L3 | Custom GPT handoff MVP | **done** | [`levels/L3-fact-check-mvp.md`](levels/L3-fact-check-mvp.md) |
 | L4 | Guide UX + a11y | **done** | [`levels/L4-mode-b-polish.md`](levels/L4-mode-b-polish.md) |
 | L5 | Required platforms (YT, TikTok, X, FB, IG) | **done** | [`levels/L5-platforms.md`](levels/L5-platforms.md) |
-| L6 | Free Gemini (+ more free chats) | todo | [`levels/L6-multi-model.md`](levels/L6-multi-model.md) |
+| L6 | Free Gemini (+ more free chats) | **done** | [`levels/L6-multi-model.md`](levels/L6-multi-model.md) |
 | L7 | Handoff hardening | todo | [`levels/L7-hardening.md`](levels/L7-hardening.md) |
 | L8 | Chrome Web Store | todo | [`levels/L8-store-release.md`](levels/L8-store-release.md) |
 
-**Current level:** L6 — Free Gemini  
+**Current level:** L7 — Handoff hardening  
 **Last updated:** 2026-07-21  
-**Next action:** Start L6 — Gemini web handoff (secondary free chat).
+**Next action:** Start L7 — clipboard reliability, errors, options polish.
 
 Status values: `todo` · `in_progress` · `done` · `blocked`
 
@@ -73,8 +73,8 @@ L8  Store release        Privacy, assets, publish
 | Do | Don’t |
 |---|---|
 | Open Custom GPT / Gemini in the user’s browser | Own LLM/STT backend for analysis |
-| Clipboard + clear paste instructions | API keys (OpenAI/Anthropic/Gemini API) |
-| In-browser captions when possible | Automate typing into chat DOM |
+| Clipboard + insert/send into the open chat (maintain selectors) | API keys (OpenAI/Anthropic/Gemini API) |
+| In-browser captions when possible | Scrape chat answers back into the extension |
 | Free end-user chat products only | Paid developer APIs |
 
 No analysis backend in the repo. Extension-only product path.
@@ -163,5 +163,5 @@ See [`PRODUCT.md`](PRODUCT.md) MVP checklist (L2–L4 primarily).
 - OpenAI / Anthropic / Gemini **API** integrations  
 - API-key settings screens  
 - Monetization / accounts for our product  
-- Chat DOM automation / result scraping (MVP)  
+- Scraping ChatGPT/Gemini answers back into the extension  
 - Cursor-only rules without `AGENTS.md`

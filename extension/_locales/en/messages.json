@@ -12,85 +12,73 @@
     "message": "Check video with AI"
   },
   "sidepanelSubtitle": {
-    "message": "We prepare the link and captions. Then you open a free chat and paste."
+    "message": "We prepare the link and captions. One tap opens the chat and starts the check."
   },
   "skipToContent": {
     "message": "Skip to main content"
   },
   "stepsHeading": {
-    "message": "Three easy steps"
+    "message": "Open chat"
   },
-  "step1": {
-    "message": "Copy the prepared text (link and captions)."
+  "guideIdle": {
+    "message": "Scan a video page first — then tap a chat below."
   },
-  "step2": {
-    "message": "Open Video Fact-Check GPT or free Gemini."
+  "guideReady": {
+    "message": "Tap a chat: we insert the text and start the check."
   },
-  "step3": {
-    "message": "Paste (Ctrl+V) in the chat and send."
+  "guideOpening": {
+    "message": "Text ready — opening the chat…"
+  },
+  "guideOpenedGpt": {
+    "message": "Video Fact-Check GPT is open — inserting and sending…"
+  },
+  "guideOpenedGemini": {
+    "message": "Gemini is open — inserting and sending…"
+  },
+  "guideInjectOk": {
+    "message": "Text inserted and sent. The answer appears in the chat."
+  },
+  "guideInjectFailed": {
+    "message": "Automatic insert failed. Click the chat box, press Ctrl+V, then send."
+  },
+  "guideCopyFailed": {
+    "message": "Copy failed — tap Copy again."
   },
   "sidepanelHint": {
     "message": "No special setup. Use your normal ChatGPT or Google login."
   },
-  "guideStepReady": {
-    "message": "Link (and captions) are ready — tap Copy."
-  },
-  "guideStepOpen": {
-    "message": "Open a free chat. Opening also copies the text for you."
-  },
-  "guideStepOpenNext": {
-    "message": "Next: tap Open chat below."
-  },
-  "guideStepPaste": {
-    "message": "In the chat: Paste (Ctrl+V) and send."
-  },
-  "guideStepCopied": {
-    "message": "Copied to the clipboard."
-  },
-  "guideStepOpening": {
-    "message": "Opening the chat…"
-  },
-  "guideStepChatOpened": {
-    "message": "Chat opened in a new tab."
-  },
-  "guideStepPasteNow": {
-    "message": "Paste now (Ctrl+V) and send."
-  },
-  "guideStepCopyFailed": {
-    "message": "Could not copy automatically."
-  },
-  "guideStepCopyAgain": {
-    "message": "Tap Copy again, then paste in the chat."
-  },
   "hintAfterCopy": {
-    "message": "The text is on your clipboard. The chat will open next."
+    "message": "The chat opens. We insert the text there and send it."
   },
-  "hintAwaitingOpen": {
-    "message": "The text is on your clipboard. Tap Open chat, then paste (Ctrl+V)."
+  "hintInjecting": {
+    "message": "One moment — inserting and sending the text in the chat."
   },
   "hintPasteNow": {
-    "message": "Click in the chat box, press Ctrl+V, then send."
+    "message": "If nothing happens: Ctrl+V in the chat box, then send."
   },
   "hintCopyFailed": {
     "message": "Could not copy — tap Copy again, then paste in the chat."
   },
   "handoffWorking": {
-    "message": "Preparing copy and chat…"
+    "message": "Preparing chat and text…"
   },
   "handoffOpenedGpt": {
-    "message": "Video Fact-Check GPT is open — paste and send."
+    "message": "Video Fact-Check GPT is open — inserting and sending…"
   },
   "handoffOpenedGemini": {
-    "message": "Gemini is open — paste and send."
+    "message": "Gemini is open — inserting and sending…"
+  },
+  "handoffInjectOk": {
+    "message": "Done: text inserted and sent."
+  },
+  "handoffInjectFailed": {
+    "message": "Insert failed — please Ctrl+V in the chat and send (text is on the clipboard)."
   },
   "copyOk": {
-    "message": "Copied. Next: open the chat, then paste (Ctrl+V)."
+    "message": "Copied. Tap a chat to open, or paste yourself."
   },
   "copyAgainOk": {
     "message": "Copied again. Paste in the chat (Ctrl+V)."
-  },
-  "btnCopy": {
-    "message": "Copy"
   },
   "btnCopyAgain": {
     "message": "Copy again"
@@ -109,6 +97,9 @@
   },
   "contextOpenGpt": {
     "message": "Open with Video Fact-Check GPT"
+  },
+  "contextOpenGemini": {
+    "message": "Open with Gemini (free)"
   },
   "contextCopyOnly": {
     "message": "Copy link / transcript only"

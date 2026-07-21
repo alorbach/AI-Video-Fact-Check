@@ -6,7 +6,7 @@ alwaysApply: true
 
 Canonical: `AGENTS.md`. Status: `docs/MULTILEVEL-IMPLEMENTATION-PLAN.md`. Levels: `docs/levels/`. Product: `docs/PRODUCT.md` + `docs/SPEC-*.md`.
 
-- Handoff only: Custom GPT + free Gemini web — **no** LLM/STT API keys or analysis backend
+- Handoff: Custom GPT + free Gemini web — clipboard + **insert/send** into the open chat; **no** LLM/STT API keys or analysis backend; **no** answer scraping
 - Primary URL: https://chatgpt.com/g/g-6a5e1494f814819181208da5d30ab4ae-video-faktencheck
 - UI: de/en, large type, Side Panel guide; never say API/backend/token to users
 - Credits: Andre Lorbach → https://github.com/alorbach/

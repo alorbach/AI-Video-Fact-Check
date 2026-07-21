@@ -60,6 +60,24 @@ describe("pageMeta", () => {
     );
   });
 
+  it("does not take a sibling clip when the id is only a map key", () => {
+    // TikTok SIGI ItemModule: clips keyed by id; leaf often has no id field.
+    const itemModule = {
+      ItemModule: {
+        "111": { desc: "Wrong sibling caption", author: "a" },
+        "222": { desc: "Correct keyed caption", author: "b" },
+      },
+    };
+    assert.equal(
+      findStringByKeysNearId(itemModule, ["desc", "description"], "222"),
+      "Correct keyed caption",
+    );
+    assert.equal(
+      findStringByKeysNearId(itemModule, ["desc", "description"], "111"),
+      "Wrong sibling caption",
+    );
+  });
+
   it("does not treat shorter ids as substrings of longer ids", () => {
     assert.equal(textMentionsExactId('"111222"', "111"), false);
     assert.equal(textMentionsExactId('"111"', "111"), true);

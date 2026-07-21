@@ -49,4 +49,63 @@ describe("PastePackage", () => {
     assert.equal(pkg.videoUrl, "https://www.instagram.com/reel/AbCdEfGhIjK/");
     assert.match(formatPastePackageText(pkg), /Beitragstext hier/);
   });
+
+  it("keeps short ask for Custom GPT (no master prompt)", () => {
+    const pkg = buildPastePackage({
+      videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      locale: "de",
+      transcript: "Kurztext",
+    });
+    const text = formatPastePackageText(pkg, "chatgpt_video_faktencheck");
+    assert.match(text, /verständlichen Faktencheck/);
+    assert.doesNotMatch(text, /Sachliche Bewertung/);
+    assert.doesNotMatch(text, /facebooktotranscript\.com/);
+  });
+
+  it("embeds German master prompt for Gemini", () => {
+    const pkg = buildPastePackage({
+      videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      locale: "de",
+      transcript: "Kurztext",
+    });
+    const text = formatPastePackageText(pkg, "gemini_web");
+    assert.match(text, /Sachliche Bewertung/);
+    assert.match(text, /facebooktotranscript\.com/);
+    assert.match(text, /Kurztext/);
+    assert.match(text, /Video-URL:/);
+    assert.doesNotMatch(text, /verständlichen Faktencheck/);
+  });
+
+  it("embeds English master prompt for Gemini", () => {
+    const pkg = buildPastePackage({
+      videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      locale: "en",
+      transcript: "Hello world",
+    });
+    const text = formatPastePackageText(pkg, "gemini_web");
+    assert.match(text, /Factual score/);
+    assert.match(text, /facebooktotranscript\.com/);
+    assert.match(text, /Hello world/);
+    assert.match(text, /Video URL:/);
+    assert.doesNotMatch(text, /Sachliche Bewertung/);
+    assert.doesNotMatch(text, /Please run a clear fact-check/);
+  });
+
+  it("switches master prompt language with locale for Gemini", () => {
+    const base = {
+      videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      transcript: "same",
+    };
+    const de = formatPastePackageText(
+      buildPastePackage({ ...base, locale: "de" }),
+      "gemini_web",
+    );
+    const en = formatPastePackageText(
+      buildPastePackage({ ...base, locale: "en" }),
+      "gemini_web",
+    );
+    assert.match(de, /Antworte auf Deutsch/);
+    assert.match(en, /Answer in English/);
+    assert.notEqual(de, en);
+  });
 });

@@ -53,26 +53,71 @@ function readSigiState(videoId: string): unknown | null {
   return null;
 }
 
-function domCaption(): string {
+/**
+ * Walk up from a caption node and return the TikTok video id from a nearby
+ * `/video/{id}` link, if any. Stops at feed item boundaries.
+ */
+function linkedVideoIdNear(el: Element): string | null {
+  let node: Element | null = el;
+  for (let depth = 0; depth < 12 && node; depth++) {
+    if (node instanceof HTMLAnchorElement) {
+      const id = extractTikTokVideoId(node.href);
+      if (id) return id;
+    }
+    for (const a of Array.from(node.querySelectorAll('a[href*="/video/"]'))) {
+      const href =
+        (a as HTMLAnchorElement).href || a.getAttribute("href") || "";
+      const absolute = href.startsWith("http")
+        ? href
+        : `https://www.tiktok.com${href.startsWith("/") ? "" : "/"}${href}`;
+      const id = extractTikTokVideoId(absolute);
+      if (id) return id;
+    }
+    const e2e = node.getAttribute("data-e2e");
+    if (
+      e2e === "recommend-list-item-container" ||
+      e2e === "browse-video"
+    ) {
+      break;
+    }
+    node = node.parentElement;
+  }
+  return null;
+}
+
+/**
+ * DOM caption scoped to `videoId`. Only accepts nodes whose nearby tree
+ * links to `/video/{videoId}` — never an unscoped “longest desc” fallback
+ * (feed / SPA lag can show another clip’s caption).
+ */
+function domCaption(videoId: string): string {
   const selectors = [
     '[data-e2e="browse-video-desc"]',
     '[data-e2e="video-desc"]',
     '[data-e2e="new-desc-span"]',
     'h1[data-e2e="browse-video-desc"]',
   ];
+  const seen = new Set<Element>();
+
   for (const sel of selectors) {
-    const el = document.querySelector(sel);
-    const text = el?.textContent?.trim();
-    if (text) return text;
+    for (const el of Array.from(document.querySelectorAll(sel))) {
+      if (seen.has(el)) continue;
+      seen.add(el);
+      const text = el.textContent?.trim();
+      if (!text) continue;
+
+      if (linkedVideoIdNear(el) === videoId) return text;
+    }
   }
+
   return "";
 }
 
-function titleFromDom(): string {
+function titleFromDom(videoId: string | null): string {
   const author =
     document.querySelector('[data-e2e="browse-username"]')?.textContent?.trim() ||
     document.querySelector('[data-e2e="video-author-uniqueid"]')?.textContent?.trim();
-  const desc = domCaption();
+  const desc = videoId ? domCaption(videoId) : "";
   if (author && desc) return `${author}: ${desc.slice(0, 80)}`;
   return ogTitle(document.documentElement.innerHTML) || document.title || "";
 }
@@ -80,7 +125,7 @@ function titleFromDom(): string {
 export function captureTikTokExtras(pageUrl: string): PlatformCaptureExtras {
   const videoId = extractTikTokVideoId(pageUrl);
   const videoUrl = canonicalizeTikTokUrl(pageUrl);
-  const title = titleFromDom() || undefined;
+  const title = titleFromDom(videoId) || undefined;
 
   // Feed / For You paths have no video id — URL only, never a random caption.
   if (!videoId) {
@@ -95,9 +140,8 @@ export function captureTikTokExtras(pageUrl: string): PlatformCaptureExtras {
     findStringByKeysNearId(sigi, ["desc", "description", "text"], videoId),
   );
 
-  // Prefer id-scoped JSON. DOM on /video/{id} is the open clip; skip unscoped
-  // pageMetaPostText (can be longer and from another tile).
-  const transcript = firstNonEmpty(fromJson, domCaption());
+  // Prefer id-scoped JSON; DOM fallback is also scoped to this video id.
+  const transcript = firstNonEmpty(fromJson, domCaption(videoId));
 
   if (!transcript) {
     return { ...emptyExtras(), title, videoUrl };

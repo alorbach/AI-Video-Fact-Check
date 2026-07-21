@@ -66,10 +66,25 @@ body {
 }
 
 .header h1 {
-  margin: 0 0 0.35rem;
+  margin: 0;
   font-size: 1.45rem;
   font-weight: 700;
   letter-spacing: -0.01em;
+}
+
+.brand-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.35rem;
+}
+
+.brand-icon {
+  flex: 0 0 auto;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.45rem;
+  display: block;
 }
 
 .subtitle {
@@ -101,16 +116,7 @@ body {
   border-color: #a8c4b6;
 }
 
-.steps {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.step-item {
+.guide-box {
   margin: 0;
   padding: 0.85rem 0.9rem;
   background: var(--step-bg);
@@ -118,42 +124,17 @@ body {
   border-radius: var(--radius);
 }
 
-.step-item.is-current {
+.guide-box.is-current {
   border-color: var(--primary);
   box-shadow: inset 0 0 0 1px var(--primary);
 }
 
-.step-item.is-done .step-num {
-  background: var(--primary);
-  color: var(--primary-text);
+.guide-box.is-error {
+  border-color: var(--danger, #b42318);
 }
 
-.step-row {
-  display: flex;
-  gap: 0.75rem;
-  align-items: flex-start;
-  margin-bottom: 0.75rem;
-}
-
-.step-num {
-  flex: 0 0 2rem;
-  width: 2rem;
-  height: 2rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  background: var(--surface);
-  border: 2px solid var(--primary);
-  color: var(--primary);
-  font-weight: 700;
-  font-size: 1.05rem;
-  line-height: 1;
-}
-
-.step-text {
-  margin: 0;
-  flex: 1;
+.guide-status {
+  margin: 0 0 0.85rem;
   font-weight: 600;
   line-height: 1.45;
 }
@@ -162,6 +143,10 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
+}
+
+.step-btn {
+  margin-top: 0.65rem;
 }
 
 .step-btn,

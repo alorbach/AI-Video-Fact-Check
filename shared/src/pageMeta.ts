@@ -223,8 +223,11 @@ function findStringForKey(
 }
 
 /**
- * Deepest object subtree that mentions `id` (stringified). Used to avoid
- * picking another video’s caption from multi-item SPA payloads.
+ * Deepest object subtree that belongs to `id`.
+ *
+ * Prefer a child keyed exactly by `id` (TikTok ItemModule). Do not treat a
+ * parent map as a match merely because a sibling key equals `id` — that would
+ * let findStringByKeys pick another clip’s caption.
  */
 export function findSubtreeMentioningId(
   node: unknown,
@@ -241,18 +244,42 @@ export function findSubtreeMentioningId(
   }
   if (typeof node !== "object") return null;
   const obj = node as Record<string, unknown>;
+
+  // Map keyed by video id → that entry is the clip (even if desc has no id).
+  if (Object.prototype.hasOwnProperty.call(obj, id)) {
+    const keyed = obj[id];
+    if (keyed && typeof keyed === "object") {
+      const deeper = findSubtreeMentioningId(keyed, id, depth + 1);
+      return deeper ?? keyed;
+    }
+  }
+
   for (const child of Object.values(obj)) {
     if (child && typeof child === "object") {
       const found = findSubtreeMentioningId(child, id, depth + 1);
       if (found) return found;
     }
   }
-  try {
-    if (textMentionsExactId(JSON.stringify(obj), id)) return obj;
-  } catch {
-    /* ignore */
-  }
+
+  // Self-match only when id appears in values / id fields — not as a map key.
+  if (objectMentionsIdInValues(obj, id)) return obj;
   return null;
+}
+
+/** True when `id` appears in field values (not merely as an object key). */
+function objectMentionsIdInValues(
+  obj: Record<string, unknown>,
+  id: string,
+): boolean {
+  for (const field of ["id", "videoId", "video_id", "aweme_id", "shortcode"]) {
+    const value = obj[field];
+    if (value !== undefined && String(value) === id) return true;
+  }
+  try {
+    return textMentionsExactId(JSON.stringify(Object.values(obj)), id);
+  } catch {
+    return false;
+  }
 }
 
 /** Like findStringByKeys, but only inside the deepest subtree that mentions id. */

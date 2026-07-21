@@ -1,10 +1,13 @@
+import { getMasterPrompt } from "./masterPrompt.js";
 import type {
   CaptureResult,
+  ChatTargetId,
   Locale,
   PastePackage,
   PlatformId,
   TranscriptSource,
 } from "./types.js";
+import { CHAT_TARGETS } from "./types.js";
 import { canonicalizeVideoUrl, detectPlatform } from "./platform.js";
 
 export interface BuildPastePackageInput {
@@ -69,25 +72,42 @@ export function withManualTranscript(
   };
 }
 
-/** Plain-text clipboard body (PRODUCT.md). */
-export function formatPastePackageText(pkg: PastePackage): string {
+/** Plain-text clipboard body (PRODUCT.md). Target selects short ask vs master prompt. */
+export function formatPastePackageText(
+  pkg: PastePackage,
+  target?: ChatTargetId,
+): string {
   const unavailable =
     pkg.locale === "de"
       ? "nicht verfügbar – bitte nur anhand der URL prüfen"
       : "not available – please check using the URL only";
 
-  const transcriptBlock =
-    pkg.transcript?.trim() || unavailable;
+  const transcriptBlock = pkg.transcript?.trim() || unavailable;
+  const transcriptLabel =
+    pkg.locale === "de"
+      ? pkg.transcriptSource === "post"
+        ? "Beitragstext / Untertitel (falls vorhanden):"
+        : "Transkript / Untertitel (falls vorhanden):"
+      : pkg.transcriptSource === "post"
+        ? "Post text / captions (if available):"
+        : "Transcript / captions (if available):";
+
+  const material =
+    pkg.locale === "de"
+      ? ["Video-URL:", pkg.videoUrl, "", transcriptLabel, transcriptBlock]
+      : ["Video URL:", pkg.videoUrl, "", transcriptLabel, transcriptBlock];
+
+  const needsMaster =
+    target !== undefined &&
+    (CHAT_TARGETS[target]?.needsEmbeddedMasterPrompt ?? false);
+
+  if (needsMaster) {
+    return [getMasterPrompt(pkg.locale), "", "---", "", ...material].join("\n");
+  }
 
   if (pkg.locale === "de") {
     return [
-      "Video-URL:",
-      pkg.videoUrl,
-      "",
-      pkg.transcriptSource === "post"
-        ? "Beitragstext / Untertitel (falls vorhanden):"
-        : "Transkript / Untertitel (falls vorhanden):",
-      transcriptBlock,
+      ...material,
       "",
       "Bitte führe einen verständlichen Faktencheck durch (Bewertung 1–10,",
       "kurze Zusammenfassung, wichtige Behauptungen, Quellen, Unsicherheiten).",
@@ -95,13 +115,7 @@ export function formatPastePackageText(pkg: PastePackage): string {
   }
 
   return [
-    "Video URL:",
-    pkg.videoUrl,
-    "",
-    pkg.transcriptSource === "post"
-      ? "Post text / captions (if available):"
-      : "Transcript / captions (if available):",
-    transcriptBlock,
+    ...material,
     "",
     "Please run a clear fact-check (score 1–10, short summary,",
     "important claims, sources, uncertainties).",

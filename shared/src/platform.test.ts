@@ -70,4 +70,20 @@ describe("sameVideoUrl", () => {
       "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
     );
   });
+
+  it("strips tracking params on non-social URLs", () => {
+    assert.equal(
+      canonicalizeVideoUrl(
+        "https://example.com/watch/abc?utm_source=x&fbclid=1#frag",
+      ),
+      "https://example.com/watch/abc",
+    );
+    assert.equal(
+      sameVideoUrl(
+        "https://example.com/v?utm_campaign=a",
+        "https://example.com/v?gclid=b",
+      ),
+      true,
+    );
+  });
 });

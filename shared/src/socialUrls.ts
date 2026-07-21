@@ -30,6 +30,15 @@ function stripTracking(parsed: URL): URL {
   return parsed;
 }
 
+/** Drop common tracking query params and hash (any host). */
+export function stripUrlTracking(url: string): string {
+  try {
+    return stripTracking(new URL(url)).toString();
+  } catch {
+    return url;
+  }
+}
+
 /** Numeric TikTok video id from `/video/{id}` path. */
 export function extractTikTokVideoId(url: string): string | null {
   try {

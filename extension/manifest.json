@@ -24,7 +24,10 @@
     "*://*.facebook.com/*",
     "*://*.fb.com/*",
     "*://*.fb.watch/*",
-    "*://*.instagram.com/*"
+    "*://*.instagram.com/*",
+    "*://chatgpt.com/*",
+    "*://*.chatgpt.com/*",
+    "*://gemini.google.com/*"
   ],
   "background": {
     "service_worker": "background.js",
@@ -34,7 +37,8 @@
     "default_title": "__MSG_actionTitle__",
     "default_icon": {
       "16": "icons/icon16.png",
-      "48": "icons/icon48.png"
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
     }
   },
   "side_panel": {
@@ -58,6 +62,15 @@
         "*://*.instagram.com/*"
       ],
       "js": ["content.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "*://chatgpt.com/*",
+        "*://*.chatgpt.com/*",
+        "*://gemini.google.com/*"
+      ],
+      "js": ["chatInject.js"],
       "run_at": "document_idle"
     }
   ],

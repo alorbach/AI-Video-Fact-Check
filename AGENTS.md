@@ -27,13 +27,14 @@ docs/        Plans and specs
 ## Non-negotiables
 
 - Manifest **V3**; no remote code; **no API keys** anywhere.
-- Analysis **only** via opening free consumer chats (Custom GPT, Gemini web) + clipboard handoff.
+- Analysis **only** via opening free consumer chats (Custom GPT, Gemini web).
 - **Do not** build an LLM/STT backend, OpenAI/Anthropic/Gemini API clients, or key settings UI.
-- **Do not** automate typing into ChatGPT/Gemini DOM (guided paste only).
+- Handoff may **insert + send** the prepared text into ChatGPT/Gemini (maintain selectors when UIs change). Still **no** scraping of chat answers.
+- Clipboard remains a fallback if insert/send fails.
 - UI: senior-friendly, plain language, Side Panel as step guide; de + en.
 - Required platforms: **YouTube, TikTok, X, Facebook, Instagram** (see `docs/SPEC-TRANSCRIPT.md`).
 - No DRM/captcha bypass; no social cookie forwarding.
-- Minimal permissions; `optional_host_permissions` when possible.
+- Minimal permissions; declare ChatGPT/Gemini hosts for insert/send; social hosts for captions.
 
 ## Commands
 

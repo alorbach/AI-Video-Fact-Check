@@ -1,6 +1,8 @@
 import {
   CHAT_TARGETS,
   formatPastePackageText,
+  PENDING_CHAT_HANDOFF_KEY,
+  PENDING_CHAT_HANDOFFS_KEY,
   platformLabelKey,
   sameVideoUrl,
   type CaptureResult,
@@ -8,6 +10,7 @@ import {
   type ExtensionMessage,
   type Locale,
   type PastePackage,
+  type PendingChatHandoffs,
   type PlatformId,
 } from "@ai-video-fact-check/shared";
 
@@ -17,19 +20,41 @@ type FontSizePref = "normal" | "large";
 type GuidePhase =
   | "idle"
   | "ready"
-  /** Manual Copy / Copy again — text ready, user must open chat. */
-  | "awaiting_open"
   /** Handoff in progress — copy succeeded, chat tab is opening. */
   | "copied"
   | "opened"
+  | "inject_ok"
+  | "inject_failed"
   | "clipboard_failed";
 
 let lastResult: CaptureResult | null = null;
 let lastPackage: PastePackage | null = null;
+/** Last opened / default chat — used for “Copy again” after a successful open. */
+let selectedChat: ChatTargetId = DEFAULT_CHAT;
+/**
+ * Chat the user last tried to open (even if clipboard failed).
+ * Used for retry copy without moving the primary-button default early.
+ */
+let lastClickedChat: ChatTargetId = DEFAULT_CHAT;
 let guidePhase: GuidePhase = "idle";
 let handoffBusy = false;
 /** Suppress duplicate START_HANDOFF deliveries that arrive after a run finishes. */
 let handoffCooldownUntil = 0;
+/** Current UI handoff — results for this key update the guide. */
+let activeHandoff: { tabId: number; at: number; target: ChatTargetId } | null =
+  null;
+/**
+ * All open handoffs by `${tabId}:${at}`. A superseded handoff can still
+ * complete in the background without updating the wrong guide state.
+ */
+const openHandoffs = new Map<
+  string,
+  { tabId: number; at: number; target: ChatTargetId }
+>();
+
+function handoffKey(tabId: number, at: number): string {
+  return `${tabId}:${at}`;
+}
 
 function t(key: string): string {
   return chrome.i18n.getMessage(key) || key;
@@ -67,86 +92,65 @@ function applyFontSize(size: FontSizePref): void {
     size === "large" ? "large" : "normal";
 }
 
-function setStepHighlight(phase: GuidePhase): void {
-  const item1 = document.getElementById("stepItem1");
-  const item2 = document.getElementById("stepItem2");
-  const item3 = document.getElementById("stepItem3");
-  if (!item1 || !item2 || !item3) return;
-
-  const items = [item1, item2, item3];
-  for (const item of items) {
-    item.classList.remove("is-current", "is-done");
-  }
-
-  switch (phase) {
-    case "ready":
-      item1.classList.add("is-current");
-      break;
-    case "awaiting_open":
-    case "copied":
-      item1.classList.add("is-done");
-      item2.classList.add("is-current");
-      break;
-    case "opened":
-      item1.classList.add("is-done");
-      item2.classList.add("is-done");
-      item3.classList.add("is-current");
-      break;
-    case "clipboard_failed":
-      item1.classList.add("is-current");
-      break;
-    default:
-      break;
-  }
-}
-
 function setGuidePhase(phase: GuidePhase): void {
   guidePhase = phase;
-  const step1 = document.getElementById("step1");
-  const step2 = document.getElementById("step2");
-  const step3 = document.getElementById("step3");
+  const status = document.getElementById("guideStatus");
+  const box = document.getElementById("guideBox");
   const hint = document.getElementById("hintText");
-  if (!step1 || !step2 || !step3 || !hint) return;
+  const copyAgain = document.getElementById("btnCopyAgain");
+  if (!status || !box || !hint) return;
+
+  box.classList.toggle(
+    "is-current",
+    phase === "ready" ||
+      phase === "opened" ||
+      phase === "inject_ok" ||
+      phase === "inject_failed",
+  );
+  box.classList.toggle(
+    "is-error",
+    phase === "clipboard_failed" || phase === "inject_failed",
+  );
+  if (copyAgain) {
+    copyAgain.hidden =
+      phase !== "clipboard_failed" &&
+      phase !== "opened" &&
+      phase !== "inject_failed" &&
+      phase !== "inject_ok";
+  }
 
   switch (phase) {
     case "ready":
-      step1.textContent = t("guideStepReady");
-      step2.textContent = t("guideStepOpen");
-      step3.textContent = t("guideStepPaste");
+      status.textContent = t("guideReady");
       hint.textContent = t("sidepanelHint");
       break;
-    case "awaiting_open":
-      step1.textContent = t("guideStepCopied");
-      step2.textContent = t("guideStepOpenNext");
-      step3.textContent = t("guideStepPaste");
-      hint.textContent = t("hintAwaitingOpen");
-      break;
     case "copied":
-      step1.textContent = t("guideStepCopied");
-      step2.textContent = t("guideStepOpening");
-      step3.textContent = t("guideStepPaste");
+      status.textContent = t("guideOpening");
       hint.textContent = t("hintAfterCopy");
       break;
     case "opened":
-      step1.textContent = t("guideStepCopied");
-      step2.textContent = t("guideStepChatOpened");
-      step3.textContent = t("guideStepPasteNow");
+      status.textContent =
+        selectedChat === "gemini_web"
+          ? t("guideOpenedGemini")
+          : t("guideOpenedGpt");
+      hint.textContent = t("hintInjecting");
+      break;
+    case "inject_ok":
+      status.textContent = t("guideInjectOk");
+      hint.textContent = t("sidepanelHint");
+      break;
+    case "inject_failed":
+      status.textContent = t("guideInjectFailed");
       hint.textContent = t("hintPasteNow");
       break;
     case "clipboard_failed":
-      step1.textContent = t("guideStepCopyFailed");
-      step2.textContent = t("guideStepCopyAgain");
-      step3.textContent = t("guideStepPaste");
+      status.textContent = t("guideCopyFailed");
       hint.textContent = t("hintCopyFailed");
       break;
     default:
-      step1.textContent = t("step1");
-      step2.textContent = t("step2");
-      step3.textContent = t("step3");
+      status.textContent = t("guideIdle");
       hint.textContent = t("sidepanelHint");
   }
-
-  setStepHighlight(phase);
 }
 
 function renderCapture(): void {
@@ -194,6 +198,8 @@ function applyDefaultChat(defaultChat: string): void {
   const id = (
     defaultChat in CHAT_TARGETS ? defaultChat : DEFAULT_CHAT
   ) as ChatTargetId;
+  selectedChat = id;
+  lastClickedChat = id;
   const actions = document.querySelector(".step-actions");
   const gptBtn = document.getElementById("btnOpenGpt");
   const geminiBtn = document.getElementById("btnOpenGemini");
@@ -298,8 +304,11 @@ async function ensurePackage(): Promise<PastePackage | null> {
   return lastPackage;
 }
 
-async function copyPackageToClipboard(pkg: PastePackage): Promise<boolean> {
-  const text = formatPastePackageText(pkg);
+async function copyPackageToClipboard(
+  pkg: PastePackage,
+  target?: ChatTargetId,
+): Promise<boolean> {
+  const text = formatPastePackageText(pkg, target);
   try {
     await navigator.clipboard.writeText(text);
     return true;
@@ -330,6 +339,7 @@ async function handoffToChat(
   // Ignore SW retry deliveries; button clicks pass force: true.
   if (!opts?.force && Date.now() < handoffCooldownUntil) return;
   handoffBusy = true;
+  lastClickedChat = target;
   try {
     setMsg("handoffMsg", t("handoffWorking"));
     const pkg = await ensurePackage();
@@ -339,7 +349,9 @@ async function handoffToChat(
       return;
     }
 
-    const copied = await copyPackageToClipboard(pkg);
+    const text = formatPastePackageText(pkg, target);
+    // Clipboard backup if insert/send fails in the chat tab.
+    const copied = await copyPackageToClipboard(pkg, target);
     if (!copied) {
       setGuidePhase("clipboard_failed");
       setMsg("handoffMsg", t("hintCopyFailed"), "error");
@@ -348,11 +360,57 @@ async function handoffToChat(
 
     setGuidePhase("copied");
     const chat = CHAT_TARGETS[target] ?? CHAT_TARGETS[DEFAULT_CHAT];
-    await chrome.tabs.create({ url: chat.openUrl });
+    const tab = await chrome.tabs.create({ url: chat.openUrl });
+    if (tab.id == null) {
+      setGuidePhase("inject_failed");
+      setMsg("handoffMsg", t("handoffInjectFailed"), "error");
+      return;
+    }
+    const tabId = tab.id;
+    const at = Date.now();
+    const session = { tabId, at, target };
+    activeHandoff = session;
+    openHandoffs.set(handoffKey(tabId, at), session);
+    // Per-tab pending map — a second handoff must not erase the first tab’s payload.
+    const stored = await chrome.storage.session.get([
+      PENDING_CHAT_HANDOFFS_KEY,
+      PENDING_CHAT_HANDOFF_KEY,
+    ]);
+    const map: PendingChatHandoffs = {
+      ...((stored[PENDING_CHAT_HANDOFFS_KEY] as
+        | PendingChatHandoffs
+        | undefined) ?? {}),
+    };
+    map[String(tabId)] = {
+      text,
+      target,
+      at,
+      tabId,
+    };
+    await chrome.storage.session.set({ [PENDING_CHAT_HANDOFFS_KEY]: map });
+    // Clear legacy single-entry key so it cannot override the map.
+    await chrome.storage.session.remove(PENDING_CHAT_HANDOFF_KEY);
+    void (async () => {
+      // Two spaced kicks only — pending is claimed on first successful attempt.
+      for (const gap of [1800, 4500]) {
+        await new Promise((r) => setTimeout(r, gap === 1800 ? 1800 : 2700));
+        try {
+          await chrome.runtime.sendMessage({
+            type: "TRIGGER_CHAT_INJECT",
+            tabId,
+          } satisfies ExtensionMessage);
+        } catch {
+          /* service worker wake */
+        }
+      }
+    })();
+    selectedChat = target;
     setGuidePhase("opened");
     setMsg(
       "handoffMsg",
-      target === "gemini_web" ? t("handoffOpenedGemini") : t("handoffOpenedGpt"),
+      target === "gemini_web"
+        ? t("handoffOpenedGemini")
+        : t("handoffOpenedGpt"),
       "ok",
     );
     handoffCooldownUntil = Date.now() + 2500;
@@ -361,33 +419,37 @@ async function handoffToChat(
   }
 }
 
-async function copyOnly(): Promise<void> {
-  const pkg = await ensurePackage();
-  if (!pkg?.videoUrl) {
-    setMsg("handoffMsg", t("captureFailed"), "error");
-    return;
-  }
-  const copied = await copyPackageToClipboard(pkg);
-  if (copied) {
-    setGuidePhase("awaiting_open");
-    setMsg("handoffMsg", t("copyOk"), "ok");
-  } else {
-    setGuidePhase("clipboard_failed");
-    setMsg("handoffMsg", t("hintCopyFailed"), "error");
-  }
-}
-
+/** Re-copy for the last attempted/opened chat (recovery after open or clipboard fail). */
 async function copyAgain(): Promise<void> {
   const pkg = await ensurePackage();
   if (!pkg?.videoUrl) {
     setMsg("handoffMsg", t("captureFailed"), "error");
     return;
   }
+  const target = lastClickedChat;
+  const copied = await copyPackageToClipboard(pkg, target);
+  if (copied) {
+    setGuidePhase(guidePhase === "clipboard_failed" ? "ready" : "opened");
+    setMsg("handoffMsg", t("copyAgainOk"), "ok");
+  } else {
+    setGuidePhase("clipboard_failed");
+    setMsg("handoffMsg", t("hintCopyFailed"), "error");
+  }
+}
+
+/**
+ * Context-menu “copy only”: short package (no master prompt), no chat open.
+ */
+async function copyPackageOnlyShort(): Promise<void> {
+  const pkg = await ensurePackage();
+  if (!pkg?.videoUrl) {
+    setMsg("handoffMsg", t("captureFailed"), "error");
+    return;
+  }
   const copied = await copyPackageToClipboard(pkg);
   if (copied) {
-    // After a successful open, keep paste guidance; otherwise wait for Open chat.
-    setGuidePhase(guidePhase === "opened" ? "opened" : "awaiting_open");
-    setMsg("handoffMsg", t("copyAgainOk"), "ok");
+    setGuidePhase("ready");
+    setMsg("handoffMsg", t("copyOk"), "ok");
   } else {
     setGuidePhase("clipboard_failed");
     setMsg("handoffMsg", t("hintCopyFailed"), "error");
@@ -470,7 +532,6 @@ function initCopy(): void {
   setText("manualHelp", t("manualHelp"));
   setText("manualLabel", t("manualLabel"));
   setText("btnSaveManual", t("btnSaveManual"));
-  setText("btnCopy", t("btnCopy"));
   setText("btnOpenGpt", t("btnOpenGpt"));
   setText("btnOpenGemini", t("btnOpenGemini"));
   setText("btnCopyAgain", t("btnCopyAgain"));
@@ -490,10 +551,6 @@ document.getElementById("btnScan")?.addEventListener("click", () => {
 
 document.getElementById("btnSaveManual")?.addEventListener("click", () => {
   void applyManualTranscript();
-});
-
-document.getElementById("btnCopy")?.addEventListener("click", () => {
-  void copyOnly();
 });
 
 document.getElementById("btnOpenGpt")?.addEventListener("click", () => {
@@ -541,7 +598,35 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage) => {
     return;
   }
   if (message.type === "COPY_PACKAGE_ONLY") {
-    void copyAgain();
+    void copyPackageOnlyShort();
+    return;
+  }
+  if (message.type === "CHAT_INJECT_RESULT") {
+    const key = handoffKey(message.tabId, message.at);
+    const session = openHandoffs.get(key);
+    if (!session) return;
+    openHandoffs.delete(key);
+
+    const isActive =
+      activeHandoff != null &&
+      message.tabId === activeHandoff.tabId &&
+      message.at === activeHandoff.at;
+
+    if (message.ok) {
+      // Persist default chat for this handoff even if the UI moved on.
+      applyDefaultChat(session.target);
+      void chrome.storage.sync.set({ defaultChat: session.target });
+      if (isActive) {
+        setGuidePhase("inject_ok");
+        setMsg("handoffMsg", t("handoffInjectOk"), "ok");
+      }
+      return;
+    }
+
+    if (isActive) {
+      setGuidePhase("inject_failed");
+      setMsg("handoffMsg", t("handoffInjectFailed"), "error");
+    }
   }
 });
 
@@ -552,7 +637,11 @@ void chrome.storage.sync
     fontSize: "normal" satisfies FontSizePref,
   })
   .then(({ defaultChat, fontSize }) => {
-    applyDefaultChat(defaultChat as string);
+    const chat =
+      typeof defaultChat === "string" && defaultChat in CHAT_TARGETS
+        ? (defaultChat as ChatTargetId)
+        : DEFAULT_CHAT;
+    applyDefaultChat(chat);
     applyFontSize(fontSize === "large" ? "large" : "normal");
   });
 void initCaptureState();

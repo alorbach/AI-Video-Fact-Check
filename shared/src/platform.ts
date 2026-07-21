@@ -5,6 +5,7 @@ import {
   extractFacebookVideoId,
   extractInstagramShortcode,
   extractTikTokVideoId,
+  stripUrlTracking,
 } from "./socialUrls.js";
 
 /**
@@ -69,13 +70,7 @@ export function canonicalizeVideoUrl(url: string): string {
   ) {
     return canonicalizeSocialVideoUrl(platform, url);
   }
-  try {
-    const parsed = new URL(url);
-    parsed.hash = "";
-    return parsed.toString();
-  } catch {
-    return url;
-  }
+  return stripUrlTracking(url);
 }
 
 /** True when two URLs refer to the same video (canonical / id-aware). */

@@ -39,6 +39,17 @@ await esbuild.build({
   logLevel: "info",
 });
 
+await esbuild.build({
+  entryPoints: [join(root, "src/chatInject.ts")],
+  bundle: true,
+  outfile: join(dist, "chatInject.js"),
+  format: "iife",
+  platform: "browser",
+  target: ["chrome120"],
+  alias: sharedAlias,
+  logLevel: "info",
+});
+
 for (const name of [
   "manifest.json",
   "sidepanel.html",

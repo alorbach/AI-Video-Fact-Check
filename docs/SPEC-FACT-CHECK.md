@@ -11,10 +11,11 @@ No backend fact-check API. No developer LLM API keys.
 
 ```text
 Extension
-  → build PastePackage (URL + optional transcript + short ask)
-  → navigator.clipboard.writeText / chrome offscreen clipboard helper
+  → build PastePackage (URL + optional transcript + short ask / master prompt)
+  → clipboard backup + chrome.storage.session pending handoff
   → chrome.tabs.create({ url: chatTarget })
-  → Side Panel shows step-by-step paste help
+  → content script on ChatGPT/Gemini: insert text into composer + send
+  → Side Panel reports success or “please paste manually” fallback
 ```
 
 ### Chat targets
@@ -29,6 +30,8 @@ interface ChatTarget {
   openUrl: string;
   /** Free web chat available to ordinary users (no API key). */
   freeForEndUsers: true;
+  /** When true, clipboard includes the full master prompt (locale-matched). */
+  needsEmbeddedMasterPrompt: boolean;
 }
 ```
 
@@ -51,7 +54,10 @@ interface PastePackage {
 }
 ```
 
-Rendered as plain text (see [`PRODUCT.md`](PRODUCT.md)). For Gemini, prepend one sentence that asks for the same plain-language score format (the Custom GPT already has that behavior built in).
+Rendered as plain text (see [`PRODUCT.md`](PRODUCT.md)).
+
+- **Custom GPT:** short ask (score 1–10, plain summary, claims, sources, uncertainties) — the Custom GPT already has the full behavior configured.
+- **Gemini (and any `needsEmbeddedMasterPrompt` target):** prepend the full locale-matched master prompt (`shared/src/masterPrompt.ts`: DE or EN from UI language), then `---`, then URL + transcript. No second short ask line.
 
 ## What we ask the chat to produce
 
@@ -94,11 +100,10 @@ Traffic-light helper in Side Panel (for reading the chat answer):
 Not a second analysis engine. It is a **guide**:
 
 1. Status of capture (URL / captions found?)  
-2. Which chat will open  
-3. Big button: Open chat  
-4. “Paste now (Ctrl+V)” reminder  
-5. Optional: show copied text, “copy again”  
-6. Short “how to read the answer” tip  
+2. Big button: Open chat (insert + send)  
+3. Status: inserting / sent / or manual fallback  
+4. Optional: “copy again” if automation failed  
+5. Short “how to read the answer” tip  
 
 ## Extension messages (target)
 
@@ -116,5 +121,4 @@ type ExtensionMessage =
 
 - `POST` to OpenAI / Anthropic / Gemini **APIs**
 - Own job queue for LLM scoring
-- Scraping ChatGPT/Gemini DOM for automatic result import (MVP)
-- Automating keystrokes into the chat page
+- Scraping ChatGPT/Gemini DOM for automatic result import

@@ -8,6 +8,8 @@ import {
   canonicalizeVideoUrl,
   captureToPastePackage,
   detectPlatform,
+  PENDING_CHAT_HANDOFF_KEY,
+  PENDING_CHAT_HANDOFFS_KEY,
   sameVideoUrl,
   withManualTranscript,
   type CaptureResult,
@@ -15,8 +17,11 @@ import {
   type ExtensionMessage,
   type Locale,
   type PastePackage,
+  type PendingChatHandoff,
+  type PendingChatHandoffs,
   type PlatformId,
 } from "@ai-video-fact-check/shared";
+import { pageInjectAndSend } from "./chatInjectMain.js";
 
 const STORAGE_KEYS = {
   lastCapture: "lastCapture",
@@ -49,6 +54,260 @@ function isRestrictedUrl(url: string): boolean {
   );
 }
 
+function isChatHandoffUrl(url: string): boolean {
+  try {
+    const host = new URL(url).hostname.toLowerCase();
+    return (
+      host === "chatgpt.com" ||
+      host.endsWith(".chatgpt.com") ||
+      host === "gemini.google.com" ||
+      host.endsWith(".gemini.google.com")
+    );
+  } catch {
+    return false;
+  }
+}
+
+async function emitChatInjectResult(
+  ok: boolean,
+  handoff: Pick<PendingChatHandoff, "tabId" | "at">,
+): Promise<void> {
+  try {
+    await chrome.runtime.sendMessage({
+      type: "CHAT_INJECT_RESULT",
+      ok,
+      tabId: handoff.tabId,
+      at: handoff.at,
+    } satisfies ExtensionMessage);
+  } catch {
+    /* side panel closed */
+  }
+}
+
+/** Tab closed / navigated away during delayed inject kicks — not actionable. */
+function isGoneTabError(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : String(err ?? "");
+  // Match EN + DE Chrome messages (locale may translate).
+  return (
+    /no tab with id|kein tab mit/i.test(msg) ||
+    /frame with id|frame mit id/i.test(msg) ||
+    /was removed|wurde entfernt/i.test(msg) ||
+    /tab was closed|tab.*geschlossen/i.test(msg) ||
+    /cannot access|zugriff.*nicht/i.test(msg)
+  );
+}
+
+async function tabStillOpen(tabId: number): Promise<boolean> {
+  try {
+    await chrome.tabs.get(tabId);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Serialize pending claims — SW async callers (onUpdated + kicks + probe)
+ * otherwise all read the same payload before any remove.
+ */
+let pendingClaimChain: Promise<unknown> = Promise.resolve();
+
+function withPendingClaimLock<T>(fn: () => Promise<T>): Promise<T> {
+  const run = pendingClaimChain.then(fn, fn);
+  pendingClaimChain = run.then(
+    () => undefined,
+    () => undefined,
+  );
+  return run;
+}
+
+function tabKey(tabId: number): string {
+  return String(tabId);
+}
+
+/** Read multi-tab map; migrate legacy single-entry key if present. */
+async function readPendingMap(): Promise<PendingChatHandoffs> {
+  const data = await chrome.storage.session.get([
+    PENDING_CHAT_HANDOFFS_KEY,
+    PENDING_CHAT_HANDOFF_KEY,
+  ]);
+  const map = {
+    ...((data[PENDING_CHAT_HANDOFFS_KEY] as PendingChatHandoffs | undefined) ??
+      {}),
+  };
+  const legacy = data[PENDING_CHAT_HANDOFF_KEY] as PendingChatHandoff | undefined;
+  if (legacy?.text && legacy.tabId != null) {
+    map[tabKey(legacy.tabId)] = legacy;
+  }
+  return map;
+}
+
+async function writePendingMap(map: PendingChatHandoffs): Promise<void> {
+  // Drop legacy single key so it cannot fight the map.
+  await chrome.storage.session.remove(PENDING_CHAT_HANDOFF_KEY);
+  if (Object.keys(map).length === 0) {
+    await chrome.storage.session.remove(PENDING_CHAT_HANDOFFS_KEY);
+    return;
+  }
+  await chrome.storage.session.set({ [PENDING_CHAT_HANDOFFS_KEY]: map });
+}
+
+async function restorePending(pending: PendingChatHandoff): Promise<void> {
+  await withPendingClaimLock(async () => {
+    const map = await readPendingMap();
+    const key = tabKey(pending.tabId);
+    const current = map[key];
+    // Do not overwrite a newer handoff for the same tab.
+    if (current && current.at !== pending.at) return;
+    map[key] = pending;
+    await writePendingMap(map);
+  });
+}
+
+/** Atomically take pending for this tab, or null if already claimed / wrong tab. */
+async function claimPendingForTab(
+  tabId: number,
+): Promise<PendingChatHandoff | null> {
+  return withPendingClaimLock(async () => {
+    const map = await readPendingMap();
+    const key = tabKey(tabId);
+    const pending = map[key];
+    if (!pending?.text) return null;
+    if (Date.now() - pending.at > 120_000) {
+      delete map[key];
+      await writePendingMap(map);
+      await emitChatInjectResult(false, pending);
+      return null;
+    }
+    if (!(await tabStillOpen(tabId))) {
+      delete map[key];
+      await writePendingMap(map);
+      await emitChatInjectResult(false, pending);
+      return null;
+    }
+    delete map[key];
+    await writePendingMap(map);
+    return pending;
+  });
+}
+
+/** Insert+send in the page MAIN world (required for ProseMirror / Quill). */
+async function triggerChatInject(tabId: number): Promise<void> {
+  const pending = await claimPendingForTab(tabId);
+  if (!pending) return;
+
+  try {
+    const results = await chrome.scripting.executeScript({
+      target: { tabId },
+      world: "MAIN",
+      func: pageInjectAndSend,
+      args: [pending.text],
+    });
+    const result = results[0]?.result as
+      | { ok: boolean; reason?: string }
+      | undefined;
+    if (result?.ok) {
+      await emitChatInjectResult(true, pending);
+      return;
+    }
+
+    // In-page lock still held — restore without burning the attempt budget.
+    if (result?.reason === "already-attempted") {
+      await restorePending(pending);
+      return;
+    }
+
+    // Retryable before send — restore for timed kicks; do not fail the UI yet.
+    // Never retry after send was attempted (send-*-unconfirmed) — duplicate risk.
+    if (
+      result?.reason === "no-editor" ||
+      result?.reason === "login-required" ||
+      result?.reason === "fill-failed"
+    ) {
+      const attempts = (pending.attempts ?? 0) + 1;
+      const maxAttempts = 4;
+      if (attempts < maxAttempts) {
+        await restorePending({ ...pending, attempts });
+        return;
+      }
+    }
+
+    // Terminal failure (or retries exhausted) — notify the panel.
+    await emitChatInjectResult(false, pending);
+  } catch (err) {
+    // Tab/frame races are common (SPA to /c/…, closed tab, delayed kicks).
+    // Never console.error here — Chrome lists it on the extension errors page.
+    // Do not treat /c/ or /app/ URL alone as proof the pending text was sent.
+    if (isGoneTabError(err) || !(await tabStillOpen(tabId))) {
+      try {
+        const tab = await chrome.tabs.get(tabId);
+        const path = tab.url ? new URL(tab.url).pathname : "";
+        const onConversation =
+          path.includes("/c/") || path.includes("/app/");
+        // Conversation URL: inject is done for this tab (onUpdated skips /c/).
+        // Without composer confirmation, report failure — clipboard remains.
+        if (onConversation) {
+          await emitChatInjectResult(false, pending);
+          return;
+        }
+        // Still on landing page — allow another inject attempt.
+        const attempts = (pending.attempts ?? 0) + 1;
+        if (attempts < 4) {
+          await restorePending({ ...pending, attempts });
+          return;
+        }
+      } catch {
+        /* tab fully closed */
+      }
+      await emitChatInjectResult(false, pending);
+      return;
+    }
+    // Transient scripting failure — restore for a later tab-complete retry.
+    const attempts = (pending.attempts ?? 0) + 1;
+    if (attempts < 4) {
+      await restorePending({ ...pending, attempts });
+      return;
+    }
+    await emitChatInjectResult(false, pending);
+  }
+}
+
+chrome.tabs.onUpdated.addListener((tabId, info, tab) => {
+  if (info.status !== "complete" || !tab.url || !isChatHandoffUrl(tab.url)) {
+    return;
+  }
+  // Skip conversation URLs after a handoff already navigated (/c/...) —
+  // those reloads must not inject again.
+  try {
+    const path = new URL(tab.url).pathname;
+    if (path.startsWith("/c/") || path.includes("/c/")) {
+      return;
+    }
+  } catch {
+    /* ignore */
+  }
+  void (async () => {
+    const map = await readPendingMap();
+    const pending = map[tabKey(tabId)];
+    // Ignore unrelated ChatGPT/Gemini tabs that finish loading.
+    if (!pending?.text) return;
+    await new Promise((r) => setTimeout(r, 1200));
+    if (!(await tabStillOpen(tabId))) return;
+    await triggerChatInject(tabId);
+    await new Promise((r) => setTimeout(r, 3500));
+    if (!(await tabStillOpen(tabId))) return;
+    // Skip if chat already left the composer landing page.
+    try {
+      const t = await chrome.tabs.get(tabId);
+      const path = t.url ? new URL(t.url).pathname : "";
+      if (path.startsWith("/c/") || path.includes("/c/")) return;
+    } catch {
+      return;
+    }
+    await triggerChatInject(tabId);
+  })();
+});
+
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.removeAll(() => {
     chrome.contextMenus.create({
@@ -63,6 +322,14 @@ chrome.runtime.onInstalled.addListener(() => {
       title:
         chrome.i18n.getMessage("contextOpenGpt") ||
         "Open with Video Fact-Check GPT",
+      contexts: ["page", "video", "link"],
+    });
+    chrome.contextMenus.create({
+      id: "check-video-gemini",
+      parentId: "check-video",
+      title:
+        chrome.i18n.getMessage("contextOpenGemini") ||
+        "Open with Gemini (free)",
       contexts: ["page", "video", "link"],
     });
     chrome.contextMenus.create({
@@ -541,13 +808,27 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     await openSidePanelAndHandoff(tab, "chatgpt_video_faktencheck", linkUrl);
     return;
   }
+  if (info.menuItemId === "check-video-gemini") {
+    await openSidePanelAndHandoff(tab, "gemini_web", linkUrl);
+    return;
+  }
   if (info.menuItemId === "check-video-copy") {
     await openSidePanelAndHandoff(tab, "copy_only", linkUrl);
   }
 });
 
 chrome.runtime.onMessage.addListener(
-  (message: ExtensionMessage, _sender, sendResponse) => {
+  (message: ExtensionMessage, sender, sendResponse) => {
+    if (message.type === "TRIGGER_CHAT_INJECT") {
+      const tabId = message.tabId ?? sender.tab?.id;
+      if (tabId != null) {
+        void triggerChatInject(tabId).finally(() => sendResponse({ ok: true }));
+        return true;
+      }
+      sendResponse({ ok: false });
+      return false;
+    }
+
     if (message.type === "CAPTURE_ACTIVE_TAB") {
       void captureActiveTab({ force: message.force === true })
         .then(async (captured) => {

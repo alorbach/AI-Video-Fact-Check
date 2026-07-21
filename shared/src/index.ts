@@ -7,9 +7,15 @@ export type {
   ChatTarget,
   CaptureResult,
   ExtensionMessage,
+  PendingChatHandoff,
+  PendingChatHandoffs,
 } from "./types.js";
 
-export { CHAT_TARGETS } from "./types.js";
+export {
+  CHAT_TARGETS,
+  PENDING_CHAT_HANDOFF_KEY,
+  PENDING_CHAT_HANDOFFS_KEY,
+} from "./types.js";
 export {
   detectPlatform,
   platformLabelKey,
@@ -60,3 +66,8 @@ export {
   formatPastePackageText,
   type BuildPastePackageInput,
 } from "./pastePackage.js";
+export {
+  MASTER_PROMPT_DE,
+  MASTER_PROMPT_EN,
+  getMasterPrompt,
+} from "./masterPrompt.js";

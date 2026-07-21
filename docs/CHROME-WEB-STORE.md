@@ -18,8 +18,9 @@ Fill before **Level 8**.
 | `sidePanel` | Step-by-step guide beside the video |
 | `storage` | Language / last chat choice / optional last package |
 | `contextMenus` | “Check video with AI” |
-| `clipboardWrite` (if declared) | Copy URL + captions for paste into chat |
-| `host_permissions` (YouTube, TikTok, X, Facebook, Instagram) | Read captions/metadata on those video pages; required for Side Panel “Scan” without an extra permission prompt |
+| `clipboardWrite` (if declared) | Backup copy of URL + captions if insert/send fails |
+| `host_permissions` (YouTube, TikTok, X, Facebook, Instagram) | Read captions/metadata on those video pages |
+| `host_permissions` (chatgpt.com, gemini.google.com) | Insert prepared text into the chat box and send at the user’s request |
 | Opens chatgpt.com / gemini.google.com | User’s fact-check happens there |
 
 ### Host patterns (manifest)
@@ -31,15 +32,18 @@ Declared under `host_permissions` for the five required platforms:
 - `*://*.x.com/*`, `*://*.twitter.com/*`
 - `*://*.facebook.com/*`, `*://*.fb.com/*`, `*://*.fb.watch/*`
 - `*://*.instagram.com/*`
+- `*://chatgpt.com/*`, `*://*.chatgpt.com/*`
+- `*://gemini.google.com/*`
 
 (`optional_host_permissions` alone broke Side Panel Scan — no `activeTab` gesture — so required hosts are used for MVP.)
 
 ## Privacy policy must say
 
-- Extension copies video URL and optional captions to the clipboard  
-- Opens ChatGPT Custom GPT and/or Gemini web at the user’s request  
+- Extension prepares video URL and optional captions  
+- At the user’s request, opens ChatGPT Custom GPT and/or Gemini web and may insert that text into the chat box and send it  
+- Clipboard is used as a backup if insert/send fails  
 - No own analysis server; no developer API keys  
-- Data leaves the device when the user pastes into ChatGPT/Gemini under their account terms  
+- Data is processed under the user’s ChatGPT/Gemini account terms once sent  
 
 ## Assets
 

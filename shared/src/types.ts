@@ -36,6 +36,8 @@ export interface ChatTarget {
   labelEn: string;
   openUrl: string;
   freeForEndUsers: true;
+  /** When true, clipboard includes the full master prompt (locale-matched). */
+  needsEmbeddedMasterPrompt: boolean;
 }
 
 export const CHAT_TARGETS: Record<ChatTargetId, ChatTarget> = {
@@ -46,6 +48,7 @@ export const CHAT_TARGETS: Record<ChatTargetId, ChatTarget> = {
     openUrl:
       "https://chatgpt.com/g/g-6a5e1494f814819181208da5d30ab4ae-video-faktencheck",
     freeForEndUsers: true,
+    needsEmbeddedMasterPrompt: false,
   },
   gemini_web: {
     id: "gemini_web",
@@ -53,6 +56,7 @@ export const CHAT_TARGETS: Record<ChatTargetId, ChatTarget> = {
     labelEn: "Gemini (free)",
     openUrl: "https://gemini.google.com/",
     freeForEndUsers: true,
+    needsEmbeddedMasterPrompt: true,
   },
 };
 
@@ -79,6 +83,8 @@ export type ExtensionMessage =
   | { type: "COPY_PACKAGE_ONLY" }
   | { type: "CLIPBOARD_OK" }
   | { type: "CHAT_OPENED"; target: ChatTargetId }
+  | { type: "CHAT_INJECT_RESULT"; ok: boolean; tabId: number; at: number }
+  | { type: "TRIGGER_CHAT_INJECT"; tabId?: number }
   | { type: "HANDOFF_FAILED"; error: string }
   | { type: "GET_LAST_CAPTURE" }
   | {
@@ -87,3 +93,21 @@ export type ExtensionMessage =
       package: PastePackage | null;
     }
   | { type: "SET_MANUAL_TRANSCRIPT"; transcript: string; locale: Locale };
+
+/** Session payload for ChatGPT/Gemini insert+send (see chatInject.ts). */
+export interface PendingChatHandoff {
+  text: string;
+  target: ChatTargetId;
+  at: number;
+  /** Only this tab may consume the pending handoff. */
+  tabId: number;
+  /** Composer-not-ready retries so far (no-editor / login-required / fill-failed). */
+  attempts?: number;
+}
+
+/** Map of tabId (string) → pending handoff. Supports concurrent chat tabs. */
+export type PendingChatHandoffs = Record<string, PendingChatHandoff>;
+
+export const PENDING_CHAT_HANDOFF_KEY = "pendingChatHandoff";
+/** Preferred multi-tab store (replaces single PENDING_CHAT_HANDOFF_KEY). */
+export const PENDING_CHAT_HANDOFFS_KEY = "pendingChatHandoffs";

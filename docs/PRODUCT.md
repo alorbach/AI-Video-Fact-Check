@@ -46,9 +46,9 @@ Optional later: Vimeo, generic HTML5 pages.
 1. Detect video + platform on the page
 2. Collect video URL + captions/transcript when available (in the browser)
 3. Build a simple paste package (URL + text)
-4. Copy to clipboard
-5. Open chosen chat (Custom GPT or free Gemini)
-6. Side Panel shows short steps: what was copied, what to paste, what to expect
+4. Open chosen chat (Custom GPT or free Gemini)
+5. Insert package into the chat box and send (clipboard as fallback)
+6. Side Panel shows status: sent, or how to paste manually if needed
 ```
 
 The **analysis itself** runs inside ChatGPT / Gemini — not in our server.
@@ -57,19 +57,21 @@ The **analysis itself** runs inside ChatGPT / Gemini — not in our server.
 
 ### Custom GPT (default)
 
-1. Copy paste package to clipboard  
+1. Copy paste package to clipboard (fallback)  
 2. Open https://chatgpt.com/g/g-6a5e1494f814819181208da5d30ab4ae-video-faktencheck  
-3. Side Panel: „Einfügen (Strg+V) und Senden“ / „Paste (Ctrl+V) and send“
+3. Extension inserts the text into the chat box and sends  
 
 ### Free Gemini (optional)
 
-1. Same clipboard package (+ short instruction so Gemini answers in the same plain style)  
+1. Same URL/transcript material, plus the **full master prompt** in the UI language (de/en)  
 2. Open https://gemini.google.com/  
-3. Same paste guidance
+3. Extension inserts and sends (same as GPT)  
 
-No automation that types into ChatGPT/Gemini for the user (fragile + policy risk). **Guided paste** is intentional and understandable.
+If insert/send fails (UI change or login wall), clipboard text remains and the Side Panel asks the user to paste manually (Ctrl+V).
 
 ## Paste package (what we put on the clipboard)
+
+**Custom GPT** (short ask):
 
 ```text
 Video-URL:
@@ -83,6 +85,8 @@ kurze Zusammenfassung, wichtige Behauptungen, Quellen, Unsicherheiten).
 ```
 
 (EN variant of the instruction block when UI language is English.)
+
+**Gemini** (and future free chats with `needsEmbeddedMasterPrompt`): full master prompt for the UI locale, then `---`, then the same URL/transcript material (no second short ask). Source: `shared/src/masterPrompt.ts`.
 
 ## User journey (context menu)
 
