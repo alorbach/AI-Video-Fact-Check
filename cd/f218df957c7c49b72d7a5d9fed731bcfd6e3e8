@@ -1,0 +1,41 @@
+extension/_locales/en/messages.json
+  s_ade21bde696617::t_4688ce1eeebfae 103,210,215-226
+  s_ade21bde696617::t_4e92266b97c443 17-19,21,24,33,36,39
+  s_ade21bde696617::t_a944af19d458b8 80-82,86-88,92-102
+extension/sidepanel.css
+  s_ade21bde696617::t_47f1288add8cc0 14,18-22,35,49-67,89-90,92-101,106-174,176,179-180,183,232,238-243,266-267,284-292,308-318
+docs/MULTILEVEL-IMPLEMENTATION-PLAN.md
+  s_ade21bde696617::t_6b8b7c859e37a8 36
+  s_ade21bde696617::t_25e2fc79b5dcfb 29
+  s_ade21bde696617::t_0434460d2f8a83 35,37
+extension/options.html
+  s_ade21bde696617::t_4bd6894bc35c4f 16-20,28-34,39,44-45,51,59-68
+extension/sidepanel.html
+  s_ade21bde696617::t_ba08700d55eba1 10-11,17,39,42-65,67,70-71,73-77
+docs/levels/L4-mode-b-polish.md
+  s_ade21bde696617::t_5727eca4761350 3,15-20,24-33
+extension/src/sidepanel.ts
+  s_ade21bde696617::t_dbcb1d1c325bff 15,45-93,133-134,175,178,183-187,220,312,315,323,331,334,342-357,361,366-368,371,422,424,430,440,447-450,462-465,483-493,517-521,523
+extension/src/options.ts
+  s_ade21bde696617::t_ca070f7a190d02 3-4,9-19,21-23,27-28,31-32,35-36,38,42-43,46-47,51,53,55-57,59-65,69-75
+extension/_locales/de/messages.json
+  s_ade21bde696617::t_52e5c4daa52091 80-82,86-88,92-102
+  s_ade21bde696617::t_509c15092bbcbe 17-19,21,24,33,36,39
+  s_ade21bde696617::t_00c42894d8fda7 103,210,215-226
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "cdf218df957c7c49b72d7a5d9fed731bcfd6e3e8",
+  "prompts": {},
+  "sessions": {
+    "s_ade21bde696617": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "660d6888-7a08-4692-b5ca-1a83dbbaf908",
+        "model": "grok-4.5"
+      },
+      "human_author": "Andre Lorbach <alorbach@adiscon.com>"
+    }
+  }
+}
