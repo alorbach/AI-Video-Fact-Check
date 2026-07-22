@@ -13,6 +13,7 @@ import {
   captureTikTokExtras,
   captureXExtras,
 } from "./adapters/index.js";
+import { installWorkOverlayListener } from "./workOverlay.js";
 import { captureYouTubeExtras } from "./youtubeCaptions.js";
 
 const SUPPORTED: PlatformId[] = [
@@ -36,7 +37,7 @@ function stablePageUrl(): string {
   return location.href;
 }
 
-async function capturePage(): Promise<CaptureResult> {
+async function capturePage(skipTranscript = false): Promise<CaptureResult> {
   const pageUrl = stablePageUrl();
   const platform = detectPlatform(pageUrl);
   const locale = uiLocale();
@@ -46,6 +47,35 @@ async function capturePage(): Promise<CaptureResult> {
   let transcript: string | undefined;
   let transcriptSource: CaptureResult["transcriptSource"] = "none";
   let videoUrl = canonicalizeVideoUrl(pageUrl);
+
+  if (skipTranscript) {
+    title = document.title || undefined;
+    if (platform === "tiktok") {
+      const extras = captureTikTokExtras(pageUrl);
+      title = extras.title || title;
+      if (extras.videoUrl) videoUrl = extras.videoUrl;
+    } else if (platform === "x") {
+      const extras = captureXExtras(pageUrl);
+      title = extras.title || title;
+      if (extras.videoUrl) videoUrl = extras.videoUrl;
+    } else if (platform === "facebook") {
+      const extras = captureFacebookExtras(pageUrl);
+      title = extras.title || title;
+      if (extras.videoUrl) videoUrl = extras.videoUrl;
+    } else if (platform === "instagram") {
+      const extras = captureInstagramExtras(pageUrl);
+      title = extras.title || title;
+      if (extras.videoUrl) videoUrl = extras.videoUrl;
+    }
+    return {
+      platform,
+      pageUrl,
+      videoUrl,
+      title,
+      transcriptSource: "none",
+      supported,
+    };
+  }
 
   if (platform === "youtube") {
     const extras = await captureYouTubeExtras(pageUrl, locale);
@@ -101,11 +131,13 @@ declare global {
 if (!window.__AVFC_CONTENT_READY__) {
   window.__AVFC_CONTENT_READY__ = true;
 
+  installWorkOverlayListener();
+
   chrome.runtime.onMessage.addListener(
     (message: ExtensionMessage, _sender, sendResponse) => {
       if (message.type !== "CAPTURE_PAGE") return;
 
-      void capturePage()
+      void capturePage(message.skipTranscript === true)
         .then((result) => {
           const locale = uiLocale();
           const pkg = captureToPastePackage(result, locale);

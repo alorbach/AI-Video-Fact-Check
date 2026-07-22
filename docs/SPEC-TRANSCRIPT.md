@@ -24,6 +24,15 @@ Optional later: Vimeo, generic HTML5.
 4. Video URL only — chat checks from the link (Custom GPT accepts URL)
 5. Manual: user pastes their own transcript into the Side Panel, then hand off
 
+### Settings: automatic transcript (default on)
+
+`chrome.storage.sync.enableTranscript` (default `true`). When **off**:
+
+- Skip in-page caption/transcript adapters as far as practical
+- Skip TranscribeYouTube enrichment
+- Paste package is URL-only (`transcriptSource: "none"`)
+- Manual transcript in the Side Panel still works
+
 **Avoid for MVP:** own STT server, Whisper API keys, yt-dlp backend.  
 Optional later (only if free/local and still no API keys): browser Web Speech API as a weak helper — never required.
 

@@ -1,10 +1,13 @@
 import {
   CHAT_TARGETS,
+  buildPastePackage,
   formatPastePackageText,
+  getMessageCharLimit,
   PENDING_CHAT_HANDOFF_KEY,
   PENDING_CHAT_HANDOFFS_KEY,
   platformLabelKey,
   sameVideoUrl,
+  splitIntoHandoffMessages,
   type CaptureResult,
   type ChatTargetId,
   type ExtensionMessage,
@@ -29,7 +32,9 @@ type GuidePhase =
   | "inject_failed"
   | "login_required"
   | "tab_open_failed"
-  | "clipboard_failed";
+  | "clipboard_failed"
+  | "cancelled"
+  | "multiprompt";
 
 let lastResult: CaptureResult | null = null;
 let lastPackage: PastePackage | null = null;
@@ -42,6 +47,11 @@ let selectedChat: ChatTargetId = DEFAULT_CHAT;
 let lastClickedChat: ChatTargetId = DEFAULT_CHAT;
 let guidePhase: GuidePhase = "idle";
 let handoffBusy = false;
+/** Multiprompt clipboard parts for DeepSeek / paste fallback. */
+let multipromptParts: string[] = [];
+let multipromptIndex = 0;
+/** True when automatic transcript capture is enabled (Settings). */
+let enableTranscript = true;
 /** True after defaultChat / fontSize loaded from sync storage. */
 let prefsReady = false;
 let prefsReadyResolve: (() => void) | null = null;
@@ -127,14 +137,17 @@ function setGuidePhase(phase: GuidePhase): void {
       phase === "inject_ok" ||
       phase === "inject_failed" ||
       phase === "login_required" ||
-      phase === "tab_open_failed",
+      phase === "tab_open_failed" ||
+      phase === "multiprompt" ||
+      phase === "cancelled",
   );
   box.classList.toggle(
     "is-error",
     phase === "clipboard_failed" ||
       phase === "inject_failed" ||
       phase === "login_required" ||
-      phase === "tab_open_failed",
+      phase === "tab_open_failed" ||
+      phase === "cancelled",
   );
   if (copyAgain) {
     copyAgain.hidden =
@@ -144,7 +157,8 @@ function setGuidePhase(phase: GuidePhase): void {
       phase !== "inject_failed" &&
       phase !== "login_required" &&
       phase !== "tab_open_failed" &&
-      phase !== "inject_ok";
+      phase !== "inject_ok" &&
+      phase !== "multiprompt";
   }
 
   switch (phase) {
@@ -162,7 +176,27 @@ function setGuidePhase(phase: GuidePhase): void {
       break;
     case "paste_needed":
       status.textContent = msgWithChat("guideOpenedPaste", selectedChat);
-      hint.textContent = t("hintPasteNow");
+      hint.textContent =
+        multipromptParts.length > 1
+          ? chrome.i18n.getMessage(
+              "hintPasteMultiprompt",
+              [
+                String(multipromptIndex + 1),
+                String(multipromptParts.length),
+              ],
+            ) || t("hintPasteNow")
+          : t("hintPasteNow");
+      break;
+    case "multiprompt":
+      status.textContent =
+        chrome.i18n.getMessage(
+          "guideMultiprompt",
+          [
+            String(multipromptIndex + 1),
+            String(Math.max(multipromptParts.length, 1)),
+          ],
+        ) || t("guideOpening");
+      hint.textContent = t("hintInjecting");
       break;
     case "inject_ok":
       status.textContent = t("guideInjectOk");
@@ -183,6 +217,10 @@ function setGuidePhase(phase: GuidePhase): void {
     case "clipboard_failed":
       status.textContent = t("guideCopyFailed");
       hint.textContent = t("hintCopyFailed");
+      break;
+    case "cancelled":
+      status.textContent = t("guideCancelled");
+      hint.textContent = t("hintCancelled");
       break;
     default:
       status.textContent = t("guideIdle");
@@ -232,6 +270,9 @@ function renderCapture(): void {
   }
   if (lastPackage.transcriptSource === "external") {
     lines.push(t("captionsExternalHint"));
+  }
+  if (!enableTranscript && lastPackage.transcriptSource !== "manual") {
+    lines.push(t("transcriptOffHint"));
   }
   detailsEl.textContent = lines.join("\n");
 }
@@ -390,11 +431,7 @@ async function ensurePackage(): Promise<PastePackage | null> {
   return lastPackage;
 }
 
-async function copyPackageToClipboard(
-  pkg: PastePackage,
-  target?: ChatTargetId,
-): Promise<boolean> {
-  const text = formatPastePackageText(pkg, target);
+async function copyTextToClipboard(text: string): Promise<boolean> {
   try {
     await navigator.clipboard.writeText(text);
     return true;
@@ -417,6 +454,26 @@ async function copyPackageToClipboard(
   }
 }
 
+async function copyPackageToClipboard(
+  pkg: PastePackage,
+  target?: ChatTargetId,
+): Promise<boolean> {
+  return copyTextToClipboard(formatPastePackageText(pkg, target));
+}
+
+/** When auto-transcript is off, drop cached captions (manual paste still kept). */
+function packageForHandoff(pkg: PastePackage): PastePackage {
+  if (enableTranscript) return pkg;
+  if (pkg.transcriptSource === "manual" && pkg.transcript?.trim()) {
+    return pkg;
+  }
+  return buildPastePackage({
+    videoUrl: pkg.videoUrl,
+    locale: pkg.locale,
+    platform: pkg.platform,
+  });
+}
+
 async function handoffToChat(
   target: ChatTargetId,
   opts?: { force?: boolean },
@@ -429,23 +486,29 @@ async function handoffToChat(
   lastClickedChat = target;
   try {
     setMsg("handoffMsg", t("handoffWorking"));
-    const pkg = await ensurePackage();
-    if (!pkg?.videoUrl) {
+    const rawPkg = await ensurePackage();
+    if (!rawPkg?.videoUrl) {
       setMsg("handoffMsg", t("captureFailed"), "error");
       setGuidePhase("idle");
       return;
     }
+    const pkg = packageForHandoff(rawPkg);
 
-    const text = formatPastePackageText(pkg, target);
-    // Clipboard backup if insert/send fails in the chat tab.
-    const copied = await copyPackageToClipboard(pkg, target);
+    const charLimit = getMessageCharLimit(target);
+    const messages = splitIntoHandoffMessages(pkg, target, { charLimit });
+    multipromptParts = messages;
+    multipromptIndex = 0;
+    const firstText = messages[0] ?? formatPastePackageText(pkg, target);
+
+    // Clipboard backup if insert/send fails in the chat tab (first / current part).
+    const copied = await copyTextToClipboard(firstText);
     if (!copied) {
       setGuidePhase("clipboard_failed");
       setMsg("handoffMsg", t("hintCopyFailed"), "error");
       return;
     }
 
-    setGuidePhase("copied");
+    setGuidePhase(messages.length > 1 ? "multiprompt" : "copied");
     const chat = CHAT_TARGETS[target] ?? CHAT_TARGETS[DEFAULT_CHAT];
     let tab: chrome.tabs.Tab;
     try {
@@ -467,15 +530,17 @@ async function handoffToChat(
 
     const supportsInject = CHAT_TARGETS[target]?.supportsInject ?? false;
     if (!supportsInject) {
-      // Open + clipboard only — no pending inject / content script.
-      // Drop prior inject sessions so a late CHAT_INJECT_RESULT cannot
-      // revert combobox / defaultChat / Copy-again target.
       activeHandoff = null;
       openHandoffs.clear();
       setGuidePhase("paste_needed");
       setMsg(
         "handoffMsg",
-        msgWithChat("handoffOpenedPaste", target),
+        messages.length > 1
+          ? chrome.i18n.getMessage(
+              "handoffMultipromptPaste",
+              [String(1), String(messages.length)],
+            ) || msgWithChat("handoffOpenedPaste", target)
+          : msgWithChat("handoffOpenedPaste", target),
         "ok",
       );
       handoffCooldownUntil = Date.now() + 2500;
@@ -486,7 +551,6 @@ async function handoffToChat(
     activeHandoff = session;
     openHandoffs.set(handoffKey(tabId, at), session);
 
-    // Per-tab pending map — a second handoff must not erase the first tab’s payload.
     const stored = await chrome.storage.session.get([
       PENDING_CHAT_HANDOFFS_KEY,
       PENDING_CHAT_HANDOFF_KEY,
@@ -497,17 +561,22 @@ async function handoffToChat(
         | undefined) ?? {}),
     };
     map[String(tabId)] = {
-      text,
+      messages,
+      index: 0,
+      charLimit,
+      package: pkg,
+      text: firstText,
       target,
       at,
+      touchedAt: at,
       tabId,
     };
     await chrome.storage.session.set({ [PENDING_CHAT_HANDOFFS_KEY]: map });
-    // Clear legacy single-entry key so it cannot override the map.
     await chrome.storage.session.remove(PENDING_CHAT_HANDOFF_KEY);
+    // Do not clear workCancelledAt here — isWorkCancelled(pending.at) already
+    // ignores cancels older than this handoff. Clearing would let an in-flight
+    // inject from a cancelled session resume and restorePending.
     void (async () => {
-      // Delayed kick — Custom GPT / Claude need the shell after tab create.
-      // onUpdated + content probe cover earlier/later windows.
       await new Promise((r) => setTimeout(r, 3800));
       try {
         await chrome.runtime.sendMessage({
@@ -518,10 +587,15 @@ async function handoffToChat(
         /* service worker wake */
       }
     })();
-    setGuidePhase("opened");
+    setGuidePhase(messages.length > 1 ? "multiprompt" : "opened");
     setMsg(
       "handoffMsg",
-      msgWithChat("handoffOpenedInject", target),
+      messages.length > 1
+        ? chrome.i18n.getMessage(
+            "handoffMultipromptInject",
+            [String(1), String(messages.length)],
+          ) || msgWithChat("handoffOpenedInject", target)
+        : msgWithChat("handoffOpenedInject", target),
       "ok",
     );
     handoffCooldownUntil = Date.now() + 2500;
@@ -532,13 +606,49 @@ async function handoffToChat(
 
 /** Re-copy for the last attempted/opened chat (recovery after open or clipboard fail). */
 async function copyAgain(): Promise<void> {
+  // Multiprompt paste targets: advance to next part when user clicks Copy again.
+  if (
+    multipromptParts.length > 1 &&
+    (guidePhase === "paste_needed" ||
+      guidePhase === "inject_failed" ||
+      guidePhase === "multiprompt")
+  ) {
+    const next = Math.min(multipromptIndex + 1, multipromptParts.length - 1);
+    if (
+      guidePhase === "paste_needed" &&
+      multipromptIndex < multipromptParts.length - 1
+    ) {
+      multipromptIndex = next;
+    }
+    const text = multipromptParts[multipromptIndex]!;
+    const copied = await copyTextToClipboard(text);
+    if (copied) {
+      setGuidePhase("paste_needed");
+      setMsg(
+        "handoffMsg",
+        chrome.i18n.getMessage(
+          "handoffMultipromptPaste",
+          [
+            String(multipromptIndex + 1),
+            String(multipromptParts.length),
+          ],
+        ) || t("copyAgainOk"),
+        "ok",
+      );
+    } else {
+      setGuidePhase("clipboard_failed");
+      setMsg("handoffMsg", t("hintCopyFailed"), "error");
+    }
+    return;
+  }
+
   const pkg = await ensurePackage();
   if (!pkg?.videoUrl) {
     setMsg("handoffMsg", t("captureFailed"), "error");
     return;
   }
   const target = lastClickedChat;
-  const copied = await copyPackageToClipboard(pkg, target);
+  const copied = await copyPackageToClipboard(packageForHandoff(pkg), target);
   if (copied) {
     if (
       guidePhase === "clipboard_failed" ||
@@ -568,7 +678,7 @@ async function copyPackageOnlyShort(): Promise<void> {
     setMsg("handoffMsg", t("captureFailed"), "error");
     return;
   }
-  const copied = await copyPackageToClipboard(pkg);
+  const copied = await copyPackageToClipboard(packageForHandoff(pkg));
   if (copied) {
     setGuidePhase("ready");
     setMsg("handoffMsg", t("copyOk"), "ok");
@@ -588,6 +698,13 @@ async function requestCapture(opts?: { force?: boolean }): Promise<void> {
     } satisfies ExtensionMessage)) as ExtensionMessage;
 
     if (response.type === "HANDOFF_FAILED") {
+      if (response.error === "cancelled") {
+        setGuidePhase("cancelled");
+        setText("captureStatus", t("guideCancelled"));
+        setText("captureDetails", "");
+        setMsg("handoffMsg", t("handoffCancelled"), "error");
+        return;
+      }
       setText("captureStatus", t("captureFailed"));
       setText("captureDetails", "");
       return;
@@ -736,7 +853,13 @@ chrome.storage.onChanged.addListener((changes, area) => {
       const next = changes.fontSize.newValue as FontSizePref | undefined;
       applyFontSize(next === "large" ? "large" : "normal");
     }
-    if (changes.defaultChat || changes.fontSize) return;
+    if (changes.enableTranscript) {
+      enableTranscript = changes.enableTranscript.newValue !== false;
+      renderCapture();
+    }
+    if (changes.defaultChat || changes.fontSize || changes.enableTranscript) {
+      return;
+    }
   }
   // Context-menu capture writes session storage — keep the panel in sync.
   if (
@@ -757,20 +880,45 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage) => {
     void copyPackageOnlyShort();
     return;
   }
+  if (message.type === "WORK_CANCELLED") {
+    activeHandoff = null;
+    openHandoffs.clear();
+    setGuidePhase("cancelled");
+    setMsg("handoffMsg", t("handoffCancelled"), "error");
+    setText("captureStatus", t("guideCancelled"));
+    return;
+  }
   if (message.type === "CHAT_INJECT_RESULT") {
     const key = handoffKey(message.tabId, message.at);
     const session = openHandoffs.get(key);
-    if (!session) return;
-    openHandoffs.delete(key);
+    if (!session && message.reason !== "multiprompt-progress") return;
 
     const isActive =
       activeHandoff != null &&
       message.tabId === activeHandoff.tabId &&
       message.at === activeHandoff.at;
 
+    // Intermediate multiprompt part — keep session open and update guide.
+    if (message.ok && message.reason === "multiprompt-progress") {
+      if (isActive && message.part != null && message.total != null) {
+        multipromptIndex = Math.max(0, message.part);
+        setGuidePhase("multiprompt");
+        setMsg(
+          "handoffMsg",
+          chrome.i18n.getMessage(
+            "handoffMultipromptInject",
+            [String(message.part + 1), String(message.total)],
+          ) || t("handoffWorking"),
+          "ok",
+        );
+      }
+      return;
+    }
+
+    if (!session) return;
+    openHandoffs.delete(key);
+
     if (message.ok) {
-      // Only the active handoff may update defaultChat / combobox — a
-      // superseded tab completing later must not revert the user's choice.
       if (isActive) {
         persistDefaultChat(session.target);
         setGuidePhase("inject_ok");
@@ -780,7 +928,10 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage) => {
     }
 
     if (isActive) {
-      if (message.reason === "login-required") {
+      if (message.reason === "cancelled") {
+        setGuidePhase("cancelled");
+        setMsg("handoffMsg", t("handoffCancelled"), "error");
+      } else if (message.reason === "login-required") {
         selectedChat = session.target;
         setGuidePhase("login_required");
         setMsg(
@@ -801,16 +952,19 @@ void chrome.storage.sync
   .get({
     defaultChat: DEFAULT_CHAT,
     fontSize: "normal" satisfies FontSizePref,
+    enableTranscript: true,
   })
-  .then(({ defaultChat, fontSize }) => {
+  .then(({ defaultChat, fontSize, enableTranscript: et }) => {
     const chat =
       typeof defaultChat === "string" && defaultChat in CHAT_TARGETS
         ? (defaultChat as ChatTargetId)
         : DEFAULT_CHAT;
     applyDefaultChat(chat);
     applyFontSize(fontSize === "large" ? "large" : "normal");
+    enableTranscript = et !== false;
     prefsReady = true;
     prefsReadyResolve?.();
+    prefsReadyResolve = null;
     setOpenChatEnabled(true);
   });
 void initCaptureState();

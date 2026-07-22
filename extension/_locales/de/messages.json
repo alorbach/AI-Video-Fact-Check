@@ -279,7 +279,7 @@
     "message": "Video-Faktencheck Einstellungen"
   },
   "optionsSubtitle": {
-    "message": "Wählen Sie Standard-Chat, Schriftgröße und ob das letzte Video merken."
+    "message": "Wählen Sie Standard-Chat, Schriftgröße, Transkript-Option und ob das letzte Video merken."
   },
   "labelDefaultChat": {
     "message": "Standard-Chat"
@@ -301,6 +301,52 @@
   },
   "rememberPackageHelp": {
     "message": "Optional. Speichert den letzten Link und das Transkript nur auf diesem Computer — nicht bei uns. Ausschalten löscht den Speicher."
+  },
+  "labelEnableTranscript": {
+    "message": "Transkript / Untertitel automatisch holen"
+  },
+  "enableTranscriptHelp": {
+    "message": "Wenn aus, wird nur der Video-Link vorbereitet. Sie können im Seitenpanel weiterhin selbst ein Transkript einfügen."
+  },
+  "transcriptOffHint": {
+    "message": "Automatisches Transkript ist aus (Einstellungen)."
+  },
+  "guideCancelled": {
+    "message": "Abgebrochen."
+  },
+  "hintCancelled": {
+    "message": "Sie können erneut scannen oder den Chat öffnen, wenn Sie bereit sind."
+  },
+  "handoffCancelled": {
+    "message": "Abgebrochen."
+  },
+  "guideMultiprompt": {
+    "message": "Sende Teil $1 von $2…",
+    "placeholders": {
+      "part": { "content": "$1" },
+      "total": { "content": "$2" }
+    }
+  },
+  "handoffMultipromptInject": {
+    "message": "Füge Teil $1 von $2 in den Chat ein…",
+    "placeholders": {
+      "part": { "content": "$1" },
+      "total": { "content": "$2" }
+    }
+  },
+  "handoffMultipromptPaste": {
+    "message": "Teil $1 von $2 ist in der Zwischenablage — einfügen und senden, dann erneut Kopieren für den nächsten Teil.",
+    "placeholders": {
+      "part": { "content": "$1" },
+      "total": { "content": "$2" }
+    }
+  },
+  "hintPasteMultiprompt": {
+    "message": "Fügen Sie Teil $1 von $2 in den Chat ein und senden Sie. Danach mit erneut Kopieren den nächsten Teil. Der letzte Teil startet den Faktencheck.",
+    "placeholders": {
+      "part": { "content": "$1" },
+      "total": { "content": "$2" }
+    }
   },
   "btnSave": {
     "message": "Speichern"

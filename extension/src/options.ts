@@ -50,6 +50,8 @@ async function load(): Promise<void> {
   const fontSizeHelp = document.getElementById("fontSizeHelp");
   const labelRememberPackage = document.getElementById("labelRememberPackage");
   const rememberPackageHelp = document.getElementById("rememberPackageHelp");
+  const labelEnableTranscript = document.getElementById("labelEnableTranscript");
+  const enableTranscriptHelp = document.getElementById("enableTranscriptHelp");
   const optFontNormal = document.getElementById("optFontNormal");
   const optFontLarge = document.getElementById("optFontLarge");
   const btnSave = document.getElementById("btnSave");
@@ -58,6 +60,9 @@ async function load(): Promise<void> {
   const fontSelect = document.getElementById("fontSize") as HTMLSelectElement;
   const rememberBox = document.getElementById(
     "rememberLastPackage",
+  ) as HTMLInputElement | null;
+  const transcriptBox = document.getElementById(
+    "enableTranscript",
   ) as HTMLInputElement | null;
 
   if (skipLink) skipLink.textContent = t("skipToContent");
@@ -72,15 +77,23 @@ async function load(): Promise<void> {
   if (rememberPackageHelp) {
     rememberPackageHelp.textContent = t("rememberPackageHelp");
   }
+  if (labelEnableTranscript) {
+    labelEnableTranscript.textContent = t("labelEnableTranscript");
+  }
+  if (enableTranscriptHelp) {
+    enableTranscriptHelp.textContent = t("enableTranscriptHelp");
+  }
   if (optFontNormal) optFontNormal.textContent = t("fontSizeNormal");
   if (optFontLarge) optFontLarge.textContent = t("fontSizeLarge");
   if (btnSave) btnSave.textContent = t("btnSave");
   if (creditsLabel) creditsLabel.textContent = t("creditsLabel");
 
-  const { defaultChat, fontSize } = await chrome.storage.sync.get({
-    defaultChat: "chatgpt_video_faktencheck" satisfies ChatTargetId,
-    fontSize: "normal" satisfies FontSizePref,
-  });
+  const { defaultChat, fontSize, enableTranscript } =
+    await chrome.storage.sync.get({
+      defaultChat: "chatgpt_video_faktencheck" satisfies ChatTargetId,
+      fontSize: "normal" satisfies FontSizePref,
+      enableTranscript: true,
+    });
   const local = await chrome.storage.local.get({
     [LOCAL_KEYS.rememberLastPackage]: false,
   });
@@ -97,6 +110,9 @@ async function load(): Promise<void> {
   if (rememberBox) {
     rememberBox.checked = Boolean(local[LOCAL_KEYS.rememberLastPackage]);
   }
+  if (transcriptBox) {
+    transcriptBox.checked = enableTranscript !== false;
+  }
 
   fontSelect?.addEventListener("change", () => {
     applyFontSize(fontSelect.value === "large" ? "large" : "normal");
@@ -109,12 +125,16 @@ document.getElementById("btnSave")?.addEventListener("click", async () => {
   const rememberBox = document.getElementById(
     "rememberLastPackage",
   ) as HTMLInputElement | null;
+  const transcriptBox = document.getElementById(
+    "enableTranscript",
+  ) as HTMLInputElement | null;
   const defaultChat = chatSelect.value;
   const fontSize: FontSizePref =
     fontSelect.value === "large" ? "large" : "normal";
   const rememberLastPackage = Boolean(rememberBox?.checked);
+  const enableTranscript = transcriptBox ? Boolean(transcriptBox.checked) : true;
 
-  await chrome.storage.sync.set({ defaultChat, fontSize });
+  await chrome.storage.sync.set({ defaultChat, fontSize, enableTranscript });
   await chrome.storage.local.set({
     [LOCAL_KEYS.rememberLastPackage]: rememberLastPackage,
   });

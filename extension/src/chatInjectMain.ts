@@ -5,14 +5,35 @@
  */
 export async function pageInjectAndSend(
   text: string,
+  partIndex = 0,
+  totalParts = 1,
 ): Promise<{ ok: boolean; reason?: string }> {
   const DONE = "__vfFactCheckHandoffDone";
   const ATTEMPTED = "__vfFactCheckHandoffAttempted";
   const ATTEMPTED_AT = "__vfFactCheckHandoffAttemptedAt";
+  const PART = "__vfFactCheckHandoffPart";
   const w = window as unknown as Record<string, unknown>;
-  // Idempotent only for the same payload; a different text must not look "sent".
-  if (w[DONE] === text) return { ok: true, reason: "already-done" };
-  if (w[DONE]) return { ok: false, reason: "already-done-other" };
+
+  // Later multiprompt parts must clear the previous DONE lock.
+  if (partIndex > 0) {
+    if (w[PART] === partIndex && w[DONE] === text) {
+      return { ok: true, reason: "already-done" };
+    }
+    if (typeof w[PART] === "number" && (w[PART] as number) > partIndex) {
+      return { ok: true, reason: "already-done" };
+    }
+    delete w[DONE];
+    if (w[ATTEMPTED] === "done") delete w[ATTEMPTED];
+  } else {
+    if (w[DONE] === text) return { ok: true, reason: "already-done" };
+    if (w[DONE] && totalParts <= 1) {
+      return { ok: false, reason: "already-done-other" };
+    }
+    if (w[DONE] && totalParts > 1) {
+      delete w[DONE];
+    }
+  }
+
   // Soft lock while fill/send runs — cleared on failure so SW retries can proceed.
   // "in-flight" blocks only parallel injects; stale locks (killed frame) expire.
   // Must exceed composer wait (~36s for GPT/Claude/Copilot) plus fill/send.
@@ -335,6 +356,63 @@ export async function pageInjectAndSend(
     return r.width > 0 && r.height > 0;
   }
 
+  /** Detect ChatGPT “Message is too long” without reading answers.
+   * Keep the scan narrow — broad page text matches caused false positives.
+   */
+  function isMessageTooLongVisible(): boolean {
+    const exact = [
+      "message is too long",
+      "nachricht ist zu lang",
+      "message too long",
+    ];
+    const roots = document.querySelectorAll(
+      '[role="alert"], [data-testid*="error"], [class*="toast" i], [class*="Tooltip" i], [class*="tooltip" i]',
+    );
+    for (const el of roots) {
+      const r = (el as HTMLElement).getBoundingClientRect?.();
+      if (r && (r.width < 8 || r.height < 8)) continue;
+      const t = ((el as HTMLElement).innerText || el.textContent || "")
+        .replace(/\s+/g, " ")
+        .trim()
+        .toLowerCase();
+      if (t.length < 8 || t.length > 80) continue;
+      if (exact.some((n) => t === n || t.includes(n))) return true;
+    }
+    // Composer-adjacent aria-labels only (send button / prohibited control).
+    for (const b of document.querySelectorAll<HTMLElement>(
+      'button[data-testid="send-button"], button[aria-label]',
+    )) {
+      const label = (b.getAttribute("aria-label") || "").toLowerCase();
+      if (exact.some((n) => label.includes(n))) return true;
+    }
+    return false;
+  }
+
+  function sendLooksBlocked(editor: HTMLElement): boolean {
+    if (isMessageTooLongVisible()) return true;
+    if (!hasText(editor)) return false;
+    const form = editor.closest("form") || editor.parentElement;
+    if (!form) return false;
+    const candidates = form.querySelectorAll<HTMLButtonElement>(
+      'button[data-testid="send-button"], button[aria-label*="Send"], button[aria-label*="Senden"]',
+    );
+    for (const b of candidates) {
+      const disabled =
+        b.disabled ||
+        b.getAttribute("aria-disabled") === "true" ||
+        b.dataset.disabled === "true";
+      if (
+        disabled &&
+        hasText(editor) &&
+        (isMessageTooLongVisible() ||
+          b.getAttribute("aria-label")?.toLowerCase().includes("too long"))
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /** One activation only — double click/events caused duplicate ChatGPT submits. */
   function clickSendButton(btn: HTMLButtonElement): void {
     btn.focus();
@@ -417,6 +495,13 @@ export async function pageInjectAndSend(
     return { ok: false, reason: "fill-failed" };
   }
 
+  await sleep(isGpt || isClaude || isCopilot ? 500 : 300);
+  if (sendLooksBlocked(editor)) {
+    w[ATTEMPTED] = "failed";
+    delete w[DONE];
+    return { ok: false, reason: "message-too-long" };
+  }
+
   function composerLooksSent(el: HTMLElement): boolean {
     // Only trust empty composer or an explicit stop/generating control —
     // do not treat /c/ or /chat/ path alone as success while text remains.
@@ -440,12 +525,18 @@ export async function pageInjectAndSend(
     await sleep(500);
     if (composerLooksSent(editor)) {
       w[DONE] = text;
+      w[PART] = partIndex;
       w[ATTEMPTED] = "done";
       return { ok: true, reason: "sent" };
     }
   }
 
   for (let i = 0; i < 50; i++) {
+    if (sendLooksBlocked(editor)) {
+      w[ATTEMPTED] = "failed";
+      delete w[DONE];
+      return { ok: false, reason: "message-too-long" };
+    }
     const btn = findSend(editor);
     if (btn) {
       clickSendButton(btn);
@@ -466,6 +557,7 @@ export async function pageInjectAndSend(
   for (let i = 0; i < 30; i++) {
     if (composerLooksSent(editor)) {
       w[DONE] = text;
+      w[PART] = partIndex;
       w[ATTEMPTED] = "done";
       return { ok: true, reason: "sent" };
     }
@@ -476,10 +568,105 @@ export async function pageInjectAndSend(
   // double-submit. ChatGPT sometimes keeps the composer text briefly.
   if (sentViaClick) {
     w[DONE] = text;
+    w[PART] = partIndex;
     w[ATTEMPTED] = "done";
     return { ok: true, reason: "send-clicked" };
   }
 
   w[ATTEMPTED] = "failed";
   return { ok: false, reason: "send-unconfirmed" };
+}
+
+/**
+ * Wait until the composer is ready for the next multiprompt part.
+ * DOM signals only — never reads assistant answer text.
+ */
+export async function waitComposerReadyForNext(): Promise<{
+  ok: boolean;
+  reason?: string;
+}> {
+  const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+  const host = location.hostname.toLowerCase();
+  const isGpt =
+    host === "chatgpt.com" || host.endsWith(".chatgpt.com");
+  const isGemini =
+    host === "gemini.google.com" || host.endsWith(".gemini.google.com");
+  const isClaude = host === "claude.ai" || host.endsWith(".claude.ai");
+  const isCopilot =
+    host === "copilot.microsoft.com" ||
+    host.endsWith(".copilot.microsoft.com");
+  if (!isGpt && !isGemini && !isClaude && !isCopilot) {
+    return { ok: false, reason: "wrong-host" };
+  }
+
+  function isUsableEditor(el: HTMLElement): boolean {
+    try {
+      const cs = getComputedStyle(el);
+      if (cs.visibility === "hidden" || cs.display === "none") return false;
+    } catch {
+      /* ignore */
+    }
+    const r = el.getBoundingClientRect();
+    return r.width > 40 && r.height > 16;
+  }
+
+  function findEditor(): HTMLElement | null {
+    const sels = [
+      "#prompt-textarea",
+      '[data-testid="prompt-textarea"]',
+      'div[contenteditable="true"][role="textbox"]',
+      "div.ProseMirror[contenteditable='true']",
+      'div.ql-editor[contenteditable="true"]',
+      '[data-testid="chat-input"]',
+      "textarea#userInput",
+      'textarea[data-testid="composer-input"]',
+      '[data-testid="composer-input"]',
+      'textarea:not([aria-hidden="true"])',
+    ];
+    for (const sel of sels) {
+      for (const el of document.querySelectorAll<HTMLElement>(sel)) {
+        if (isUsableEditor(el)) return el;
+      }
+    }
+    return null;
+  }
+
+  function hasText(el: HTMLElement): boolean {
+    if (el instanceof HTMLTextAreaElement || el instanceof HTMLInputElement) {
+      return el.value.trim().length > 0;
+    }
+    return (el.innerText || el.textContent || "").trim().length > 0;
+  }
+
+  function isGenerating(): boolean {
+    return Boolean(
+      document.querySelector('button[data-testid="stop-button"]') ||
+        document.querySelector('button[aria-label*="Stop generating"]') ||
+        document.querySelector('button[aria-label*="Stoppen"]') ||
+        document.querySelector('button[aria-label="Stop"]'),
+    );
+  }
+
+  // Up to ~3 minutes — models may take a while on long ack messages.
+  for (let i = 0; i < 180; i++) {
+    const editor = findEditor();
+    if (editor && !isGenerating() && !hasText(editor)) {
+      await sleep(400);
+      const again = findEditor();
+      if (again && !isGenerating() && !hasText(again)) {
+        return { ok: true, reason: "ready" };
+      }
+    }
+    if (editor && !isGenerating() && i > 8) {
+      const send =
+        document.querySelector('button[data-testid="send-button"]') ||
+        document.querySelector('button[aria-label*="Send prompt"]') ||
+        document.querySelector('button[aria-label*="Prompt senden"]');
+      if (send && !hasText(editor)) {
+        return { ok: true, reason: "ready" };
+      }
+    }
+    await sleep(1000);
+  }
+  return { ok: false, reason: "timeout" };
 }

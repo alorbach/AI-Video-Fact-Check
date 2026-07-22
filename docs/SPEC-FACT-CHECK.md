@@ -12,11 +12,25 @@ No backend fact-check API.
 ```text
 Extension
   → build PastePackage (URL + optional transcript + short ask / master prompt)
-  → clipboard backup + chrome.storage.session pending handoff (when inject supported)
+  → split into one or more messages if over per-chat char budget (multiprompt)
+  → clipboard backup (first / current part) + chrome.storage.session pending handoff
   → chrome.tabs.create({ url: chatTarget })
-  → content script on inject hosts: insert text into composer + send
+  → work overlay on chat tab (progress + Cancel)
+  → content script on inject hosts: insert+send each part; wait for composer ready between parts
+  → last part starts the analysis; earlier parts only ask for a short acknowledgement
   → Side Panel reports success or “please paste manually” fallback
 ```
+
+### Multiprompt (long transcripts)
+
+- Conservative char budgets live in `shared/src/messageLimits.ts` (per `ChatTargetId`).
+- Split logic: `shared/src/multiprompt.ts` → `splitIntoHandoffMessages`.
+- Parts `1…N−1`: material chunks + “acknowledge only, do not analyze yet”.
+- Part `N`: analysis ask (Custom GPT short ask) or embedded master prompt + analyze instruction.
+- Between parts: wait for composer ready / send enabled (DOM only — **never scrape answers**).
+- If the chat UI shows “Message is too long” after fill, re-chunk with a smaller budget.
+- DeepSeek (no inject): Side Panel guides multi-part paste when split is needed.
+- Cancel clears pending handoff and hides the overlay.
 
 ### Chat targets
 

@@ -113,6 +113,10 @@ Alles ist vorbereitet…
 Chat wird geöffnet… → eingefügt / bitte einfügen und senden
 ```
 
+While work runs, a full-page **overlay** on the video tab (scan) and chat tab (insert / multiprompt) shows plain-language status and a large **Cancel** button. Long transcripts may be sent as several chat messages; analysis starts only on the last part.
+
+Settings: optional **automatic transcript** toggle (default on). When off, only the video URL is prepared; users can still paste a transcript manually in the Side Panel.
+
 ## Privacy & consent
 
 ```text

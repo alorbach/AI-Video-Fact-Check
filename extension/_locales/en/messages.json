@@ -279,7 +279,7 @@
     "message": "Video Fact-Check settings"
   },
   "optionsSubtitle": {
-    "message": "Choose your default chat, text size, and whether to keep the last video."
+    "message": "Choose your default chat, text size, transcript option, and whether to keep the last video."
   },
   "labelDefaultChat": {
     "message": "Default chat"
@@ -301,6 +301,52 @@
   },
   "rememberPackageHelp": {
     "message": "Optional. Stores the last link and transcript on this computer only — never sent to us. Turn off to clear it."
+  },
+  "labelEnableTranscript": {
+    "message": "Fetch transcript / captions automatically"
+  },
+  "enableTranscriptHelp": {
+    "message": "When off, only the video link is prepared. You can still paste a transcript yourself in the side panel."
+  },
+  "transcriptOffHint": {
+    "message": "Automatic transcript is off (Settings)."
+  },
+  "guideCancelled": {
+    "message": "Cancelled."
+  },
+  "hintCancelled": {
+    "message": "You can scan again or open the chat when you are ready."
+  },
+  "handoffCancelled": {
+    "message": "Cancelled."
+  },
+  "guideMultiprompt": {
+    "message": "Sending part $1 of $2…",
+    "placeholders": {
+      "part": { "content": "$1" },
+      "total": { "content": "$2" }
+    }
+  },
+  "handoffMultipromptInject": {
+    "message": "Inserting part $1 of $2 into the chat…",
+    "placeholders": {
+      "part": { "content": "$1" },
+      "total": { "content": "$2" }
+    }
+  },
+  "handoffMultipromptPaste": {
+    "message": "Part $1 of $2 is on the clipboard — paste and send, then tap Copy again for the next part.",
+    "placeholders": {
+      "part": { "content": "$1" },
+      "total": { "content": "$2" }
+    }
+  },
+  "hintPasteMultiprompt": {
+    "message": "Paste part $1 of $2 into the chat, send it, then use Copy again for the next part. The last part starts the fact-check.",
+    "placeholders": {
+      "part": { "content": "$1" },
+      "total": { "content": "$2" }
+    }
   },
   "btnSave": {
     "message": "Save"

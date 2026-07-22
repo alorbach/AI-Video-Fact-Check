@@ -132,9 +132,11 @@ export interface CaptureResult {
   supported: boolean;
 }
 
+export type WorkOverlayPhase = "capture" | "inject" | "multiprompt" | "waiting";
+
 export type ExtensionMessage =
   | { type: "CAPTURE_ACTIVE_TAB"; force?: boolean }
-  | { type: "CAPTURE_PAGE" }
+  | { type: "CAPTURE_PAGE"; skipTranscript?: boolean }
   | { type: "CAPTURE_RESULT"; result: CaptureResult; package: PastePackage }
   | { type: "PACKAGE_READY"; package: PastePackage }
   | { type: "VIDEO_DETECTED"; platform: PlatformId; url: string }
@@ -150,6 +152,9 @@ export type ExtensionMessage =
       at: number;
       /** Inject failure detail: login-required, no-editor, fill-failed, … */
       reason?: string;
+      /** Multiprompt progress when ok and more parts remain (informational). */
+      part?: number;
+      total?: number;
     }
   | { type: "TRIGGER_CHAT_INJECT"; tabId?: number }
   | { type: "HANDOFF_FAILED"; error: string }
@@ -159,17 +164,56 @@ export type ExtensionMessage =
       result: CaptureResult | null;
       package: PastePackage | null;
     }
-  | { type: "SET_MANUAL_TRANSCRIPT"; transcript: string; locale: Locale };
+  | { type: "SET_MANUAL_TRANSCRIPT"; transcript: string; locale: Locale }
+  | {
+      type: "SHOW_WORK_OVERLAY";
+      phase: WorkOverlayPhase;
+      part?: number;
+      total?: number;
+      title?: string;
+      detail?: string;
+    }
+  | { type: "HIDE_WORK_OVERLAY" }
+  | { type: "CANCEL_WORK" }
+  | { type: "WORK_CANCELLED" };
 
 /** Session payload for inject-supported chat insert+send (see chatInject.ts). */
 export interface PendingChatHandoff {
-  text: string;
+  /**
+   * Composer messages to send in order. Prefer this over `text`.
+   * Legacy single-string handoffs may only set `text`.
+   */
+  messages?: string[];
+  /** Current index into `messages` (0-based). */
+  index?: number;
+  /** Char budget used when messages were built (for too-long re-split). */
+  charLimit?: number;
+  /** Package used to build messages (for runtime re-split). */
+  package?: PastePackage;
+  /** Legacy single payload — treated as messages[0] when messages absent. */
+  text?: string;
   target: ChatTargetId;
   at: number;
+  /**
+   * Last activity time for TTL (multiprompt parts refresh this).
+   * Session identity stays `at`; expiry uses `touchedAt ?? at`.
+   */
+  touchedAt?: number;
   /** Only this tab may consume the pending handoff. */
   tabId: number;
   /** Composer-not-ready retries so far (no-editor / login-required / fill-failed). */
   attempts?: number;
+}
+
+/** Resolve the message list for a pending handoff (legacy `text` supported). */
+export function pendingHandoffMessages(
+  pending: PendingChatHandoff,
+): string[] {
+  if (pending.messages && pending.messages.length > 0) {
+    return pending.messages;
+  }
+  if (pending.text) return [pending.text];
+  return [];
 }
 
 /** Map of tabId (string) → pending handoff. Supports concurrent chat tabs. */
@@ -178,3 +222,5 @@ export type PendingChatHandoffs = Record<string, PendingChatHandoff>;
 export const PENDING_CHAT_HANDOFF_KEY = "pendingChatHandoff";
 /** Preferred multi-tab store (replaces single PENDING_CHAT_HANDOFF_KEY). */
 export const PENDING_CHAT_HANDOFFS_KEY = "pendingChatHandoffs";
+/** Session flag: user cancelled the active work (capture / handoff). */
+export const WORK_CANCELLED_KEY = "workCancelledAt";

@@ -10,11 +10,15 @@ import {
   CHAT_TARGETS,
   detectPlatform,
   fetchTranscribeYoutubeTranscript,
+  getMessageCharLimit,
   isPostSendChatPath,
   PENDING_CHAT_HANDOFF_KEY,
   PENDING_CHAT_HANDOFFS_KEY,
+  pendingHandoffMessages,
+  resplitAfterTooLong,
   sameVideoUrl,
   withManualTranscript,
+  WORK_CANCELLED_KEY,
   type CaptureResult,
   type ChatTargetId,
   type ExtensionMessage,
@@ -23,8 +27,12 @@ import {
   type PendingChatHandoff,
   type PendingChatHandoffs,
   type PlatformId,
+  type WorkOverlayPhase,
 } from "@ai-video-fact-check/shared";
-import { pageInjectAndSend } from "./chatInjectMain.js";
+import {
+  pageInjectAndSend,
+  waitComposerReadyForNext,
+} from "./chatInjectMain.js";
 
 const STORAGE_KEYS = {
   lastCapture: "lastCapture",
@@ -79,6 +87,7 @@ async function emitChatInjectResult(
   ok: boolean,
   handoff: Pick<PendingChatHandoff, "tabId" | "at">,
   reason?: string,
+  progress?: { part: number; total: number },
 ): Promise<void> {
   try {
     await chrome.runtime.sendMessage({
@@ -87,10 +96,100 @@ async function emitChatInjectResult(
       tabId: handoff.tabId,
       at: handoff.at,
       ...(reason ? { reason } : {}),
+      ...(progress
+        ? { part: progress.part, total: progress.total }
+        : {}),
     } satisfies ExtensionMessage);
   } catch {
     /* side panel closed */
   }
+}
+
+async function isWorkCancelled(sinceAt?: number): Promise<boolean> {
+  const data = await chrome.storage.session.get(WORK_CANCELLED_KEY);
+  const cancelledAt = data[WORK_CANCELLED_KEY];
+  if (typeof cancelledAt !== "number") return false;
+  if (sinceAt != null && cancelledAt < sinceAt) return false;
+  return true;
+}
+
+async function markWorkCancelled(): Promise<void> {
+  await chrome.storage.session.set({ [WORK_CANCELLED_KEY]: Date.now() });
+}
+
+async function sendOverlayToTab(
+  tabId: number,
+  message: ExtensionMessage,
+): Promise<void> {
+  try {
+    await chrome.tabs.sendMessage(tabId, message);
+  } catch {
+    /* content script missing */
+  }
+}
+
+async function showWorkOverlay(
+  tabId: number,
+  phase: WorkOverlayPhase,
+  part?: number,
+  total?: number,
+): Promise<void> {
+  await sendOverlayToTab(tabId, {
+    type: "SHOW_WORK_OVERLAY",
+    phase,
+    ...(part != null ? { part } : {}),
+    ...(total != null ? { total } : {}),
+  });
+}
+
+async function hideWorkOverlay(tabId: number): Promise<void> {
+  await sendOverlayToTab(tabId, { type: "HIDE_WORK_OVERLAY" });
+}
+
+async function clearAllPendingHandoffs(): Promise<void> {
+  await withPendingClaimLock(async () => {
+    await writePendingMap({});
+  });
+}
+
+async function isTranscriptEnabled(): Promise<boolean> {
+  const { enableTranscript } = await chrome.storage.sync.get({
+    enableTranscript: true,
+  });
+  return enableTranscript !== false;
+}
+
+function stripTranscript(
+  result: CaptureResult,
+  pkg: PastePackage,
+): { result: CaptureResult; package: PastePackage } {
+  const nextResult: CaptureResult = {
+    ...result,
+    transcript: undefined,
+    transcriptSource: "none",
+  };
+  const nextPkg = buildPastePackage({
+    videoUrl: pkg.videoUrl,
+    locale: pkg.locale,
+    platform: pkg.platform ?? result.platform,
+  });
+  return { result: nextResult, package: nextPkg };
+}
+
+/** Drop auto-captured captions when the Settings toggle is off (keep manual). */
+async function applyTranscriptPreference(captured: {
+  result: CaptureResult;
+  package: PastePackage;
+}): Promise<{ result: CaptureResult; package: PastePackage }> {
+  if (await isTranscriptEnabled()) return captured;
+  if (captured.package.transcriptSource === "manual") return captured;
+  if (
+    captured.package.transcriptSource === "none" &&
+    !captured.package.transcript?.trim()
+  ) {
+    return captured;
+  }
+  return stripTranscript(captured.result, captured.package);
 }
 
 /** Tab closed / navigated away during delayed inject kicks — not actionable. */
@@ -145,7 +244,7 @@ async function readPendingMap(): Promise<PendingChatHandoffs> {
       {}),
   };
   const legacy = data[PENDING_CHAT_HANDOFF_KEY] as PendingChatHandoff | undefined;
-  if (legacy?.text && legacy.tabId != null) {
+  if (legacy && legacy.tabId != null && pendingHandoffMessages(legacy).length) {
     map[tabKey(legacy.tabId)] = legacy;
   }
   return map;
@@ -181,18 +280,21 @@ async function claimPendingForTab(
     const map = await readPendingMap();
     const key = tabKey(tabId);
     const pending = map[key];
-    if (!pending?.text) return null;
-    // Cover long GPT/Claude composer waits + backoff retries (see MAX_INJECT_ATTEMPTS).
-    if (Date.now() - pending.at > PENDING_HANDOFF_TTL_MS) {
+    if (!pending || pendingHandoffMessages(pending).length === 0) return null;
+    // Activity-based TTL — multiprompt refreshes touchedAt between parts.
+    const activityAt = pending.touchedAt ?? pending.at;
+    if (Date.now() - activityAt > PENDING_HANDOFF_TTL_MS) {
       delete map[key];
       await writePendingMap(map);
-      await emitChatInjectResult(false, pending);
+      await emitChatInjectResult(false, pending, "ttl-expired");
+      await hideWorkOverlay(tabId);
       return null;
     }
     if (!(await tabStillOpen(tabId))) {
       delete map[key];
       await writePendingMap(map);
-      await emitChatInjectResult(false, pending);
+      await emitChatInjectResult(false, pending, "tab-closed");
+      await hideWorkOverlay(tabId);
       return null;
     }
     delete map[key];
@@ -203,7 +305,10 @@ async function claimPendingForTab(
 
 /** Insert+send in the page MAIN world (required for ProseMirror / Quill). */
 const MAX_INJECT_ATTEMPTS = 8;
-/** Max age of a pending handoff — must exceed worst-case wait+retry window. */
+/**
+ * Max idle age of a pending handoff between activity (claim / next part).
+ * Must exceed worst-case composer wait (~3 min) plus inject retries.
+ */
 const PENDING_HANDOFF_TTL_MS = 300_000;
 
 /** Backoff after no-editor / fill-failed — Custom GPT shell often needs several seconds. */
@@ -223,80 +328,206 @@ async function triggerChatInject(tabId: number): Promise<void> {
   const pending = await claimPendingForTab(tabId);
   if (!pending) return;
 
+  if (await isWorkCancelled(pending.at)) {
+    await hideWorkOverlay(tabId);
+    await emitChatInjectResult(false, pending, "cancelled");
+    return;
+  }
+
+  let messages = pendingHandoffMessages(pending);
+  let index = pending.index ?? 0;
+  if (index < 0 || index >= messages.length) {
+    await emitChatInjectResult(false, pending, "empty-messages");
+    await hideWorkOverlay(tabId);
+    return;
+  }
+
+  const total = messages.length;
+  const text = messages[index]!;
+  const phase: WorkOverlayPhase = total > 1 ? "multiprompt" : "inject";
+  await showWorkOverlay(tabId, phase, index + 1, total);
+
   try {
     const results = await chrome.scripting.executeScript({
       target: { tabId },
       world: "MAIN",
       func: pageInjectAndSend,
-      args: [pending.text],
+      args: [text, index, total],
     });
     const result = results[0]?.result as
       | { ok: boolean; reason?: string }
       | undefined;
-    if (result?.ok) {
-      await emitChatInjectResult(true, pending);
+
+    if (await isWorkCancelled(pending.at)) {
+      await hideWorkOverlay(tabId);
+      await emitChatInjectResult(false, pending, "cancelled");
       return;
     }
 
-    // Peer MAIN-world inject still holds the in-flight lock. Restore pending so a
-    // later kick can finish after that peer sets DONE / clears the lock — but do
-    // not emit here (the peer owns the terminal CHAT_INJECT_RESULT).
+    if (result?.ok) {
+      if (index + 1 < total) {
+        await showWorkOverlay(tabId, "waiting", index + 1, total);
+        const waitResults = await chrome.scripting.executeScript({
+          target: { tabId },
+          world: "MAIN",
+          func: waitComposerReadyForNext,
+        });
+        const wait = waitResults[0]?.result as
+          | { ok: boolean; reason?: string }
+          | undefined;
+
+        if (await isWorkCancelled(pending.at)) {
+          await hideWorkOverlay(tabId);
+          await emitChatInjectResult(false, pending, "cancelled");
+          return;
+        }
+
+        if (!wait?.ok) {
+          await emitChatInjectResult(
+            false,
+            pending,
+            wait?.reason === "timeout" ? "multiprompt-timeout" : "multiprompt-wait-failed",
+          );
+          await hideWorkOverlay(tabId);
+          return;
+        }
+
+        await restorePending({
+          ...pending,
+          messages,
+          index: index + 1,
+          attempts: 0,
+          text: messages[index + 1],
+          touchedAt: Date.now(),
+        });
+        // Inform panel of progress without closing the handoff session.
+        try {
+          await chrome.runtime.sendMessage({
+            type: "CHAT_INJECT_RESULT",
+            ok: true,
+            tabId: pending.tabId,
+            at: pending.at,
+            reason: "multiprompt-progress",
+            part: index + 1,
+            total,
+          } satisfies ExtensionMessage);
+        } catch {
+          /* side panel closed */
+        }
+        scheduleInjectRetry(tabId, 0);
+        return;
+      }
+
+      await emitChatInjectResult(true, pending);
+      await hideWorkOverlay(tabId);
+      return;
+    }
+
+    // Runtime too-long: re-split with a smaller budget and retry from this index.
+    if (result?.reason === "message-too-long" && pending.package) {
+      const prevLimit =
+        pending.charLimit ?? getMessageCharLimit(pending.target);
+      const { messages: nextMessages, charLimit } = resplitAfterTooLong(
+        pending.package,
+        pending.target,
+        prevLimit,
+      );
+      // If we already sent earlier parts, keep them and append a fresh split
+      // of the full package as remaining work would duplicate — safest: restart
+      // from index 0 only when still on the first part; otherwise fail to paste.
+      if (index > 0) {
+        await emitChatInjectResult(false, pending, "message-too-long");
+        await hideWorkOverlay(tabId);
+        return;
+      }
+      if (nextMessages.length === 0) {
+        await emitChatInjectResult(false, pending, "message-too-long");
+        await hideWorkOverlay(tabId);
+        return;
+      }
+      await restorePending({
+        ...pending,
+        messages: nextMessages,
+        index: 0,
+        charLimit,
+        attempts: (pending.attempts ?? 0) + 1,
+        text: nextMessages[0],
+        package: pending.package,
+        touchedAt: Date.now(),
+      });
+      scheduleInjectRetry(tabId, pending.attempts ?? 1);
+      return;
+    }
+
     if (result?.reason === "already-attempted") {
       const attempts = (pending.attempts ?? 0) + 1;
       if (attempts < MAX_INJECT_ATTEMPTS) {
-        await restorePending({ ...pending, attempts });
+        await restorePending({
+          ...pending,
+          messages,
+          index,
+          attempts,
+          text,
+          touchedAt: Date.now(),
+        });
         scheduleInjectRetry(tabId, attempts);
         return;
       }
-      // Cap: do not restore (peer may still succeed). Delay failure so a peer
-      // success can update the Side Panel first; late failure is ignored if
-      // the handoff session is already closed.
       setTimeout(() => {
         void emitChatInjectResult(false, pending, "already-attempted");
+        void hideWorkOverlay(tabId);
       }, 22_000);
       return;
     }
 
-    // Login wall is terminal — do not burn retries on a composer that will not appear.
     if (result?.reason === "login-required") {
       await emitChatInjectResult(false, pending, "login-required");
+      await hideWorkOverlay(tabId);
       return;
     }
 
-    // Retryable before send — restore + schedule delayed kick (page may still be hydrating).
     if (
       result?.reason === "no-editor" ||
       result?.reason === "fill-failed"
     ) {
       const attempts = (pending.attempts ?? 0) + 1;
       if (attempts < MAX_INJECT_ATTEMPTS) {
-        await restorePending({ ...pending, attempts });
+        await restorePending({
+          ...pending,
+          messages,
+          index,
+          attempts,
+          text,
+          touchedAt: Date.now(),
+        });
         scheduleInjectRetry(tabId, attempts);
         return;
       }
     }
 
-    // Terminal failure (or retries exhausted) — notify the panel.
     await emitChatInjectResult(false, pending, result?.reason);
+    await hideWorkOverlay(tabId);
   } catch (err) {
-    // Tab/frame races are common (SPA to /c/…, closed tab, delayed kicks).
-    // Never console.error here — Chrome lists it on the extension errors page.
-    // Do not treat /c/ or /app/ URL alone as proof the pending text was sent.
     if (isGoneTabError(err) || !(await tabStillOpen(tabId))) {
       try {
         const tab = await chrome.tabs.get(tabId);
         const path = tab.url ? new URL(tab.url).pathname : "";
         const onConversation = isPostSendChatPath(path);
-        // Conversation URL: inject is done for this tab (onUpdated skips /c/).
-        // Without composer confirmation, report failure — clipboard remains.
-        if (onConversation) {
+        if (onConversation && index + 1 >= total) {
           await emitChatInjectResult(false, pending);
+          await hideWorkOverlay(tabId);
           return;
         }
-        // Still on landing page — allow another inject attempt.
         const attempts = (pending.attempts ?? 0) + 1;
         if (attempts < MAX_INJECT_ATTEMPTS) {
-          await restorePending({ ...pending, attempts });
+          await restorePending({
+            ...pending,
+            messages,
+            index,
+            attempts,
+            text,
+            touchedAt: Date.now(),
+          });
           scheduleInjectRetry(tabId, attempts);
           return;
         }
@@ -304,16 +535,24 @@ async function triggerChatInject(tabId: number): Promise<void> {
         /* tab fully closed */
       }
       await emitChatInjectResult(false, pending);
+      await hideWorkOverlay(tabId);
       return;
     }
-    // Transient scripting failure — restore for a later tab-complete retry.
     const attempts = (pending.attempts ?? 0) + 1;
     if (attempts < MAX_INJECT_ATTEMPTS) {
-      await restorePending({ ...pending, attempts });
+      await restorePending({
+        ...pending,
+        messages,
+        index,
+        attempts,
+        text,
+        touchedAt: Date.now(),
+      });
       scheduleInjectRetry(tabId, attempts);
       return;
     }
     await emitChatInjectResult(false, pending);
+    await hideWorkOverlay(tabId);
   }
 }
 
@@ -335,14 +574,15 @@ chrome.tabs.onUpdated.addListener((tabId, info, tab) => {
     const map = await readPendingMap();
     const pending = map[tabKey(tabId)];
     // Ignore unrelated chat tabs that finish loading.
-    if (!pending?.text) return;
+    if (!pending || pendingHandoffMessages(pending).length === 0) return;
     // Custom GPT / Claude shells hydrate after "complete" — wait longer before first kick.
     await new Promise((r) => setTimeout(r, 3200));
     if (!(await tabStillOpen(tabId))) return;
     await triggerChatInject(tabId);
     await new Promise((r) => setTimeout(r, 5500));
     if (!(await tabStillOpen(tabId))) return;
-    // Skip if chat already left the composer landing page.
+    // Skip if chat already left the composer landing page (first part done).
+    // Multiprompt continuation is driven by triggerChatInject after wait.
     try {
       const t = await chrome.tabs.get(tabId);
       const path = t.url ? new URL(t.url).pathname : "";
@@ -594,6 +834,9 @@ async function maybeEnrichWithTranscribeYoutube(
   result: CaptureResult,
   pkg: PastePackage,
 ): Promise<{ result: CaptureResult; package: PastePackage }> {
+  if (!(await isTranscriptEnabled())) {
+    return stripTranscript(result, pkg);
+  }
   const platform =
     result.platform === "youtube" || detectPlatform(pkg.videoUrl) === "youtube"
       ? "youtube"
@@ -675,9 +918,11 @@ async function fallbackCapture(
 
 async function requestCaptureFromTab(
   tabId: number,
+  skipTranscript = false,
 ): Promise<ExtensionMessage> {
   return (await chrome.tabs.sendMessage(tabId, {
     type: "CAPTURE_PAGE",
+    ...(skipTranscript ? { skipTranscript: true } : {}),
   } satisfies ExtensionMessage)) as ExtensionMessage;
 }
 
@@ -685,47 +930,67 @@ async function captureTab(tabId: number): Promise<{
   result: CaptureResult;
   package: PastePackage;
 }> {
+  const skipTranscript = !(await isTranscriptEnabled());
+  // Capture session start — only cancels after this timestamp abort this run.
+  // Do not clear workCancelledAt (would let an in-flight inject resume).
+  const captureStartedAt = Date.now();
+  await showWorkOverlay(tabId, "capture");
+
   let response: ExtensionMessage;
 
   try {
-    response = await requestCaptureFromTab(tabId);
-  } catch {
-    const tab = await chrome.tabs.get(tabId);
-    const declared = tab.url ? hasDeclaredContentScript(tab.url) : false;
+    try {
+      response = await requestCaptureFromTab(tabId, skipTranscript);
+    } catch {
+      const tab = await chrome.tabs.get(tabId);
+      const declared = tab.url ? hasDeclaredContentScript(tab.url) : false;
 
-    if (declared) {
-      await new Promise((r) => setTimeout(r, 120));
-      try {
-        response = await requestCaptureFromTab(tabId);
-      } catch {
+      if (declared) {
+        await new Promise((r) => setTimeout(r, 120));
+        try {
+          response = await requestCaptureFromTab(tabId, skipTranscript);
+        } catch {
+          await chrome.scripting.executeScript({
+            target: { tabId },
+            files: ["content.js"],
+          });
+          response = await requestCaptureFromTab(tabId, skipTranscript);
+        }
+      } else {
         await chrome.scripting.executeScript({
           target: { tabId },
           files: ["content.js"],
         });
-        response = await requestCaptureFromTab(tabId);
+        response = await requestCaptureFromTab(tabId, skipTranscript);
       }
-    } else {
-      await chrome.scripting.executeScript({
-        target: { tabId },
-        files: ["content.js"],
-      });
-      response = await requestCaptureFromTab(tabId);
     }
-  }
 
-  if (response.type === "HANDOFF_FAILED") {
-    throw new Error(response.error || "capture failed");
-  }
-  if (response.type !== "CAPTURE_RESULT") {
-    throw new Error("empty capture");
-  }
+    if (await isWorkCancelled(captureStartedAt)) {
+      throw new Error("cancelled");
+    }
 
-  const enriched = await maybeEnrichWithTranscribeYoutube(
-    response.result,
-    response.package,
-  );
-  await saveCapture(enriched.result, enriched.package);
-  return enriched;
+    if (response.type === "HANDOFF_FAILED") {
+      throw new Error(response.error || "capture failed");
+    }
+    if (response.type !== "CAPTURE_RESULT") {
+      throw new Error("empty capture");
+    }
+
+    let enriched = await maybeEnrichWithTranscribeYoutube(
+      response.result,
+      response.package,
+    );
+    if (skipTranscript) {
+      enriched = stripTranscript(enriched.result, enriched.package);
+    }
+    if (await isWorkCancelled(captureStartedAt)) {
+      throw new Error("cancelled");
+    }
+    await saveCapture(enriched.result, enriched.package);
+    return enriched;
+  } finally {
+    await hideWorkOverlay(tabId);
+  }
 }
 
 /**
@@ -814,6 +1079,17 @@ async function pinnedCaptureIfStillValid(
 }
 
 async function captureActiveTab(options?: {
+  force?: boolean;
+}): Promise<{
+  result: CaptureResult;
+  package: PastePackage;
+} | null> {
+  const captured = await captureActiveTabRaw(options);
+  if (!captured) return null;
+  return applyTranscriptPreference(captured);
+}
+
+async function captureActiveTabRaw(options?: {
   force?: boolean;
 }): Promise<{
   result: CaptureResult;
@@ -1026,6 +1302,30 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 
 chrome.runtime.onMessage.addListener(
   (message: ExtensionMessage, sender, sendResponse) => {
+    if (message.type === "CANCEL_WORK") {
+      void (async () => {
+        await markWorkCancelled();
+        const map = await readPendingMap();
+        const tabIds = Object.values(map).map((p) => p.tabId);
+        await clearAllPendingHandoffs();
+        for (const id of tabIds) {
+          await hideWorkOverlay(id);
+        }
+        if (sender.tab?.id != null) {
+          await hideWorkOverlay(sender.tab.id);
+        }
+        try {
+          await chrome.runtime.sendMessage({
+            type: "WORK_CANCELLED",
+          } satisfies ExtensionMessage);
+        } catch {
+          /* side panel closed */
+        }
+        sendResponse({ ok: true });
+      })();
+      return true;
+    }
+
     if (message.type === "TRIGGER_CHAT_INJECT") {
       const tabId = message.tabId ?? sender.tab?.id;
       if (tabId != null) {
@@ -1054,22 +1354,45 @@ chrome.runtime.onMessage.addListener(
           } satisfies ExtensionMessage);
         })
         .catch((err: unknown) => {
+          const msg = err instanceof Error ? err.message : String(err);
+          if (msg === "cancelled") {
+            try {
+              void chrome.runtime.sendMessage({
+                type: "WORK_CANCELLED",
+              } satisfies ExtensionMessage);
+            } catch {
+              /* ignore */
+            }
+          }
           sendResponse({
             type: "HANDOFF_FAILED",
-            error: err instanceof Error ? err.message : String(err),
+            error: msg,
           } satisfies ExtensionMessage);
         });
       return true;
     }
 
     if (message.type === "GET_LAST_CAPTURE") {
-      void getStored().then((stored) => {
-        sendResponse({
-          type: "LAST_CAPTURE",
-          result: stored.result,
-          package: stored.package,
-        } satisfies ExtensionMessage);
-      });
+      void getStored()
+        .then(async (stored) => {
+          if (!stored.result || !stored.package) {
+            sendResponse({
+              type: "LAST_CAPTURE",
+              result: null,
+              package: null,
+            } satisfies ExtensionMessage);
+            return;
+          }
+          const preferred = await applyTranscriptPreference({
+            result: stored.result,
+            package: stored.package,
+          });
+          sendResponse({
+            type: "LAST_CAPTURE",
+            result: preferred.result,
+            package: preferred.package,
+          } satisfies ExtensionMessage);
+        });
       return true;
     }
 

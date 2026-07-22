@@ -9,13 +9,16 @@ export type {
   ExtensionMessage,
   PendingChatHandoff,
   PendingChatHandoffs,
+  WorkOverlayPhase,
 } from "./types.js";
 
 export {
   CHAT_TARGETS,
   PENDING_CHAT_HANDOFF_KEY,
   PENDING_CHAT_HANDOFFS_KEY,
+  WORK_CANCELLED_KEY,
   isPostSendChatPath,
+  pendingHandoffMessages,
 } from "./types.js";
 export {
   detectPlatform,
@@ -84,3 +87,15 @@ export {
   MASTER_PROMPT_EN,
   getMasterPrompt,
 } from "./masterPrompt.js";
+export {
+  MESSAGE_CHAR_LIMITS,
+  MESSAGE_CHAR_LIMIT_FLOOR,
+  getMessageCharLimit,
+  shrinkMessageCharLimit,
+} from "./messageLimits.js";
+export {
+  chunkText,
+  splitIntoHandoffMessages,
+  resplitAfterTooLong,
+  type SplitHandoffOptions,
+} from "./multiprompt.js";

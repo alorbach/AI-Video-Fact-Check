@@ -32,6 +32,7 @@ This file is the **overall roadmap and status board**. Level detail: [`levels/`]
 | L7 | Handoff hardening | **done** | [`levels/L7-hardening.md`](levels/L7-hardening.md) |
 | L8 | Chat picker & more free chats | **done** | [`levels/L8-chat-picker.md`](levels/L8-chat-picker.md) |
 | L9 | Chrome Web Store | todo | [`levels/L9-store-release.md`](levels/L9-store-release.md) |
+| L10 | Overlay, multiprompt, transcript toggle | **done** | [`levels/L10-overlay-multiprompt.md`](levels/L10-overlay-multiprompt.md) |
 
 **Current level:** L9 — Chrome Web Store  
 **Last updated:** 2026-07-22  
@@ -54,6 +55,7 @@ L6  Free Gemini (+…)     gemini.google.com handoff (no API keys)
 L7  Handoff hardening    Insert/send reliability, clipboard fallback, errors
 L8  Chat picker          Combobox + Claude / Copilot / DeepSeek
 L9  Store release        Privacy, assets, publish
+L10 Overlay / multiprompt Work overlay + cancel; long-text multiprompt; transcript toggle
 ```
 
 ---

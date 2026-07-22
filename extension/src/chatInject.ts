@@ -4,6 +4,9 @@
  */
 
 import { isPostSendChatPath } from "@ai-video-fact-check/shared";
+import { installWorkOverlayListener } from "./workOverlay.js";
+
+installWorkOverlayListener();
 
 function hostOk(): boolean {
   const h = location.hostname.toLowerCase();
@@ -44,8 +47,8 @@ let lastRequestAt = 0;
 
 function requestInject(force = false): void {
   if (!hostOk()) return;
-  // Do not re-inject on conversation pages after a send navigated here.
-  // Copilot often stays on / — probe still runs; MAIN-world DONE lock prevents double send.
+  // First-message landing pages only for auto-probe.
+  // Multiprompt continuation on /c/… is driven by the service worker.
   if (isPostSendChatPath(location.pathname)) return;
   // Debounce MutationObserver storms (composer mount fires many mutations).
   const now = Date.now();
