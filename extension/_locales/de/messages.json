@@ -41,6 +41,15 @@
   "guideInjectFailed": {
     "message": "Automatisches Einfügen hat nicht geklappt. Tippen Sie im Chat auf das Feld, Strg+V, und senden."
   },
+  "guideLoginGpt": {
+    "message": "Bitte melden Sie sich in dem offenen Tab bei ChatGPT an. Tippen Sie danach erneut auf Video-Faktencheck GPT öffnen."
+  },
+  "guideLoginGemini": {
+    "message": "Bitte melden Sie sich in dem offenen Tab bei Google an. Tippen Sie danach erneut auf Gemini öffnen."
+  },
+  "guideTabOpenFailed": {
+    "message": "Der Chat-Tab konnte nicht geöffnet werden. Pop-up-Blocker prüfen und erneut versuchen."
+  },
   "guideCopyFailed": {
     "message": "Kopieren hat nicht geklappt — tippen Sie auf Nochmal kopieren."
   },
@@ -55,6 +64,12 @@
   },
   "hintPasteNow": {
     "message": "Falls nichts passiert: im Chat-Feld Strg+V und senden."
+  },
+  "hintLoginRequired": {
+    "message": "Nach dem Anmelden öffnen Sie den Chat erneut über dieses Fenster. Der Text bleibt in der Zwischenablage."
+  },
+  "hintTabOpenFailed": {
+    "message": "Erlauben Sie Pop-ups für diese Erweiterung, oder öffnen Sie den Chat selbst und fügen Sie mit Strg+V ein."
   },
   "hintCopyFailed": {
     "message": "Kopieren fehlgeschlagen — tippen Sie auf Nochmal kopieren, dann im Chat einfügen."
@@ -73,6 +88,15 @@
   },
   "handoffInjectFailed": {
     "message": "Einfügen fehlgeschlagen — bitte Strg+V im Chat und senden (Text ist in der Zwischenablage)."
+  },
+  "handoffLoginGpt": {
+    "message": "Zuerst bei ChatGPT anmelden, dann Video-Faktencheck GPT erneut öffnen."
+  },
+  "handoffLoginGemini": {
+    "message": "Zuerst bei Google anmelden, dann Gemini erneut öffnen."
+  },
+  "handoffTabOpenFailed": {
+    "message": "Chat-Tab wurde nicht geöffnet — Pop-up-Blocker prüfen und erneut versuchen (Text ist in der Zwischenablage)."
   },
   "copyOk": {
     "message": "Kopiert. Tippen Sie auf einen Chat zum Öffnen, oder fügen Sie selbst ein."
@@ -207,7 +231,7 @@
     "message": "Video-Faktencheck Einstellungen"
   },
   "optionsSubtitle": {
-    "message": "Wählen Sie Standard-Chat und Schriftgröße."
+    "message": "Wählen Sie Standard-Chat, Schriftgröße und ob das letzte Video merken."
   },
   "labelDefaultChat": {
     "message": "Standard-Chat"
@@ -223,6 +247,12 @@
   },
   "fontSizeHelp": {
     "message": "Groß macht Buttons und Schritte leichter lesbar. Sie können die Seite in Chrome auch zoomen."
+  },
+  "labelRememberPackage": {
+    "message": "Letztes Video nach Chrome-Neustart merken"
+  },
+  "rememberPackageHelp": {
+    "message": "Optional. Speichert den letzten Link und das Transkript nur auf diesem Computer — nicht bei uns. Ausschalten löscht den Speicher."
   },
   "btnSave": {
     "message": "Speichern"

@@ -70,6 +70,7 @@ describe("PastePackage", () => {
     });
     const text = formatPastePackageText(pkg, "gemini_web");
     assert.match(text, /Sachliche Bewertung/);
+    assert.match(text, /Visuelle Aufbereitung ist Pflicht/);
     assert.match(text, /facebooktotranscript\.com/);
     assert.match(text, /Kurztext/);
     assert.match(text, /Video-URL:/);
@@ -84,6 +85,7 @@ describe("PastePackage", () => {
     });
     const text = formatPastePackageText(pkg, "gemini_web");
     assert.match(text, /Factual score/);
+    assert.match(text, /Visual formatting is required/);
     assert.match(text, /facebooktotranscript\.com/);
     assert.match(text, /Hello world/);
     assert.match(text, /Video URL:/);

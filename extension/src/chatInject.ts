@@ -13,16 +13,22 @@ function hostOk(): boolean {
   );
 }
 
+let lastRequestAt = 0;
+
 function requestInject(): void {
   if (!hostOk()) return;
   // Do not re-inject on conversation pages after a send navigated here.
   if (location.pathname.includes("/c/")) return;
+  // Debounce MutationObserver storms (composer mount fires many mutations).
+  const now = Date.now();
+  if (now - lastRequestAt < 1200) return;
+  lastRequestAt = now;
   void chrome.runtime.sendMessage({ type: "TRIGGER_CHAT_INJECT" });
 }
 
 requestInject();
-setTimeout(requestInject, 2000);
-setTimeout(requestInject, 5000);
+setTimeout(requestInject, 2500);
+setTimeout(requestInject, 5500);
 
 const mo = new MutationObserver(() => {
   if (location.pathname.includes("/c/")) {
@@ -31,6 +37,7 @@ const mo = new MutationObserver(() => {
   }
   if (
     document.querySelector("#prompt-textarea") ||
+    document.querySelector('[data-testid="prompt-textarea"]') ||
     document.querySelector('div.ql-editor[contenteditable="true"]') ||
     document.querySelector('div[contenteditable="true"][role="textbox"]')
   ) {

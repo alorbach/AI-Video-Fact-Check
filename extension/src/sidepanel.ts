@@ -25,6 +25,8 @@ type GuidePhase =
   | "opened"
   | "inject_ok"
   | "inject_failed"
+  | "login_required"
+  | "tab_open_failed"
   | "clipboard_failed";
 
 let lastResult: CaptureResult | null = null;
@@ -105,17 +107,24 @@ function setGuidePhase(phase: GuidePhase): void {
     phase === "ready" ||
       phase === "opened" ||
       phase === "inject_ok" ||
-      phase === "inject_failed",
+      phase === "inject_failed" ||
+      phase === "login_required" ||
+      phase === "tab_open_failed",
   );
   box.classList.toggle(
     "is-error",
-    phase === "clipboard_failed" || phase === "inject_failed",
+    phase === "clipboard_failed" ||
+      phase === "inject_failed" ||
+      phase === "login_required" ||
+      phase === "tab_open_failed",
   );
   if (copyAgain) {
     copyAgain.hidden =
       phase !== "clipboard_failed" &&
       phase !== "opened" &&
       phase !== "inject_failed" &&
+      phase !== "login_required" &&
+      phase !== "tab_open_failed" &&
       phase !== "inject_ok";
   }
 
@@ -142,6 +151,17 @@ function setGuidePhase(phase: GuidePhase): void {
     case "inject_failed":
       status.textContent = t("guideInjectFailed");
       hint.textContent = t("hintPasteNow");
+      break;
+    case "login_required":
+      status.textContent =
+        selectedChat === "gemini_web"
+          ? t("guideLoginGemini")
+          : t("guideLoginGpt");
+      hint.textContent = t("hintLoginRequired");
+      break;
+    case "tab_open_failed":
+      status.textContent = t("guideTabOpenFailed");
+      hint.textContent = t("hintTabOpenFailed");
       break;
     case "clipboard_failed":
       status.textContent = t("guideCopyFailed");
@@ -360,10 +380,17 @@ async function handoffToChat(
 
     setGuidePhase("copied");
     const chat = CHAT_TARGETS[target] ?? CHAT_TARGETS[DEFAULT_CHAT];
-    const tab = await chrome.tabs.create({ url: chat.openUrl });
+    let tab: chrome.tabs.Tab;
+    try {
+      tab = await chrome.tabs.create({ url: chat.openUrl });
+    } catch {
+      setGuidePhase("tab_open_failed");
+      setMsg("handoffMsg", t("handoffTabOpenFailed"), "error");
+      return;
+    }
     if (tab.id == null) {
-      setGuidePhase("inject_failed");
-      setMsg("handoffMsg", t("handoffInjectFailed"), "error");
+      setGuidePhase("tab_open_failed");
+      setMsg("handoffMsg", t("handoffTabOpenFailed"), "error");
       return;
     }
     const tabId = tab.id;
@@ -391,17 +418,16 @@ async function handoffToChat(
     // Clear legacy single-entry key so it cannot override the map.
     await chrome.storage.session.remove(PENDING_CHAT_HANDOFF_KEY);
     void (async () => {
-      // Two spaced kicks only — pending is claimed on first successful attempt.
-      for (const gap of [1800, 4500]) {
-        await new Promise((r) => setTimeout(r, gap === 1800 ? 1800 : 2700));
-        try {
-          await chrome.runtime.sendMessage({
-            type: "TRIGGER_CHAT_INJECT",
-            tabId,
-          } satisfies ExtensionMessage);
-        } catch {
-          /* service worker wake */
-        }
+      // One delayed kick — onUpdated + content probe cover the rest.
+      // Two early kicks raced Custom GPT load and double-claimed after restore.
+      await new Promise((r) => setTimeout(r, 2200));
+      try {
+        await chrome.runtime.sendMessage({
+          type: "TRIGGER_CHAT_INJECT",
+          tabId,
+        } satisfies ExtensionMessage);
+      } catch {
+        /* service worker wake */
       }
     })();
     selectedChat = target;
@@ -429,7 +455,16 @@ async function copyAgain(): Promise<void> {
   const target = lastClickedChat;
   const copied = await copyPackageToClipboard(pkg, target);
   if (copied) {
-    setGuidePhase(guidePhase === "clipboard_failed" ? "ready" : "opened");
+    if (
+      guidePhase === "clipboard_failed" ||
+      guidePhase === "tab_open_failed"
+    ) {
+      setGuidePhase("ready");
+    } else if (guidePhase === "login_required") {
+      setGuidePhase("login_required");
+    } else {
+      setGuidePhase("opened");
+    }
     setMsg("handoffMsg", t("copyAgainOk"), "ok");
   } else {
     setGuidePhase("clipboard_failed");
@@ -624,8 +659,19 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage) => {
     }
 
     if (isActive) {
-      setGuidePhase("inject_failed");
-      setMsg("handoffMsg", t("handoffInjectFailed"), "error");
+      if (message.reason === "login-required") {
+        setGuidePhase("login_required");
+        setMsg(
+          "handoffMsg",
+          session.target === "gemini_web"
+            ? t("handoffLoginGemini")
+            : t("handoffLoginGpt"),
+          "error",
+        );
+      } else {
+        setGuidePhase("inject_failed");
+        setMsg("handoffMsg", t("handoffInjectFailed"), "error");
+      }
     }
   }
 });

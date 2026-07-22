@@ -8,13 +8,13 @@ export async function pageInjectAndSend(
 ): Promise<{ ok: boolean; reason?: string }> {
   const DONE = "__vfFactCheckHandoffDone";
   const ATTEMPTED = "__vfFactCheckHandoffAttempted";
+  const ATTEMPTED_AT = "__vfFactCheckHandoffAttemptedAt";
   const w = window as unknown as Record<string, unknown>;
   // Idempotent only for the same payload; a different text must not look "sent".
   if (w[DONE] === text) return { ok: true, reason: "already-done" };
   if (w[DONE]) return { ok: false, reason: "already-done-other" };
   // Soft lock while fill/send runs — cleared on failure so SW retries can proceed.
   // "in-flight" blocks only parallel injects; stale locks (killed frame) expire.
-  const ATTEMPTED_AT = "__vfFactCheckHandoffAttemptedAt";
   if (w[ATTEMPTED] === "in-flight") {
     const started = w[ATTEMPTED_AT];
     if (typeof started === "number" && Date.now() - started < 20_000) {
@@ -82,13 +82,15 @@ export async function pageInjectAndSend(
   }
 
   function findSend(editor: HTMLElement): HTMLButtonElement | null {
-    // ChatGPT current UI: circular button, tooltip "Send prompt"
+    // ChatGPT current UI: circular button, tooltip "Send prompt" / "Prompt senden"
     const exact = [
       'button[data-testid="send-button"]',
       'button[aria-label="Send prompt"]',
+      'button[aria-label="Prompt senden"]',
       'button[aria-label="Send"]',
       'button[aria-label="Senden"]',
       'button[aria-label*="Send prompt"]',
+      'button[aria-label*="Prompt senden"]',
     ];
     for (const sel of exact) {
       const b = document.querySelector<HTMLButtonElement>(sel);
@@ -99,7 +101,6 @@ export async function pageInjectAndSend(
     const roots: ParentNode[] = form ? [form, document] : [document];
     for (const root of roots) {
       const buttons = [...root.querySelectorAll<HTMLButtonElement>("button")];
-      // Prefer explicit send test id / label
       for (const b of buttons) {
         const label = (b.getAttribute("aria-label") || "").toLowerCase();
         const testId = (b.getAttribute("data-testid") || "").toLowerCase();
@@ -108,10 +109,10 @@ export async function pageInjectAndSend(
           (testId === "send-button" ||
             testId.includes("send") ||
             label === "send prompt" ||
+            label === "prompt senden" ||
             label.startsWith("send") ||
             label.includes("senden"))
         ) {
-          // Skip attach / voice / mic
           if (
             label.includes("attach") ||
             label.includes("voice") ||
@@ -124,7 +125,6 @@ export async function pageInjectAndSend(
           return b;
         }
       }
-      // Composer: last enabled button with an svg near the editor
       if (form) {
         for (let i = buttons.length - 1; i >= 0; i--) {
           const b = buttons[i]!;
@@ -153,18 +153,14 @@ export async function pageInjectAndSend(
     return r.width > 0 && r.height > 0;
   }
 
+  /** One activation only — double click/events caused duplicate ChatGPT submits. */
   function clickSendButton(btn: HTMLButtonElement): void {
     btn.focus();
-    const opts = { bubbles: true, cancelable: true, view: window };
-    btn.dispatchEvent(new PointerEvent("pointerdown", opts));
-    btn.dispatchEvent(new MouseEvent("mousedown", opts));
-    btn.dispatchEvent(new PointerEvent("pointerup", opts));
-    btn.dispatchEvent(new MouseEvent("mouseup", opts));
-    btn.dispatchEvent(new MouseEvent("click", opts));
     try {
       btn.click();
     } catch {
-      /* ignore */
+      const opts = { bubbles: true, cancelable: true, view: window };
+      btn.dispatchEvent(new MouseEvent("click", opts));
     }
   }
 
@@ -190,10 +186,38 @@ export async function pageInjectAndSend(
     await sleep(250);
   }
   if (!editor) {
-    // Login wall or composer not ready
-    const login =
-      document.body.innerText.includes("Log in") ||
-      document.body.innerText.includes("Anmelden");
+    // Prefer visible login CTAs over loose body-text (avoids "blog in" false positives).
+    // Do NOT treat accounts.google.com links alone as logged-out — Gemini shows those
+    // for signed-in account/profile menus too.
+    const login = (() => {
+      const hrefHints = [
+        'a[href*="/auth/login"]',
+        'a[href*="/log-in"]',
+        'button[data-testid*="login"]',
+        'a[data-testid*="login"]',
+      ];
+      for (const sel of hrefHints) {
+        for (const el of document.querySelectorAll<HTMLElement>(sel)) {
+          const r = el.getBoundingClientRect();
+          if (r.width > 20 && r.height > 10) return true;
+        }
+      }
+      for (const el of document.querySelectorAll<HTMLElement>("a, button")) {
+        const r = el.getBoundingClientRect();
+        if (r.width < 20 || r.height < 10) continue;
+        const label = `${el.getAttribute("aria-label") || ""} ${el.textContent || ""}`
+          .replace(/\s+/g, " ")
+          .trim();
+        if (label.length === 0 || label.length > 48) continue;
+        if (
+          /^(log\s*in|sign\s*in|anmelden|einloggen)\b/i.test(label) ||
+          /^(create (an )?account|konto erstellen)\b/i.test(label)
+        ) {
+          return true;
+        }
+      }
+      return false;
+    })();
     return { ok: false, reason: login ? "login-required" : "no-editor" };
   }
 
@@ -207,7 +231,7 @@ export async function pageInjectAndSend(
   } catch {
     /* ignore */
   }
-  await sleep(100);
+  await sleep(150);
 
   if (editor instanceof HTMLTextAreaElement) {
     editor.value = text;
@@ -268,20 +292,26 @@ export async function pageInjectAndSend(
     if (document.querySelector('button[data-testid="stop-button"]')) return true;
     if (document.querySelector('button[aria-label*="Stop"]')) return true;
     if (document.querySelector('button[aria-label*="Stoppen"]')) return true;
+    // Custom GPT often navigates to /c/… or shows the user bubble.
+    try {
+      if (location.pathname.includes("/c/")) return true;
+    } catch {
+      /* ignore */
+    }
     return false;
   }
 
   // Wait for Send to enable (React), then send exactly once — never click+Enter.
-  await sleep(isGpt ? 700 : 350);
+  await sleep(isGpt ? 900 : 400);
   let sentViaClick = false;
-  for (let i = 0; i < 40; i++) {
+  for (let i = 0; i < 50; i++) {
     const btn = findSend(editor);
     if (btn) {
       clickSendButton(btn);
       sentViaClick = true;
       break;
     }
-    await sleep(150);
+    await sleep(160);
   }
 
   if (!sentViaClick) {
@@ -289,7 +319,7 @@ export async function pageInjectAndSend(
   }
 
   // Poll longer — ChatGPT/Gemini often clear the composer slowly.
-  for (let i = 0; i < 25; i++) {
+  for (let i = 0; i < 30; i++) {
     if (composerLooksSent(editor)) {
       w[DONE] = text;
       w[ATTEMPTED] = "done";
@@ -298,10 +328,14 @@ export async function pageInjectAndSend(
     await sleep(200);
   }
 
-  // Do not ask the SW to retry after a Send click — that can double-submit.
-  w[ATTEMPTED] = "failed";
+  // Send was clicked: treat as success and lock DONE so a later kick cannot
+  // double-submit. ChatGPT sometimes keeps the composer text briefly.
   if (sentViaClick) {
-    return { ok: false, reason: "send-clicked-unconfirmed" };
+    w[DONE] = text;
+    w[ATTEMPTED] = "done";
+    return { ok: true, reason: "send-clicked" };
   }
+
+  w[ATTEMPTED] = "failed";
   return { ok: false, reason: "send-unconfirmed" };
 }

@@ -41,6 +41,15 @@
   "guideInjectFailed": {
     "message": "Automatic insert failed. Click the chat box, press Ctrl+V, then send."
   },
+  "guideLoginGpt": {
+    "message": "Please sign in to ChatGPT in the open tab, then tap Open Video Fact-Check GPT again."
+  },
+  "guideLoginGemini": {
+    "message": "Please sign in to Google in the open tab, then tap Open Gemini again."
+  },
+  "guideTabOpenFailed": {
+    "message": "Could not open the chat tab. Check pop-up blockers, then try again."
+  },
   "guideCopyFailed": {
     "message": "Copy failed — tap Copy again."
   },
@@ -55,6 +64,12 @@
   },
   "hintPasteNow": {
     "message": "If nothing happens: Ctrl+V in the chat box, then send."
+  },
+  "hintLoginRequired": {
+    "message": "After you sign in, open the chat again from this panel. The text stays on the clipboard."
+  },
+  "hintTabOpenFailed": {
+    "message": "Allow pop-ups for this extension, or open the chat yourself and paste (Ctrl+V)."
   },
   "hintCopyFailed": {
     "message": "Could not copy — tap Copy again, then paste in the chat."
@@ -73,6 +88,15 @@
   },
   "handoffInjectFailed": {
     "message": "Insert failed — please Ctrl+V in the chat and send (text is on the clipboard)."
+  },
+  "handoffLoginGpt": {
+    "message": "Sign in to ChatGPT first, then open Video Fact-Check GPT again."
+  },
+  "handoffLoginGemini": {
+    "message": "Sign in with Google first, then open Gemini again."
+  },
+  "handoffTabOpenFailed": {
+    "message": "Chat tab did not open — check pop-up blockers and try again (text is on the clipboard)."
   },
   "copyOk": {
     "message": "Copied. Tap a chat to open, or paste yourself."
@@ -207,7 +231,7 @@
     "message": "Video Fact-Check settings"
   },
   "optionsSubtitle": {
-    "message": "Choose your default chat and text size."
+    "message": "Choose your default chat, text size, and whether to keep the last video."
   },
   "labelDefaultChat": {
     "message": "Default chat"
@@ -223,6 +247,12 @@
   },
   "fontSizeHelp": {
     "message": "Large makes buttons and steps easier to read. You can also zoom the page in Chrome."
+  },
+  "labelRememberPackage": {
+    "message": "Remember last video after Chrome restarts"
+  },
+  "rememberPackageHelp": {
+    "message": "Optional. Stores the last link and transcript on this computer only — never sent to us. Turn off to clear it."
   },
   "btnSave": {
     "message": "Save"

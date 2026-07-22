@@ -26,7 +26,7 @@ YouTube · TikTok · X · Facebook · Instagram
 
 ## Status
 
-**Level 7 — Handoff hardening** (in progress). L0–L6 done: platforms, Custom GPT + Gemini insert/send, clipboard fallback; no analysis backend.
+**Level 7 — Handoff hardening** (done). L0–L7 complete: platforms, Custom GPT + Gemini insert/send, clipboard fallback, login/tab-open recovery; next is L8 store release.
 
 ## Local development
 

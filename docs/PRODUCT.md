@@ -118,7 +118,7 @@ Extension (local) → clipboard → user’s ChatGPT or Gemini tab
 - Never forward social-media cookies
 - No DRM / captcha bypass
 - Captions/transcript stay on device until the user pastes into the chat they chose
-- Optional: remember last handoff locally (`chrome.storage`) with opt-in
+- Optional: remember last video locally (`chrome.storage.local`) with opt-in in Settings
 
 If tab audio is ever recorded for local helper use, show consent first. Prefer **captions + URL** so audio upload is unnecessary.
 

@@ -29,12 +29,12 @@ This file is the **overall roadmap and status board**. Level detail: [`levels/`]
 | L4 | Guide UX + a11y | **done** | [`levels/L4-mode-b-polish.md`](levels/L4-mode-b-polish.md) |
 | L5 | Required platforms (YT, TikTok, X, FB, IG) | **done** | [`levels/L5-platforms.md`](levels/L5-platforms.md) |
 | L6 | Free Gemini (+ more free chats) | **done** | [`levels/L6-multi-model.md`](levels/L6-multi-model.md) |
-| L7 | Handoff hardening | **in_progress** | [`levels/L7-hardening.md`](levels/L7-hardening.md) |
+| L7 | Handoff hardening | **done** | [`levels/L7-hardening.md`](levels/L7-hardening.md) |
 | L8 | Chrome Web Store | todo | [`levels/L8-store-release.md`](levels/L8-store-release.md) |
 
-**Current level:** L7 — Handoff hardening  
+**Current level:** L8 — Chrome Web Store  
 **Last updated:** 2026-07-22  
-**Next action:** Finish remaining L7 — login-wall / tab-open copy, profile checklist, optional persist package.
+**Next action:** Start L8 — privacy form, store assets, publish checklist.
 
 Status values: `todo` · `in_progress` · `done` · `blocked`
 

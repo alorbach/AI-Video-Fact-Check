@@ -71,6 +71,7 @@ function isChatHandoffUrl(url: string): boolean {
 async function emitChatInjectResult(
   ok: boolean,
   handoff: Pick<PendingChatHandoff, "tabId" | "at">,
+  reason?: string,
 ): Promise<void> {
   try {
     await chrome.runtime.sendMessage({
@@ -78,6 +79,7 @@ async function emitChatInjectResult(
       ok,
       tabId: handoff.tabId,
       at: handoff.at,
+      ...(reason ? { reason } : {}),
     } satisfies ExtensionMessage);
   } catch {
     /* side panel closed */
@@ -211,17 +213,23 @@ async function triggerChatInject(tabId: number): Promise<void> {
       return;
     }
 
-    // In-page lock still held — restore without burning the attempt budget.
+    // Peer MAIN-world inject still holds the in-flight lock. Restore pending so a
+    // later kick can finish after that peer sets DONE / clears the lock — but do
+    // not emit here (the peer owns the terminal CHAT_INJECT_RESULT).
     if (result?.reason === "already-attempted") {
       await restorePending(pending);
       return;
     }
 
+    // Login wall is terminal — do not burn ~80s retrying a composer that will not appear.
+    if (result?.reason === "login-required") {
+      await emitChatInjectResult(false, pending, "login-required");
+      return;
+    }
+
     // Retryable before send — restore for timed kicks; do not fail the UI yet.
-    // Never retry after send was attempted (send-*-unconfirmed) — duplicate risk.
     if (
       result?.reason === "no-editor" ||
-      result?.reason === "login-required" ||
       result?.reason === "fill-failed"
     ) {
       const attempts = (pending.attempts ?? 0) + 1;
@@ -233,7 +241,7 @@ async function triggerChatInject(tabId: number): Promise<void> {
     }
 
     // Terminal failure (or retries exhausted) — notify the panel.
-    await emitChatInjectResult(false, pending);
+    await emitChatInjectResult(false, pending, result?.reason);
   } catch (err) {
     // Tab/frame races are common (SPA to /c/…, closed tab, delayed kicks).
     // Never console.error here — Chrome lists it on the extension errors page.
@@ -291,10 +299,11 @@ chrome.tabs.onUpdated.addListener((tabId, info, tab) => {
     const pending = map[tabKey(tabId)];
     // Ignore unrelated ChatGPT/Gemini tabs that finish loading.
     if (!pending?.text) return;
-    await new Promise((r) => setTimeout(r, 1200));
+    // Wait for Custom GPT shell / composer — first click often raced the empty landing.
+    await new Promise((r) => setTimeout(r, 1800));
     if (!(await tabStillOpen(tabId))) return;
     await triggerChatInject(tabId);
-    await new Promise((r) => setTimeout(r, 3500));
+    await new Promise((r) => setTimeout(r, 4000));
     if (!(await tabStillOpen(tabId))) return;
     // Skip if chat already left the composer landing page.
     try {
@@ -353,6 +362,12 @@ function uiLocale(): Locale {
     : "en";
 }
 
+const LOCAL_PERSIST_KEYS = {
+  rememberLastPackage: "rememberLastPackage",
+  persistedCapture: "persistedCapture",
+  persistedPackage: "persistedPackage",
+} as const;
+
 async function saveCapture(
   result: CaptureResult,
   pkg: PastePackage,
@@ -361,6 +376,15 @@ async function saveCapture(
     [STORAGE_KEYS.lastCapture]: result,
     [STORAGE_KEYS.lastPackage]: pkg,
   });
+  const { rememberLastPackage } = await chrome.storage.local.get({
+    [LOCAL_PERSIST_KEYS.rememberLastPackage]: false,
+  });
+  if (rememberLastPackage) {
+    await chrome.storage.local.set({
+      [LOCAL_PERSIST_KEYS.persistedCapture]: result,
+      [LOCAL_PERSIST_KEYS.persistedPackage]: pkg,
+    });
+  }
 }
 
 async function getStored(): Promise<{
@@ -371,10 +395,36 @@ async function getStored(): Promise<{
     [STORAGE_KEYS.lastCapture]: null,
     [STORAGE_KEYS.lastPackage]: null,
   });
-  return {
-    result: (data[STORAGE_KEYS.lastCapture] as CaptureResult | null) ?? null,
-    package: (data[STORAGE_KEYS.lastPackage] as PastePackage | null) ?? null,
-  };
+  const sessionPkg =
+    (data[STORAGE_KEYS.lastPackage] as PastePackage | null) ?? null;
+  if (sessionPkg?.videoUrl) {
+    return {
+      result: (data[STORAGE_KEYS.lastCapture] as CaptureResult | null) ?? null,
+      package: sessionPkg,
+    };
+  }
+
+  // Opt-in: restore last package after browser restart (local only).
+  const local = await chrome.storage.local.get({
+    [LOCAL_PERSIST_KEYS.rememberLastPackage]: false,
+    [LOCAL_PERSIST_KEYS.persistedCapture]: null,
+    [LOCAL_PERSIST_KEYS.persistedPackage]: null,
+  });
+  if (!local[LOCAL_PERSIST_KEYS.rememberLastPackage]) {
+    return { result: null, package: null };
+  }
+  const persistedPkg =
+    (local[LOCAL_PERSIST_KEYS.persistedPackage] as PastePackage | null) ?? null;
+  const persistedResult =
+    (local[LOCAL_PERSIST_KEYS.persistedCapture] as CaptureResult | null) ?? null;
+  if (!persistedPkg?.videoUrl) {
+    return { result: null, package: null };
+  }
+  await chrome.storage.session.set({
+    [STORAGE_KEYS.lastCapture]: persistedResult,
+    [STORAGE_KEYS.lastPackage]: persistedPkg,
+  });
+  return { result: persistedResult, package: persistedPkg };
 }
 
 /** Start a context-menu pin; not readable until completePinnedCapture(). */

@@ -83,7 +83,14 @@ export type ExtensionMessage =
   | { type: "COPY_PACKAGE_ONLY" }
   | { type: "CLIPBOARD_OK" }
   | { type: "CHAT_OPENED"; target: ChatTargetId }
-  | { type: "CHAT_INJECT_RESULT"; ok: boolean; tabId: number; at: number }
+  | {
+      type: "CHAT_INJECT_RESULT";
+      ok: boolean;
+      tabId: number;
+      at: number;
+      /** Inject failure detail: login-required, no-editor, fill-failed, … */
+      reason?: string;
+    }
   | { type: "TRIGGER_CHAT_INJECT"; tabId?: number }
   | { type: "HANDOFF_FAILED"; error: string }
   | { type: "GET_LAST_CAPTURE" }

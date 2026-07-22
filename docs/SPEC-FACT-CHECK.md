@@ -116,7 +116,13 @@ type ExtensionMessage =
   | { type: "START_HANDOFF"; target: ChatTargetId }
   | { type: "CLIPBOARD_OK" }
   | { type: "CHAT_OPENED"; target: ChatTargetId }
-  | { type: "CHAT_INJECT_RESULT"; ok: boolean; tabId: number; at: number }
+  | {
+      type: "CHAT_INJECT_RESULT";
+      ok: boolean;
+      tabId: number;
+      at: number;
+      reason?: string;
+    }
   | { type: "HANDOFF_FAILED"; error: string }
   | /* … see shared/src/types.ts */;
 ```

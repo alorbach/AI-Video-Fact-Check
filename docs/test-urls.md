@@ -32,6 +32,19 @@ Replace any URL that goes private or 404s — keep the table filled.
 - Link: `https://www.youtube.com/watch?v=iEa1a9Hip8E`  
 - Text: **Ja — Beitragstext enthalten** (video description) and/or captions if timedtext/engagement panel works in your session
 
+## Profile / login checklist (L7)
+
+Use a second Chrome profile (or Incognito with the unpacked extension loaded) so ChatGPT / Gemini are **logged out**.
+
+| Step | Expect |
+|---|---|
+| Scan a test URL above, then **Open Video Fact-Check GPT** | Chat tab opens; Side Panel shows **sign-in** guidance (not a silent failure) |
+| Sign in in that tab, then open GPT again from the panel | Insert/send (or paste fallback) works |
+| Repeat with **Open Gemini** while logged out of Google | Same: clear sign-in message, then success after login |
+| Block pop-ups / force tab create to fail (if reproducible) | Distinct “could not open chat tab” message; clipboard still has text |
+| Deny clipboard (site permission) then open chat | “Copy again” recovery — no silent fail |
+| Settings → enable “Remember last video…”, scan, restart Chrome | Last package restored in Side Panel; turn off clears storage |
+
 ## Optional later
 
 | Platform | URL | Notes |
