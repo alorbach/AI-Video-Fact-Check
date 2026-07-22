@@ -1,0 +1,40 @@
+docs/levels/L3-fact-check-mvp.md
+  s_87e7ac705b9b04::t_ff375b4a97b066 18,20,22,26,29-32
+docs/test-urls.md
+  s_87e7ac705b9b04::t_f84d77cd048141 25
+docs/levels/L0-foundation.md
+  s_87e7ac705b9b04::t_3de55ce18933c7 3,18
+docs/levels/L5-platforms.md
+  s_87e7ac705b9b04::t_92439b68ba4188 40
+docs/SPEC-FACT-CHECK.md
+  s_87e7ac705b9b04::t_40ea11e08bb181 51,110-111,114-116,119-121
+docs/levels/L7-hardening.md
+  s_87e7ac705b9b04::t_3fc558bfe205d7 3,11,15-29,33-34
+docs/CHROME-WEB-STORE.md
+  s_87e7ac705b9b04::t_8301bb74dd3caa 51
+docs/levels/L4-mode-b-polish.md
+  s_87e7ac705b9b04::t_2e334d12872bf9 15
+docs/MULTILEVEL-IMPLEMENTATION-PLAN.md
+  s_87e7ac705b9b04::t_fcb2d8d8cea75b 64,76
+  s_87e7ac705b9b04::t_d14518cace1c06 5
+  s_87e7ac705b9b04::t_4368f84f6fc167 105
+  s_87e7ac705b9b04::t_e45f50c6685101 53
+  s_87e7ac705b9b04::t_604346c6e63b8a 32,36-37
+  s_87e7ac705b9b04::t_141f79d5151efd 132,138-139
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "f3ea9cb58acc1c1c673278810cb7010141469844",
+  "prompts": {},
+  "sessions": {
+    "s_87e7ac705b9b04": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "b4eda435-f139-4994-b854-4d0043e529cf",
+        "model": "grok-4.5"
+      },
+      "human_author": "Andre Lorbach <alorbach@adiscon.com>"
+    }
+  }
+}
