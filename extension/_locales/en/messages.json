@@ -197,6 +197,12 @@
   "captionsPost": {
     "message": "Yes — post text included"
   },
+  "captionsExternal": {
+    "message": "Yes — via helper service"
+  },
+  "captionsExternalHint": {
+    "message": "Captions fetched with a free helper (video link only; no audio upload)."
+  },
   "captionsManual": {
     "message": "Using your pasted transcript"
   },

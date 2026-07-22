@@ -25,6 +25,8 @@ export type TranscriptSource =
   | "track"
   | "post"
   | "manual"
+  /** YouTube captions via TranscribeYouTube helper (URL only; no audio upload). */
+  | "external"
   | "none";
 
 export interface PastePackage {

@@ -197,6 +197,12 @@
   "captionsPost": {
     "message": "Ja — Beitragstext enthalten"
   },
+  "captionsExternal": {
+    "message": "Ja — über Hilfsdienst"
+  },
+  "captionsExternalHint": {
+    "message": "Untertitel mit einem kostenlosen Hilfsdienst geholt (nur Video-Link; kein Audio-Upload)."
+  },
   "captionsManual": {
     "message": "Ihr eingefügtes Transkript wird verwendet"
   },

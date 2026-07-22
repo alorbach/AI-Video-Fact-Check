@@ -87,10 +87,14 @@ export function formatPastePackageText(
     pkg.locale === "de"
       ? pkg.transcriptSource === "post"
         ? "Beitragstext / Untertitel (falls vorhanden):"
-        : "Transkript / Untertitel (falls vorhanden):"
+        : pkg.transcriptSource === "external"
+          ? "Transkript / Untertitel (Hilfsdienst):"
+          : "Transkript / Untertitel (falls vorhanden):"
       : pkg.transcriptSource === "post"
         ? "Post text / captions (if available):"
-        : "Transcript / captions (if available):";
+        : pkg.transcriptSource === "external"
+          ? "Transcript / captions (helper service):"
+          : "Transcript / captions (if available):";
 
   const material =
     pkg.locale === "de"

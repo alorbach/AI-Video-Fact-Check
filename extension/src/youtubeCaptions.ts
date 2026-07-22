@@ -1,5 +1,8 @@
 import {
   extractYouTubeVideoId,
+  joinDomTranscriptSegmentTexts,
+  labelLooksLikeHideTranscript,
+  labelLooksLikeShowTranscript,
   parseTimedTextJson3,
   parseTimedTextXml,
   pickCaptionTrack,
@@ -203,16 +206,10 @@ function findTranscriptParams(node: unknown, videoId: string, depth = 0): string
   if (endpoint && typeof endpoint === "object") {
     const params = (endpoint as { params?: unknown }).params;
     if (typeof params === "string" && params.length > 10) {
-      // Only accept params that decode to this exact video id.
-      try {
-        const decoded = atob(params.replace(/-/g, "+").replace(/_/g, "/"));
       // Only accept params that decode to this exact video id token.
       try {
         const decoded = atob(params.replace(/-/g, "+").replace(/_/g, "/"));
         if (textMentionsExactId(decoded, videoId)) return params;
-      } catch {
-        /* ignore undecodable params */
-      }
       } catch {
         /* ignore undecodable params */
       }
@@ -352,6 +349,111 @@ async function captionsFromTrackElement(videoId: string): Promise<string> {
   }
 }
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Page URL (+ watch flexy video-id when present) must match this capture.
+ * Prevents packaging a previous SPA video's leftover transcript panel.
+ */
+function domTranscriptContextMatchesVideo(videoId: string): boolean {
+  if (extractYouTubeVideoId(location.href) !== videoId) return false;
+  const flexy = document.querySelector("ytd-watch-flexy");
+  const flexyId = flexy?.getAttribute("video-id");
+  if (flexyId && flexyId !== videoId) return false;
+  return true;
+}
+
+/**
+ * Plain text from YouTube's engagement transcript panel for `videoId` only.
+ * Never falls back to `document.body` (avoids unrelated / stale segments).
+ */
+export function readDomTranscriptPanelText(videoId: string): string {
+  if (!domTranscriptContextMatchesVideo(videoId)) return "";
+
+  const roots = Array.from(
+    document.querySelectorAll(
+      'ytd-engagement-panel-section-list-renderer[target-id*="transcript"], ytd-transcript-renderer, ytd-transcript-search-panel-renderer',
+    ),
+  );
+
+  for (const root of roots) {
+    const nodes = root.querySelectorAll(
+      "ytd-transcript-segment-renderer yt-formatted-string, ytd-transcript-segment-renderer .segment-text, ytd-transcript-segment-renderer [class*='segment-text']",
+    );
+    const texts = Array.from(nodes).map((node) => node.textContent);
+    const joined = joinDomTranscriptSegmentTexts(texts);
+    if (joined) return joined;
+  }
+  return "";
+}
+
+function controlLabel(el: Element): string {
+  return (
+    el.getAttribute("aria-label") ||
+    el.getAttribute("title") ||
+    el.textContent ||
+    ""
+  );
+}
+
+function findTranscriptControl(
+  predicate: (label: string) => boolean,
+): HTMLElement | null {
+  const clickables = Array.from(
+    document.querySelectorAll(
+      "button, yt-button-shape button, tp-yt-paper-button, a[role='button']",
+    ),
+  );
+  const target = clickables.find((el) => predicate(controlLabel(el)));
+  return target instanceof HTMLElement ? target : null;
+}
+
+/**
+ * Best-effort: refresh YouTube's native transcript panel for this video, then
+ * read segments. Never trusts a pre-open panel (SPA leftovers from prior watch).
+ */
+async function captionsFromDomTranscriptPanel(
+  videoId: string,
+): Promise<string> {
+  if (!domTranscriptContextMatchesVideo(videoId)) return "";
+
+  // Close a leftover panel first so "Show transcript" reloads for this video.
+  const hideBtn = findTranscriptControl(labelLooksLikeHideTranscript);
+  if (hideBtn) {
+    try {
+      hideBtn.click();
+    } catch {
+      /* ignore */
+    }
+    await sleep(250);
+  }
+
+  if (!domTranscriptContextMatchesVideo(videoId)) return "";
+
+  const showBtn = findTranscriptControl(labelLooksLikeShowTranscript);
+  if (showBtn) {
+    try {
+      showBtn.click();
+    } catch {
+      /* ignore */
+    }
+  } else {
+    // Panel already open with no hide control — still refuse stale text.
+    return "";
+  }
+
+  const deadline = Date.now() + 2800;
+  while (Date.now() < deadline) {
+    await sleep(200);
+    if (!domTranscriptContextMatchesVideo(videoId)) return "";
+    const text = readDomTranscriptPanelText(videoId);
+    if (text) return text;
+  }
+  return "";
+}
+
 export interface YouTubeCaptureExtras {
   title?: string;
   transcript?: string;
@@ -429,6 +531,16 @@ export async function captureYouTubeExtras(
   const fromPanel = await fetchEngagementTranscript(videoId);
   if (fromPanel) {
     return { title, transcript: fromPanel, transcriptSource: "captions" };
+  }
+
+  // B1: native "Show transcript" engagement UI (DOM segments).
+  try {
+    const fromDom = await captionsFromDomTranscriptPanel(videoId);
+    if (fromDom) {
+      return { title, transcript: fromDom, transcriptSource: "captions" };
+    }
+  } catch {
+    /* continue ladder */
   }
 
   const description = descriptionFromPlayer(player);

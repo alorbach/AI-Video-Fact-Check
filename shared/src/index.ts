@@ -29,6 +29,9 @@ export {
   pickCaptionTrack,
   parseTimedTextXml,
   parseTimedTextJson3,
+  labelLooksLikeShowTranscript,
+  labelLooksLikeHideTranscript,
+  joinDomTranscriptSegmentTexts,
   type CaptionTrack,
 } from "./youtube.js";
 export {
@@ -67,6 +70,15 @@ export {
   formatPastePackageText,
   type BuildPastePackageInput,
 } from "./pastePackage.js";
+export {
+  TRANSCRIBE_YOUTUBE_ENDPOINT,
+  joinTranscribeYoutubeSegments,
+  parseTranscribeYoutubeResponse,
+  fetchTranscribeYoutubeTranscript,
+  type TranscribeYoutubeSegment,
+  type TranscribeYoutubeResponse,
+  type FetchTranscribeYoutubeOptions,
+} from "./transcribeYoutube.js";
 export {
   MASTER_PROMPT_DE,
   MASTER_PROMPT_EN,

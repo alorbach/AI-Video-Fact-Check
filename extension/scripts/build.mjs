@@ -16,6 +16,19 @@ const sharedAlias = {
 await esbuild.build({
   entryPoints: {
     background: join(root, "src/background.ts"),
+  },
+  bundle: true,
+  outdir: dist,
+  // Classic SW script — avoid MV3 "type: module" worker quirks ("No SW").
+  format: "iife",
+  platform: "browser",
+  target: ["chrome120"],
+  alias: sharedAlias,
+  logLevel: "info",
+});
+
+await esbuild.build({
+  entryPoints: {
     sidepanel: join(root, "src/sidepanel.ts"),
     options: join(root, "src/options.ts"),
   },

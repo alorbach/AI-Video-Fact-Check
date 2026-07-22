@@ -3,6 +3,9 @@ import { describe, it } from "node:test";
 import {
   canonicalizeYouTubeUrl,
   extractYouTubeVideoId,
+  joinDomTranscriptSegmentTexts,
+  labelLooksLikeHideTranscript,
+  labelLooksLikeShowTranscript,
   parseTimedTextJson3,
   parseTimedTextXml,
   pickCaptionTrack,
@@ -37,6 +40,24 @@ describe("YouTube helpers", () => {
     assert.equal(pickCaptionTrack(tracks, "de")?.baseUrl, "b");
     assert.equal(pickCaptionTrack(tracks, "en")?.baseUrl, "a");
     assert.equal(pickCaptionTrack([], "de"), null);
+  });
+
+  it("detects Show / Hide transcript control labels", () => {
+    assert.equal(labelLooksLikeShowTranscript("Show transcript"), true);
+    assert.equal(labelLooksLikeShowTranscript("Transkript anzeigen"), true);
+    assert.equal(labelLooksLikeShowTranscript("Hide transcript"), false);
+    assert.equal(labelLooksLikeShowTranscript("Transkript ausblenden"), false);
+    assert.equal(labelLooksLikeShowTranscript("Share"), false);
+    assert.equal(labelLooksLikeHideTranscript("Hide transcript"), true);
+    assert.equal(labelLooksLikeHideTranscript("Transkript ausblenden"), true);
+    assert.equal(labelLooksLikeHideTranscript("Show transcript"), false);
+  });
+
+  it("joins DOM transcript segment texts", () => {
+    assert.equal(
+      joinDomTranscriptSegmentTexts(["  Hello ", null, "world", ""]),
+      "Hello\nworld",
+    );
   });
 
   it("parses timedtext XML and json3", () => {

@@ -216,6 +216,8 @@ function renderCapture(): void {
   let captionsLabel = captionsYes ? t("captionsYes") : t("captionsNo");
   if (lastPackage.transcriptSource === "post") {
     captionsLabel = t("captionsPost");
+  } else if (lastPackage.transcriptSource === "external") {
+    captionsLabel = t("captionsExternal");
   } else if (lastPackage.transcriptSource === "manual") {
     captionsLabel = t("captionsYes");
   }
@@ -227,6 +229,9 @@ function renderCapture(): void {
   ];
   if (lastPackage.transcriptSource === "manual") {
     lines.push(t("captionsManual"));
+  }
+  if (lastPackage.transcriptSource === "external") {
+    lines.push(t("captionsExternalHint"));
   }
   detailsEl.textContent = lines.join("\n");
 }

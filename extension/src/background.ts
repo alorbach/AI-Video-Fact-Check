@@ -9,6 +9,7 @@ import {
   captureToPastePackage,
   CHAT_TARGETS,
   detectPlatform,
+  fetchTranscribeYoutubeTranscript,
   isPostSendChatPath,
   PENDING_CHAT_HANDOFF_KEY,
   PENDING_CHAT_HANDOFFS_KEY,
@@ -389,11 +390,32 @@ chrome.runtime.onInstalled.addListener(() => {
       contexts: ["page", "video", "link"],
     });
   });
+  scheduleOpenSidePanelOnActionClick();
 });
 
-chrome.sidePanel
-  .setPanelBehavior({ openPanelOnActionClick: true })
-  .catch((err) => console.error(err));
+chrome.runtime.onStartup.addListener(() => {
+  scheduleOpenSidePanelOnActionClick();
+});
+
+/** Toolbar icon opens Side Panel (no default_popup). Ignore benign "No SW". */
+function scheduleOpenSidePanelOnActionClick(): void {
+  const apply = () =>
+    chrome.sidePanel
+      .setPanelBehavior({ openPanelOnActionClick: true })
+      .catch(() => {
+        /* Chrome may reject with "No SW" during SW register — safe to ignore */
+      });
+  apply();
+  setTimeout(apply, 250);
+}
+
+/**
+ * Backup if setPanelBehavior did not stick (e.g. right after reinstall).
+ * Only runs when there is no default_popup.
+ */
+chrome.action.onClicked.addListener((tab) => {
+  void openSidePanelFromUserGesture(tab);
+});
 
 function uiLocale(): Locale {
   return chrome.i18n.getUILanguage().toLowerCase().startsWith("de")
@@ -552,6 +574,62 @@ function hasTranscript(pkg: PastePackage | null): boolean {
   );
 }
 
+/** True when package already has real captions (skip TranscribeYouTube). */
+function hasStrongCaptions(pkg: PastePackage): boolean {
+  const src = pkg.transcriptSource;
+  return (
+    (src === "captions" ||
+      src === "track" ||
+      src === "external" ||
+      src === "manual") &&
+    Boolean(pkg.transcript?.trim())
+  );
+}
+
+/**
+ * YouTube-only: when in-page captions are missing (or only post text), try
+ * TranscribeYouTube once. Never used for TikTok/X/Facebook/Instagram.
+ */
+async function maybeEnrichWithTranscribeYoutube(
+  result: CaptureResult,
+  pkg: PastePackage,
+): Promise<{ result: CaptureResult; package: PastePackage }> {
+  const platform =
+    result.platform === "youtube" || detectPlatform(pkg.videoUrl) === "youtube"
+      ? "youtube"
+      : result.platform;
+  if (platform !== "youtube") {
+    return { result, package: pkg };
+  }
+  if (hasStrongCaptions(pkg)) {
+    return { result, package: pkg };
+  }
+
+  const fetched = await fetchTranscribeYoutubeTranscript(
+    pkg.videoUrl,
+    pkg.locale,
+  );
+  if (!fetched?.text) {
+    return { result, package: pkg };
+  }
+
+  const nextResult: CaptureResult = {
+    ...result,
+    platform: "youtube",
+    transcript: fetched.text,
+    transcriptSource: "external",
+    ...(fetched.title && !result.title ? { title: fetched.title } : {}),
+  };
+  const nextPkg = buildPastePackage({
+    videoUrl: pkg.videoUrl,
+    locale: pkg.locale,
+    platform: "youtube",
+    transcript: fetched.text,
+    transcriptSource: "external",
+  });
+  return { result: nextResult, package: nextPkg };
+}
+
 async function urlOnlyCapture(
   pageUrl: string,
 ): Promise<{ result: CaptureResult; package: PastePackage }> {
@@ -570,8 +648,9 @@ async function urlOnlyCapture(
     locale,
     platform,
   });
-  await saveCapture(result, pkg);
-  return { result, package: pkg };
+  const enriched = await maybeEnrichWithTranscribeYoutube(result, pkg);
+  await saveCapture(enriched.result, enriched.package);
+  return enriched;
 }
 
 /**
@@ -641,8 +720,12 @@ async function captureTab(tabId: number): Promise<{
     throw new Error("empty capture");
   }
 
-  await saveCapture(response.result, response.package);
-  return { result: response.result, package: response.package };
+  const enriched = await maybeEnrichWithTranscribeYoutube(
+    response.result,
+    response.package,
+  );
+  await saveCapture(enriched.result, enriched.package);
+  return enriched;
 }
 
 /**
@@ -847,6 +930,35 @@ async function notifySidePanel(payload: ExtensionMessage): Promise<void> {
   }
 }
 
+/**
+ * Open the Side Panel from a user gesture (toolbar / context menu).
+ * Prefer sidePanel.open; fall back to opening sidepanel.html as a tab.
+ */
+async function openSidePanelFromUserGesture(
+  tab: chrome.tabs.Tab,
+): Promise<void> {
+  try {
+    if (tab.windowId != null) {
+      await chrome.sidePanel.setOptions({
+        path: "sidepanel.html",
+        enabled: true,
+      });
+      await chrome.sidePanel.open({ windowId: tab.windowId });
+      return;
+    }
+    if (tab.id != null) {
+      await chrome.sidePanel.open({ tabId: tab.id });
+      return;
+    }
+  } catch {
+    /* "No SW" / already open — try tab fallback */
+  }
+  await chrome.tabs.create({
+    url: chrome.runtime.getURL("sidepanel.html"),
+    active: true,
+  });
+}
+
 async function openSidePanelAndHandoff(
   tab: chrome.tabs.Tab,
   target: ChatTargetId | "copy_only",
@@ -860,7 +972,7 @@ async function openSidePanelAndHandoff(
 
   // Pin as not-ready so readers wait for this capture (not a prior package).
   await beginPinnedCapture(tab.id, targetUrl);
-  await chrome.sidePanel.open({ windowId: tab.windowId });
+  await openSidePanelFromUserGesture(tab);
 
   try {
     if (useLink && linkUrl) {

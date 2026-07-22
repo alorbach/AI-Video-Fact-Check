@@ -119,6 +119,67 @@ export function parseTimedTextJson3(jsonText: string): string {
   return lines.join("\n").trim();
 }
 
+/**
+ * True when a control label looks like YouTube's "Show transcript" action
+ * (DE/EN), not "Hide transcript".
+ */
+export function labelLooksLikeShowTranscript(raw: string): boolean {
+  const label = raw
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!label) return false;
+  if (
+    label.includes("transkript anzeigen") ||
+    label.includes("show transcript")
+  ) {
+    return true;
+  }
+  if (labelLooksLikeHideTranscript(raw)) return false;
+  return (
+    (label.includes("transcript") || label.includes("transkript")) &&
+    (label.includes("show") ||
+      label.includes("anzeigen") ||
+      label.includes("open") ||
+      label === "transcript" ||
+      label === "transkript")
+  );
+}
+
+/** True when a control label looks like "Hide transcript" / "Transkript ausblenden". */
+export function labelLooksLikeHideTranscript(raw: string): boolean {
+  const label = raw
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!label) return false;
+  if (
+    label.includes("hide transcript") ||
+    label.includes("transkript ausblenden")
+  ) {
+    return true;
+  }
+  return (
+    (label.includes("transcript") || label.includes("transkript")) &&
+    (label.includes("hide") ||
+      label.includes("ausblenden") ||
+      label.includes("schließen") ||
+      label.includes("schliessen") ||
+      label.includes("close"))
+  );
+}
+
+/** Join DOM transcript segment strings (YouTube panel). */
+export function joinDomTranscriptSegmentTexts(
+  texts: Array<string | null | undefined>,
+): string {
+  return texts
+    .map((t) => (t ?? "").trim())
+    .filter(Boolean)
+    .join("\n")
+    .trim();
+}
+
 function decodeXmlEntities(value: string): string {
   return value
     .replace(/&amp;/g, "&")

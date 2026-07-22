@@ -124,6 +124,7 @@ Extension (local) → clipboard → user’s chosen chat tab
 - Never forward social-media cookies
 - No DRM / captcha bypass
 - Captions/transcript stay on device until the user pastes into the chat they chose
+- **YouTube only:** if in-page captions are missing, the extension may send the **video URL** (not audio, not cookies) to the free TranscribeYouTube helper to fetch existing captions; the Side Panel labels this clearly
 - Optional: remember last video locally (`chrome.storage.local`) with opt-in in Settings
 
 If tab audio is ever recorded for local helper use, show consent first. Prefer **captions + URL** so audio upload is unnecessary.

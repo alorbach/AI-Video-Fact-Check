@@ -107,21 +107,23 @@ describe("PastePackage", () => {
     }
   });
 
-  it("switches master prompt language with locale for Gemini", () => {
-    const base = {
+  it("keeps external source and helper label in paste text", () => {
+    const pkg = buildPastePackage({
       videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-      transcript: "same",
-    };
-    const de = formatPastePackageText(
-      buildPastePackage({ ...base, locale: "de" }),
-      "gemini_web",
-    );
-    const en = formatPastePackageText(
-      buildPastePackage({ ...base, locale: "en" }),
-      "gemini_web",
-    );
-    assert.match(de, /Antworte auf Deutsch/);
-    assert.match(en, /Answer in English/);
-    assert.notEqual(de, en);
+      locale: "en",
+      transcript: "Helper captions",
+      transcriptSource: "external",
+    });
+    assert.equal(pkg.transcriptSource, "external");
+    assert.match(formatPastePackageText(pkg), /helper service/);
+    assert.match(formatPastePackageText(pkg), /Helper captions/);
+
+    const de = buildPastePackage({
+      videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      locale: "de",
+      transcript: "Hilfstext",
+      transcriptSource: "external",
+    });
+    assert.match(formatPastePackageText(de), /Hilfsdienst/);
   });
 });

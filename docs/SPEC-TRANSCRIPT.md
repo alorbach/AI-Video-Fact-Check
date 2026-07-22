@@ -27,11 +27,23 @@ Optional later: Vimeo, generic HTML5.
 **Avoid for MVP:** own STT server, Whisper API keys, yt-dlp backend.  
 Optional later (only if free/local and still no API keys): browser Web Speech API as a weak helper — never required.
 
+### YouTube caption ladder (implementation order)
+
+1. Player `captionTracks` → timedtext (`c=WEB`, json3/XML)  
+2. HTML `<track>` on the video element  
+3. Same-origin `youtubei/v1/get_transcript` (engagement-panel params)  
+4. **Native transcript panel DOM** — best-effort “Show transcript” / “Transkript anzeigen”, then read `ytd-transcript-segment-renderer`  
+5. Video description as `transcriptSource: "post"` (supplement)  
+6. **TranscribeYouTube helper** (service worker only) — when steps 1–4 left no real captions (`none` or only `post`): `POST https://transcribeyoutube.com/api/transcript` with the **video URL + language hint** (no audio upload, no API key). Result → `transcriptSource: "external"`  
+7. URL only + clear “not available” note  
+
+TranscribeYouTube is **YouTube-only**. TikTok / X / Facebook / Instagram never call it.
+
 ## Stage details
 
 ### Captions / text
 
-- YouTube timedtext / captions  
+- YouTube timedtext / captions / native transcript panel / optional TranscribeYouTube URL helper  
 - TikTok captions / on-screen caption data when exposed  
 - Facebook / Instagram caption or post text from DOM/metadata  
 - X post text (+ subtitles if present)  
@@ -64,7 +76,7 @@ No supported video found.
 
 | Platform | Priority 1 | Priority 2 | If nothing else |
 |---|---|---|---|
-| YouTube / Shorts | Captions | Page URL | Manual transcript |
+| YouTube / Shorts | Captions (local ladder + optional helper) | Page URL | Manual transcript |
 | TikTok | Caption / subtitles | Page URL | Manual transcript |
 | X / Twitter | Post text / subtitles | Page URL | Manual transcript |
 | Facebook / Reels | Caption / metadata | Page URL | Manual transcript |

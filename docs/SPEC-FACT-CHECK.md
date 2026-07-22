@@ -58,7 +58,7 @@ Default target: Custom GPT. Side Panel **combobox** + Options `defaultChat` sele
 interface PastePackage {
   videoUrl: string;
   transcript?: string;
-  transcriptSource?: "captions" | "track" | "post" | "manual" | "none";
+  transcriptSource?: "captions" | "track" | "post" | "manual" | "external" | "none";
   locale: "de" | "en";
   platform?: string;
 }

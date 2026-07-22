@@ -14,7 +14,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch",
-    "test": "tsc -p tsconfig.json && node --test dist/platform.test.js dist/youtube.test.js dist/pastePackage.test.js dist/pageMeta.test.js dist/socialUrls.test.js dist/chatTargets.test.js"
+    "test": "tsc -p tsconfig.json && node --test dist/platform.test.js dist/youtube.test.js dist/pastePackage.test.js dist/pageMeta.test.js dist/socialUrls.test.js dist/chatTargets.test.js dist/transcribeYoutube.test.js"
   },
   "devDependencies": {
     "typescript": "^5.8.0",

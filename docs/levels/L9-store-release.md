@@ -12,7 +12,7 @@ Publish an extension that only prepares content and opens free user chats (Custo
 
 ## Pre-submit checklist
 
-- [ ] Privacy policy: clipboard data, opens chatgpt.com / gemini.google.com / claude.ai (and opens Copilot/DeepSeek URLs), no our analysis server
+- [ ] Privacy policy: clipboard data, opens chatgpt.com / gemini.google.com / claude.ai (and opens Copilot/DeepSeek URLs), YouTube caption helper may receive the video URL when in-page captions are missing, no our analysis server
 - [ ] Single purpose: help users fact-check videos via known free chats
 - [ ] Permission justifications (contextMenus, clipboardWrite/storage, optional hosts for captions, sidePanel, chat inject hosts)
 - [ ] Icons + 1280×800 screenshots (large guide UI with chat picker)
