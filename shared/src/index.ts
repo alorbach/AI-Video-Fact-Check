@@ -83,6 +83,16 @@ export {
   type FetchTranscribeYoutubeOptions,
 } from "./transcribeYoutube.js";
 export {
+  SOCIAL_TRANSCRIPT_HELPERS,
+  socialHelperPlatform,
+  helperForPlatform,
+  isSocialTranscriptHelperUrl,
+  facebookHelperLanguageLabel,
+  isUsableSocialHelperTranscript,
+  type SocialTranscriptHelperId,
+  type SocialTranscriptHelper,
+} from "./socialTranscriptHelpers.js";
+export {
   MASTER_PROMPT_DE,
   MASTER_PROMPT_EN,
   getMasterPrompt,

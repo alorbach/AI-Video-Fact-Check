@@ -9,9 +9,14 @@ import {
   captureToPastePackage,
   CHAT_TARGETS,
   detectPlatform,
+  extractFacebookVideoId,
+  extractTikTokVideoId,
+  facebookHelperLanguageLabel,
   fetchTranscribeYoutubeTranscript,
   getMessageCharLimit,
+  helperForPlatform,
   isPostSendChatPath,
+  isUsableSocialHelperTranscript,
   PENDING_CHAT_HANDOFF_KEY,
   PENDING_CHAT_HANDOFFS_KEY,
   pendingHandoffMessages,
@@ -33,6 +38,12 @@ import {
   pageInjectAndSend,
   waitComposerReadyForNext,
 } from "./chatInjectMain.js";
+import {
+  pollSocialTranscriptHelper,
+  submitSocialTranscriptHelper,
+  type SocialHelperPollResult,
+  type SocialHelperSiteId,
+} from "./transcriptHelperMain.js";
 
 const STORAGE_KEYS = {
   lastCapture: "lastCapture",
@@ -41,6 +52,8 @@ const STORAGE_KEYS = {
   pinnedTabId: "pinnedTabId",
   pinReady: "pinReady",
   pinnedTargetUrl: "pinnedTargetUrl",
+  /** Video keys we already ran the TikTok/Facebook helper for this session. */
+  socialHelperTried: "socialHelperTried",
 } as const;
 
 const SUPPORTED: PlatformId[] = [
@@ -50,6 +63,23 @@ const SUPPORTED: PlatformId[] = [
   "facebook",
   "instagram",
 ];
+
+/** Helper tabs opened for TikTok/Facebook transcript enrichment. */
+const activeHelperTabIds = new Set<number>();
+
+async function closeAllHelperTabs(): Promise<void> {
+  const ids = [...activeHelperTabIds];
+  activeHelperTabIds.clear();
+  await Promise.all(
+    ids.map(async (id) => {
+      try {
+        await chrome.tabs.remove(id);
+      } catch {
+        /* already closed */
+      }
+    }),
+  );
+}
 
 /** Hosts that load content.js via manifest content_scripts. */
 function hasDeclaredContentScript(url: string): boolean {
@@ -814,6 +844,79 @@ function hasTranscript(pkg: PastePackage | null): boolean {
   );
 }
 
+/** Session key so Chat öffnen does not reopen the helper for the same video. */
+function socialHelperTriedKey(videoUrl: string): string {
+  const platform = detectPlatform(videoUrl);
+  if (platform === "facebook") {
+    const id = extractFacebookVideoId(videoUrl);
+    if (id) return `facebook:${id}`;
+  }
+  if (platform === "tiktok") {
+    const id = extractTikTokVideoId(videoUrl);
+    if (id) return `tiktok:${id}`;
+  }
+  return canonicalizeVideoUrl(videoUrl);
+}
+
+async function wasSocialHelperTried(videoUrl: string): Promise<boolean> {
+  const key = socialHelperTriedKey(videoUrl);
+  if (!key) return false;
+  const data = await chrome.storage.session.get({
+    [STORAGE_KEYS.socialHelperTried]: {},
+  });
+  const map =
+    (data[STORAGE_KEYS.socialHelperTried] as Record<string, number> | null) ??
+    {};
+  return typeof map[key] === "number";
+}
+
+async function markSocialHelperTried(videoUrl: string): Promise<void> {
+  const key = socialHelperTriedKey(videoUrl);
+  if (!key) return;
+  const data = await chrome.storage.session.get({
+    [STORAGE_KEYS.socialHelperTried]: {},
+  });
+  const map = {
+    ...((data[STORAGE_KEYS.socialHelperTried] as
+      | Record<string, number>
+      | null) ?? {}),
+    [key]: Date.now(),
+  };
+  await chrome.storage.session.set({
+    [STORAGE_KEYS.socialHelperTried]: map,
+  });
+}
+
+async function clearSocialHelperTried(videoUrl: string): Promise<void> {
+  const key = socialHelperTriedKey(videoUrl);
+  if (!key) return;
+  const data = await chrome.storage.session.get({
+    [STORAGE_KEYS.socialHelperTried]: {},
+  });
+  const map = {
+    ...((data[STORAGE_KEYS.socialHelperTried] as
+      | Record<string, number>
+      | null) ?? {}),
+  };
+  if (!(key in map)) return;
+  delete map[key];
+  await chrome.storage.session.set({
+    [STORAGE_KEYS.socialHelperTried]: map,
+  });
+}
+
+function storedMatchesActiveTab(
+  stored: { result: CaptureResult; package: PastePackage },
+  tabUrl: string,
+): boolean {
+  if (!tabUrl) return false;
+  return (
+    sameVideoUrl(stored.package.videoUrl, tabUrl) ||
+    sameVideoUrl(stored.result.videoUrl, tabUrl) ||
+    sameVideoUrl(stored.result.pageUrl, tabUrl)
+  );
+}
+
 /** True when package already has real captions (skip TranscribeYouTube). */
 function hasStrongCaptions(pkg: PastePackage): boolean {
   const src = pkg.transcriptSource;
@@ -873,8 +976,256 @@ async function maybeEnrichWithTranscribeYoutube(
   return { result: nextResult, package: nextPkg };
 }
 
+function waitTabComplete(tabId: number, timeoutMs: number): Promise<void> {
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    const finish = (err?: Error) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      chrome.tabs.onUpdated.removeListener(onUpdated);
+      if (err) reject(err);
+      else resolve();
+    };
+    const timer = setTimeout(
+      () => finish(new Error("helper-tab-timeout")),
+      timeoutMs,
+    );
+    const onUpdated = (id: number, info: chrome.tabs.TabChangeInfo) => {
+      if (id === tabId && info.status === "complete") finish();
+    };
+    chrome.tabs.onUpdated.addListener(onUpdated);
+    void chrome.tabs.get(tabId).then(
+      (tab) => {
+        if (tab.status === "complete") finish();
+      },
+      () => finish(new Error("helper-tab-gone")),
+    );
+  });
+}
+
+async function closeHelperTab(tabId: number | null): Promise<void> {
+  if (tabId == null) return;
+  activeHelperTabIds.delete(tabId);
+  try {
+    await chrome.tabs.remove(tabId);
+  } catch {
+    /* already closed */
+  }
+}
+
+/**
+ * TikTok / Facebook: when local transcript is `none`, open the free helper
+ * website, submit the video URL, read the transcript, close the tab.
+ * Serialized so overlapping Scans cannot orphan multiple helper tabs.
+ */
+let socialHelperChain: Promise<unknown> = Promise.resolve();
+
+function withSocialHelperLock<T>(fn: () => Promise<T>): Promise<T> {
+  const run = socialHelperChain.then(fn, fn);
+  socialHelperChain = run.then(
+    () => undefined,
+    () => undefined,
+  );
+  return run;
+}
+
+async function maybeEnrichWithSocialTranscriptHelper(
+  result: CaptureResult,
+  pkg: PastePackage,
+  opts: {
+    cancelSince: number;
+    videoTabId?: number;
+    skipIfAlreadyTried?: boolean;
+  },
+): Promise<{ result: CaptureResult; package: PastePackage }> {
+  return withSocialHelperLock(() =>
+    maybeEnrichWithSocialTranscriptHelperUnlocked(result, pkg, opts),
+  );
+}
+
+async function maybeEnrichWithSocialTranscriptHelperUnlocked(
+  result: CaptureResult,
+  pkg: PastePackage,
+  opts: {
+    cancelSince: number;
+    videoTabId?: number;
+    skipIfAlreadyTried?: boolean;
+  },
+): Promise<{ result: CaptureResult; package: PastePackage }> {
+  if (!(await isTranscriptEnabled())) {
+    return { result, package: pkg };
+  }
+  if (hasStrongCaptions(pkg) || pkg.transcriptSource !== "none") {
+    return { result, package: pkg };
+  }
+  if (pkg.transcript?.trim()) {
+    return { result, package: pkg };
+  }
+
+  const platform =
+    result.platform === "tiktok" || result.platform === "facebook"
+      ? result.platform
+      : detectPlatform(pkg.videoUrl);
+  const helper = helperForPlatform(platform);
+  if (!helper) return { result, package: pkg };
+
+  if (opts.videoTabId == null) {
+    // No work overlay / Cancel — never open a long-running helper tab silently.
+    return { result, package: pkg };
+  }
+
+  // Soft Chat öffnen: do not reopen the helper for a video we already tried.
+  if (opts.skipIfAlreadyTried && (await wasSocialHelperTried(pkg.videoUrl))) {
+    return { result, package: pkg };
+  }
+
+  if (await isWorkCancelled(opts.cancelSince)) {
+    throw new Error("cancelled");
+  }
+
+  await showWorkOverlay(opts.videoTabId, "helper");
+
+  let helperTabId: number | null = null;
+  try {
+    const tab = await chrome.tabs.create({
+      url: helper.openUrl,
+      active: false,
+    });
+    if (tab.id == null) return { result, package: pkg };
+    helperTabId = tab.id;
+    activeHelperTabIds.add(tab.id);
+
+    await waitTabComplete(tab.id, helper.timeoutMs);
+    // Next.js hydrate
+    await new Promise((r) => setTimeout(r, 900));
+
+    if (await isWorkCancelled(opts.cancelSince)) {
+      throw new Error("cancelled");
+    }
+
+    const siteId = helper.id as SocialHelperSiteId;
+    const langLabel = facebookHelperLanguageLabel(pkg.locale);
+    let method: "auto" | "whisper" = "auto";
+    let whisperRetried = false;
+
+    const submitMethod = async (
+      next: "auto" | "whisper",
+    ): Promise<boolean> => {
+      const submitResults = await chrome.scripting.executeScript({
+        target: { tabId: tab.id! },
+        world: "MAIN",
+        func: submitSocialTranscriptHelper,
+        args: [pkg.videoUrl, siteId, langLabel, next],
+      });
+      const submitted = submitResults[0]?.result as
+        | { ok: boolean; reason?: string }
+        | undefined;
+      return Boolean(submitted?.ok);
+    };
+
+    /** One Facebook Whisper/AI retry after Auto empty/junk/idle/error. */
+    const maybeWhisperRetry = async (): Promise<boolean> => {
+      if (helper.id !== "facebooktotranscript" || whisperRetried) {
+        return false;
+      }
+      whisperRetried = true;
+      method = "whisper";
+      deadline = Date.now() + helper.timeoutMs;
+      const ok = await submitMethod("whisper");
+      if (!ok) return false;
+      await new Promise((r) => setTimeout(r, 1200));
+      return true;
+    };
+
+    if (!(await submitMethod(method))) {
+      return { result, package: pkg };
+    }
+
+    let deadline = Date.now() + helper.timeoutMs;
+    let last: SocialHelperPollResult = { status: "pending" };
+    while (Date.now() < deadline) {
+      if (await isWorkCancelled(opts.cancelSince)) {
+        throw new Error("cancelled");
+      }
+      const pollResults = await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        world: "MAIN",
+        func: pollSocialTranscriptHelper,
+      });
+      last = (pollResults[0]?.result as SocialHelperPollResult | undefined) ?? {
+        status: "pending",
+      };
+      if (last.status === "ok" && last.text.trim()) {
+        const text = last.text.trim();
+        if (isUsableSocialHelperTranscript(text)) {
+          const nextResult: CaptureResult = {
+            ...result,
+            platform: helper.platform,
+            transcript: text,
+            transcriptSource: "external",
+          };
+          const nextPkg = buildPastePackage({
+            videoUrl: pkg.videoUrl,
+            locale: pkg.locale,
+            platform: helper.platform,
+            transcript: text,
+            transcriptSource: "external",
+          });
+          return { result: nextResult, package: nextPkg };
+        }
+        // Junk Auto/Extract captions (e.g. "you") — Whisper/AI retry on Facebook.
+        if (await maybeWhisperRetry()) continue;
+        // Still unusable after retry — do not paste stub text into the chat.
+        return { result, package: pkg };
+      }
+      if (last.status === "error" || last.status === "idle") {
+        // Empty Complete / Auto failure — still try Whisper once on Facebook.
+        if (await maybeWhisperRetry()) continue;
+        return { result, package: pkg };
+      }
+      await new Promise((r) => setTimeout(r, 1200));
+    }
+
+    return { result, package: pkg };
+  } catch (err) {
+    if (err instanceof Error && err.message === "cancelled") throw err;
+    return { result, package: pkg };
+  } finally {
+    if (helperTabId != null) {
+      // Mark even on cancel/error so Chat öffnen does not immediately reopen.
+      await markSocialHelperTried(pkg.videoUrl);
+    }
+    await closeHelperTab(helperTabId);
+    // Do not re-show the overlay after Cancel already hid it.
+    if (!(await isWorkCancelled(opts.cancelSince))) {
+      await showWorkOverlay(opts.videoTabId, "capture");
+    }
+  }
+}
+
+/** YouTube TranscribeYouTube + TikTok/Facebook helper-tab enrichment. */
+async function enrichCaptureTranscript(
+  result: CaptureResult,
+  pkg: PastePackage,
+  opts: {
+    cancelSince: number;
+    videoTabId?: number;
+    skipIfAlreadyTried?: boolean;
+  },
+): Promise<{ result: CaptureResult; package: PastePackage }> {
+  let enriched = await maybeEnrichWithTranscribeYoutube(result, pkg);
+  enriched = await maybeEnrichWithSocialTranscriptHelper(
+    enriched.result,
+    enriched.package,
+    opts,
+  );
+  return enriched;
+}
+
 async function urlOnlyCapture(
   pageUrl: string,
+  opts?: { cancelSince?: number; allowSocialHelper?: boolean },
 ): Promise<{ result: CaptureResult; package: PastePackage }> {
   const locale = uiLocale();
   const videoUrl = canonicalizeVideoUrl(pageUrl);
@@ -891,17 +1242,38 @@ async function urlOnlyCapture(
     locale,
     platform,
   });
-  const enriched = await maybeEnrichWithTranscribeYoutube(result, pkg);
+  // Must use the caller's session stamp. Inventing Date.now() here would treat a
+  // Cancel that happened during the preceding Scan as stale (cancelledAt < now).
+  const cancelSince = opts?.cancelSince ?? Date.now();
+  if (await isWorkCancelled(cancelSince)) {
+    throw new Error("cancelled");
+  }
+  let enriched: { result: CaptureResult; package: PastePackage };
+  // Social helper tabs need a video-tab overlay + Cancel. URL-only paths
+  // (no videoTabId) only use the silent YouTube TranscribeYouTube helper.
+  if (opts?.allowSocialHelper === true) {
+    enriched = await enrichCaptureTranscript(result, pkg, { cancelSince });
+  } else {
+    enriched = await maybeEnrichWithTranscribeYoutube(result, pkg);
+  }
+  if (await isWorkCancelled(cancelSince)) {
+    throw new Error("cancelled");
+  }
   await saveCapture(enriched.result, enriched.package);
   return enriched;
 }
 
 /**
  * Prefer an existing richer capture for the same video over a URL-only fallback.
+ * `cancelSince` must be the Scan/session start so Cancel during capture still applies.
  */
 async function fallbackCapture(
   pageUrl: string,
+  opts: { cancelSince: number },
 ): Promise<{ result: CaptureResult; package: PastePackage }> {
+  if (await isWorkCancelled(opts.cancelSince)) {
+    throw new Error("cancelled");
+  }
   const stored = await getStored();
   if (
     stored.result &&
@@ -913,7 +1285,11 @@ async function fallbackCapture(
   ) {
     return { result: stored.result, package: stored.package };
   }
-  return urlOnlyCapture(pageUrl);
+  // Capture already failed — do not open another TikTok/Facebook helper tab.
+  return urlOnlyCapture(pageUrl, {
+    cancelSince: opts.cancelSince,
+    allowSocialHelper: false,
+  });
 }
 
 async function requestCaptureFromTab(
@@ -926,10 +1302,14 @@ async function requestCaptureFromTab(
   } satisfies ExtensionMessage)) as ExtensionMessage;
 }
 
-async function captureTab(tabId: number): Promise<{
+async function captureTab(
+  tabId: number,
+  opts?: { force?: boolean },
+): Promise<{
   result: CaptureResult;
   package: PastePackage;
 }> {
+  const force = opts?.force === true;
   const skipTranscript = !(await isTranscriptEnabled());
   // Capture session start — only cancels after this timestamp abort this run.
   // Do not clear workCancelledAt (would let an in-flight inject resume).
@@ -976,9 +1356,15 @@ async function captureTab(tabId: number): Promise<{
       throw new Error("empty capture");
     }
 
-    let enriched = await maybeEnrichWithTranscribeYoutube(
+    let enriched = await enrichCaptureTranscript(
       response.result,
       response.package,
+      {
+        cancelSince: captureStartedAt,
+        videoTabId: tabId,
+        // Scan (force) may retry the helper; Chat öffnen must reuse.
+        skipIfAlreadyTried: !force,
+      },
     );
     if (skipTranscript) {
       enriched = stripTranscript(enriched.result, enriched.package);
@@ -1002,15 +1388,17 @@ async function captureLinkUrl(
   tab: chrome.tabs.Tab,
 ): Promise<{ result: CaptureResult; package: PastePackage }> {
   const videoUrl = canonicalizeVideoUrl(linkUrl);
+  const sessionStart = Date.now();
   if (tab.id && tab.url && sameVideoUrl(tab.url, linkUrl)) {
     try {
-      return await captureTab(tab.id);
+      return await captureTab(tab.id, { force: true });
     } catch (err) {
+      if (err instanceof Error && err.message === "cancelled") throw err;
       console.error(err);
-      return fallbackCapture(videoUrl);
+      return fallbackCapture(videoUrl, { cancelSince: sessionStart });
     }
   }
-  return urlOnlyCapture(videoUrl);
+  return urlOnlyCapture(videoUrl, { cancelSince: sessionStart });
 }
 
 /**
@@ -1177,17 +1565,41 @@ async function captureActiveTabRaw(options?: {
     if (
       stored.result &&
       stored.package &&
-      sameVideoUrl(stored.package.videoUrl, tab.url) &&
-      hasTranscript(stored.package)
+      storedMatchesActiveTab(
+        { result: stored.result, package: stored.package },
+        tab.url,
+      )
     ) {
-      return { result: stored.result, package: stored.package };
+      // Reuse cached transcript / prior helper attempt on Chat öffnen.
+      if (hasTranscript(stored.package)) {
+        return { result: stored.result, package: stored.package };
+      }
+      if (await wasSocialHelperTried(stored.package.videoUrl)) {
+        return { result: stored.result, package: stored.package };
+      }
+    }
+  } else {
+    // Explicit Scan: allow the TikTok/Facebook helper to run again.
+    const stored = await getStored();
+    const urls = [
+      tab.url,
+      stored.package?.videoUrl,
+      stored.result?.videoUrl,
+      stored.result?.pageUrl,
+    ].filter((u): u is string => Boolean(u));
+    for (const u of urls) {
+      await clearSocialHelperTried(u);
     }
   }
 
+  const sessionStart = Date.now();
   try {
-    return await captureTab(tab.id);
-  } catch {
-    return fallbackCapture(tab.url);
+    return await captureTab(tab.id, { force });
+  } catch (err) {
+    // Cancel must not fall through to urlOnlyCapture with a fresh cancelSince
+    // (that would treat the Cancel as stale and still enrich/save).
+    if (err instanceof Error && err.message === "cancelled") throw err;
+    return fallbackCapture(tab.url, { cancelSince: sessionStart });
   }
 }
 
@@ -1250,18 +1662,24 @@ async function openSidePanelAndHandoff(
   await beginPinnedCapture(tab.id, targetUrl);
   await openSidePanelFromUserGesture(tab);
 
+  const sessionStart = Date.now();
   try {
     if (useLink && linkUrl) {
       await captureLinkUrl(linkUrl, tab);
     } else if (tab.id) {
       try {
-        await captureTab(tab.id);
+        await captureTab(tab.id, { force: true });
       } catch (err) {
+        if (err instanceof Error && err.message === "cancelled") throw err;
         console.error(err);
-        if (tab.url) await fallbackCapture(tab.url);
+        if (tab.url) {
+          await fallbackCapture(tab.url, { cancelSince: sessionStart });
+        }
       }
     } else if (linkUrl) {
-      await urlOnlyCapture(canonicalizeVideoUrl(linkUrl));
+      await urlOnlyCapture(canonicalizeVideoUrl(linkUrl), {
+        cancelSince: sessionStart,
+      });
     }
   } finally {
     await completePinnedCapture();
@@ -1305,6 +1723,7 @@ chrome.runtime.onMessage.addListener(
     if (message.type === "CANCEL_WORK") {
       void (async () => {
         await markWorkCancelled();
+        await closeAllHelperTabs();
         const map = await readPendingMap();
         const tabIds = Object.values(map).map((p) => p.tabId);
         await clearAllPendingHandoffs();
@@ -1437,7 +1856,7 @@ chrome.runtime.onMessage.addListener(
     if (message.type === "ANALYZE_PAGE") {
       void (async () => {
         try {
-          await captureTab(message.tabId);
+          await captureTab(message.tabId, { force: true });
           sendResponse({
             type: "START_HANDOFF",
             target: message.target,

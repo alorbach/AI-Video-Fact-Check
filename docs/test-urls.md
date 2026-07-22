@@ -21,11 +21,20 @@ Replace any URL that goes private or 404s — keep the table filled.
 1. Open URL in Chrome → open Side Panel → **Scan page** (`Seite prüfen`)
 2. Platform name shown (de/en)
 3. Link looks stable (canonical when possible)
-4. Captions / post text included when the page exposes them; otherwise “No — chat can still use the link”
+4. Captions / post text included when the page exposes them; otherwise “No — chat can still use the link”. For TikTok/Facebook with **no** local text, Scan may briefly open a free helper site (tiktoktranscript.io / facebooktotranscript.com), then close it — Cancel aborts that step.
 5. Choose chat in combobox → **Open chat** → insert/send (GPT/Gemini/Claude) or paste from clipboard (Copilot/DeepSeek); if automation fails, paste works
 
 **Detection pass (2026-07-21):** YouTube, Shorts, TikTok, X, Facebook, Instagram — all recognized in Side Panel.
 
+### External helpers (L11)
+
+| Platform | When | Expect |
+|---|---|---|
+| TikTok | Local `transcriptSource` is `none` | Helper tab opens → native captions if available → tab closes; else URL-only |
+| Facebook | Local `transcriptSource` is `none` | Helper tab opens (Auto) → transcript or error → tab closes; else URL-only |
+| Cancel mid-helper | Press Cancel on overlay | Helper tab closes; Scan stops |
+
+**Spike note (2026-07-22):** tiktoktranscript.io returned “Service not configured. No Lambda regions available.”; facebooktotranscript.com returned an unexpected-format error on the sample URL. Soft-fail path (URL-only) must still work — re-check helpers when they recover.
 ### YouTube expected on `iEa1a9Hip8E`
 
 - Platform: YouTube  

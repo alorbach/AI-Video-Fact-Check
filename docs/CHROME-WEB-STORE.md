@@ -21,6 +21,7 @@ Fill before **Level 9**.
 | `clipboardWrite` (if declared) | Backup copy of URL + captions if insert/send fails |
 | `host_permissions` (YouTube, TikTok, X, Facebook, Instagram) | Read captions/metadata on those video pages |
 | `host_permissions` (transcribeyoutube.com) | YouTube-only fallback: send video URL to fetch existing captions when the page has none |
+| `host_permissions` (tiktoktranscript.io, facebooktotranscript.com) | TikTok/Facebook fallback: open free helper pages with the public video URL to fetch a transcript when the page has none |
 | `host_permissions` (chatgpt.com, gemini.google.com, claude.ai) | Insert prepared text into the chat box and send at the user’s request |
 | Opens free chat URLs | User’s fact-check happens there (also Copilot/DeepSeek via open + paste) |
 
@@ -34,6 +35,8 @@ Declared under `host_permissions` for the five required platforms:
 - `*://*.facebook.com/*`, `*://*.fb.com/*`, `*://*.fb.watch/*`
 - `*://*.instagram.com/*`
 - `*://transcribeyoutube.com/*`, `*://*.transcribeyoutube.com/*` (YouTube caption helper; URL only)
+- `*://tiktoktranscript.io/*`, `*://*.tiktoktranscript.io/*` (TikTok transcript helper tab)
+- `*://facebooktotranscript.com/*`, `*://*.facebooktotranscript.com/*` (Facebook transcript helper tab)
 - `*://chatgpt.com/*`, `*://*.chatgpt.com/*`
 - `*://gemini.google.com/*`
 - `*://claude.ai/*`, `*://*.claude.ai/*`
@@ -50,6 +53,7 @@ DeepSeek: open URL only (no host_permissions until insert/send is added).
 - Clipboard is used as a backup if insert/send fails, and for chats without insert yet  
 - No own analysis server; no developer API keys  
 - **YouTube caption fallback:** if captions are not available on the page, the extension may send the public video URL to TranscribeYouTube to retrieve existing captions (no audio upload; not used for other platforms)  
+- **TikTok / Facebook transcript helpers:** if the page has no usable transcript, the extension may briefly open tiktoktranscript.io or facebooktotranscript.com with the public video URL, read the transcript from that page, then close the tab (no API keys; no audio upload from the extension)  
 - Data is processed under the user’s chat-account terms once sent  
 
 ## Assets

@@ -25,7 +25,10 @@ export type TranscriptSource =
   | "track"
   | "post"
   | "manual"
-  /** YouTube captions via TranscribeYouTube helper (URL only; no audio upload). */
+  /**
+   * Captions/transcript via a free helper website (YouTube: TranscribeYouTube;
+   * TikTok/Facebook: tiktoktranscript.io / facebooktotranscript.com).
+   */
   | "external"
   | "none";
 
@@ -132,7 +135,12 @@ export interface CaptureResult {
   supported: boolean;
 }
 
-export type WorkOverlayPhase = "capture" | "inject" | "multiprompt" | "waiting";
+export type WorkOverlayPhase =
+  | "capture"
+  | "helper"
+  | "inject"
+  | "multiprompt"
+  | "waiting";
 
 export type ExtensionMessage =
   | { type: "CAPTURE_ACTIVE_TAB"; force?: boolean }

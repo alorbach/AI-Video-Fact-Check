@@ -30,6 +30,7 @@ Optional later: Vimeo, generic HTML5.
 
 - Skip in-page caption/transcript adapters as far as practical
 - Skip TranscribeYouTube enrichment
+- Skip TikTok/Facebook helper-tab enrichment (tiktoktranscript.io / facebooktotranscript.com)
 - Paste package is URL-only (`transcriptSource: "none"`)
 - Manual transcript in the Side Panel still works
 
@@ -47,6 +48,22 @@ Optional later (only if free/local and still no API keys): browser Web Speech AP
 7. URL only + clear “not available” note  
 
 TranscribeYouTube is **YouTube-only**. TikTok / X / Facebook / Instagram never call it.
+
+### TikTok / Facebook external helpers (when local text is `none`)
+
+When in-page capture leaves `transcriptSource: "none"` (and automatic transcript is on), the service worker may:
+
+1. Open a **free no-signup helper tab** (background)  
+   - TikTok → https://tiktoktranscript.io/  
+   - Facebook → https://facebooktotranscript.com/ (Method **Auto**; language from UI locale)  
+2. Paste the public video URL, submit, wait for the transcript (or an error)  
+3. Read the text from the helper page → `transcriptSource: "external"`  
+4. **Close** the helper tab  
+5. Continue to the existing AI chat handoff  
+
+No developer API keys. If the helper fails (no native captions on TikTok, private/login-walled media, site errors), fall back to URL-only + Side Panel manual paste.
+
+**Note:** tiktoktranscript.io extracts **TikTok’s own captions** (not Whisper). facebooktotranscript.com can fall through to AI transcription when Extract finds nothing.
 
 ## Stage details
 
@@ -86,9 +103,9 @@ No supported video found.
 | Platform | Priority 1 | Priority 2 | If nothing else |
 |---|---|---|---|
 | YouTube / Shorts | Captions (local ladder + optional helper) | Page URL | Manual transcript |
-| TikTok | Caption / subtitles | Page URL | Manual transcript |
+| TikTok | Caption / subtitles → helper site when `none` | Page URL | Manual transcript |
 | X / Twitter | Post text / subtitles | Page URL | Manual transcript |
-| Facebook / Reels | Caption / metadata | Page URL | Manual transcript |
+| Facebook / Reels | Caption / metadata → helper site when `none` | Page URL | Manual transcript |
 | Instagram / Reels | Caption / metadata | Page URL | Manual transcript |
 
 Minimum bar per platform: **correct platform detection + video/page URL in PastePackage**. Captions are best-effort and improve quality when available.

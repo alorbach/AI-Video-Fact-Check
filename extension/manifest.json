@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "__MSG_extName__",
   "description": "__MSG_extDescription__",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "default_locale": "en",
   "author": "Andre Lorbach",
   "homepage_url": "https://github.com/alorbach/AI-Video-Fact-Check",
@@ -33,7 +33,11 @@
     "*://copilot.microsoft.com/*",
     "*://*.copilot.microsoft.com/*",
     "*://transcribeyoutube.com/*",
-    "*://*.transcribeyoutube.com/*"
+    "*://*.transcribeyoutube.com/*",
+    "*://tiktoktranscript.io/*",
+    "*://*.tiktoktranscript.io/*",
+    "*://facebooktotranscript.com/*",
+    "*://*.facebooktotranscript.com/*"
   ],
   "background": {
     "service_worker": "background.js"
