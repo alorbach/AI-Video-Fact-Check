@@ -1,0 +1,109 @@
+extension/_locales/en/messages.json
+  s_aaf79eef118ba4::t_64cdd417f13997 282
+  s_aaf79eef118ba4::t_7ab7fd563460b3 305-350
+extension/src/content.ts
+  s_aaf79eef118ba4::t_44b5a08b92de42 40,51-78
+  s_aaf79eef118ba4::t_ee42c429e99075 134-135,140
+  s_aaf79eef118ba4::t_6fd3558684ab2d 16
+  s_61406e451529c6::t_9d8a75c3c5a770 79
+docs/levels/L10-overlay-multiprompt.md
+  s_aaf79eef118ba4::t_de26f3c6e868ee 1-2,4-14,22-24
+  s_aaf79eef118ba4::t_4bc8f2640de85d 3,15-21,25-28
+shared/src/multiprompt.ts
+  s_aaf79eef118ba4::t_2ec5a1f49dd668 2-5,118,125,130,133,141,148-153,197-203,205-247,249,252-261
+  s_aaf79eef118ba4::t_ce287e9557252c 1,6-117,119-124,126-129,131-132,134-140,142-147,154-196,204,248,250-251,262-275
+docs/MULTILEVEL-IMPLEMENTATION-PLAN.md
+  s_aaf79eef118ba4::t_97e25ee2cc5e3f 35
+  s_aaf79eef118ba4::t_38fb390e2d6fd8 58
+extension/src/sidepanel.ts
+  s_aaf79eef118ba4::t_85a66af16cee98 560-561
+  s_aaf79eef118ba4::t_80a8246edd451d 139-141,148-149,159-160,178-198,220-223
+  s_aaf79eef118ba4::t_0f4a04eed7ff64 273-275
+  s_aaf79eef118ba4::t_40db37e137054d 34-36,49-53
+  s_aaf79eef118ba4::t_c6a8cc414a6227 832-838,859-866,870,877-896,907-910,931,933,940,943
+  s_aaf79eef118ba4::t_8c13a05318603a 4,9
+  s_aaf79eef118ba4::t_562656ff2f5958 592-627
+  s_aaf79eef118ba4::t_9e7e17cf441166 433,456-462,482-489,496,523-528,549-553,573,576-581
+extension/_locales/de/messages.json
+  s_aaf79eef118ba4::t_60329df56740f6 305-350
+  s_aaf79eef118ba4::t_69e463798cfdef 282
+extension/options.html
+  s_aaf79eef118ba4::t_9f33fd90cae83c 88-95
+shared/src/types.ts
+  s_6edb2630329930::t_5d0515ded1063d 212-213
+  s_aaf79eef118ba4::t_1d66abc8ea88b5 220-221
+  s_aaf79eef118ba4::t_4ba5406c5961bc 135-136,139,155-157,167-178,182-194,203-211
+docs/PRODUCT.md
+  s_aaf79eef118ba4::t_e6045fc66ef637 116-119
+shared/src/multiprompt.test.ts
+  s_aaf79eef118ba4::t_d3bf52ae6b7696 1-102
+docs/SPEC-TRANSCRIPT.md
+  s_aaf79eef118ba4::t_04174933268e62 27-35
+shared/src/messageLimits.ts
+  s_aaf79eef118ba4::t_de04eb55ceb680 1-26
+extension/src/background.ts
+  s_aaf79eef118ba4::t_a7a0a0b976cc7c 553,560-561
+  s_aaf79eef118ba4::t_066b2adbccd775 813-815
+  s_aaf79eef118ba4::t_3bfbca38c435b4 897,901,909-912,916-933,938,942-944,946-967
+  s_aaf79eef118ba4::t_7b44df9bd08749 313-331,337,342-348,350-401,403-406,408-415,420-423,429-430,433-434,437-438,445-451,457,464,474-480,487,494,496,501-507,515,520-526,531
+  s_aaf79eef118ba4::t_7e3d181d4343b4 1268-1291,1320-1329,1332
+  s_aaf79eef118ba4::t_66e6100e2d9b33 13,17-18,21,30,32-35
+  s_61406e451529c6::t_6d98b79e59fcb5 182
+  s_aaf79eef118ba4::t_1388db24cadad6 271
+  s_aaf79eef118ba4::t_2aaaae2b00dc32 407,416-419,424-428,431-432,435-436
+  s_aaf79eef118ba4::t_7546de6f9e3e5d 90,99-101,108-181
+  s_aaf79eef118ba4::t_7ea8c6f9099294 235
+extension/src/chatInject.ts
+  s_aaf79eef118ba4::t_c8b092633855ee 7-9
+  s_aaf79eef118ba4::t_0a8dc4cccb14d3 50-51
+extension/src/options.ts
+  s_aaf79eef118ba4::t_60f8ccb3a7b8dc 128-130,135,137
+  s_aaf79eef118ba4::t_a777626982344d 53-54,64-66,80-85,91-96,113-115
+shared/src/index.ts
+  s_aaf79eef118ba4::t_b7cad693a6cc4a 12,19,21
+  s_aaf79eef118ba4::t_56aecd081fc5bb 90-101
+shared/package.json
+  s_aaf79eef118ba4::t_590d154a36f935 17
+extension/src/workOverlay.ts
+  s_aaf79eef118ba4::t_62257f1520e775 1-181
+docs/SPEC-FACT-CHECK.md
+  s_6edb2630329930::t_8453c0e674ea6b 34
+  s_aaf79eef118ba4::t_b6f966ec649b3f 15-16,18-20,24-33
+extension/src/chatInjectMain.ts
+  s_aaf79eef118ba4::t_0aef028acac4ba 8-9,14,16-36
+  s_aaf79eef118ba4::t_e277feb9635ef2 359-408
+  s_aaf79eef118ba4::t_63a9271d45f6f2 491-497,521,528-532,553,564,572-664
+  s_6edb2630329930::t_7bba3cc3863f6f 665
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "fb96a51fa24a7248cfdf7904c95518a00f7d959a",
+  "prompts": {},
+  "sessions": {
+    "s_61406e451529c6": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f7f67-a565-7213-9257-b81c63b99cc9",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "Andre Lorbach <alorbach@adiscon.com>"
+    },
+    "s_6edb2630329930": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f862a-5f5d-7593-b7ac-71efe79bb574",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Andre Lorbach <alorbach@adiscon.com>"
+    },
+    "s_aaf79eef118ba4": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "c347e83c-80ad-4ad3-a682-60daa2449fa6",
+        "model": "grok-4.5"
+      },
+      "human_author": "Andre Lorbach <alorbach@adiscon.com>"
+    }
+  }
+}
