@@ -36,12 +36,20 @@
         <div id="guideBox" class="guide-box">
           <p id="guideStatus" class="guide-status"></p>
           <div class="step-actions">
-            <button type="button" id="btnOpenGpt" class="btn primary"></button>
-            <button type="button" id="btnOpenGemini" class="btn"></button>
+            <label class="field-label" for="chatTarget" id="labelChatTarget"></label>
+            <select id="chatTarget" class="chat-select"></select>
+            <button type="button" id="btnOpenChat" class="btn primary"></button>
           </div>
           <button type="button" id="btnCopyAgain" class="btn step-btn"></button>
         </div>
         <p id="handoffMsg" class="inline-msg" aria-live="polite"></p>
+      </section>
+
+      <section class="hint-card" aria-labelledby="loginHelpHeading">
+        <h2 id="loginHelpHeading" class="hint-heading"></h2>
+        <p id="loginHelpIntro"></p>
+        <ul id="loginHelpList" class="tip-list help-links"></ul>
+        <p id="loginHelpPaste" class="muted"></p>
       </section>
 
       <section class="status-card">

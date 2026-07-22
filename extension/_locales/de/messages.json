@@ -3,7 +3,7 @@
     "message": "Video-Faktencheck"
   },
   "extDescription": {
-    "message": "Video-Link vorbereiten und ChatGPT Video-Faktencheck oder kostenloses Gemini öffnen — ohne Setup."
+    "message": "Video-Link vorbereiten und kostenlosen Chat öffnen (Video-Faktencheck GPT, Gemini, Claude, Copilot oder DeepSeek) — ohne Setup."
   },
   "actionTitle": {
     "message": "Dieses Video prüfen"
@@ -21,19 +21,31 @@
     "message": "Chat öffnen"
   },
   "guideIdle": {
-    "message": "Zuerst eine Video-Seite prüfen — dann unten einen Chat tippen."
+    "message": "Zuerst eine Video-Seite prüfen — dann Chat wählen und öffnen."
   },
   "guideReady": {
-    "message": "Tippen Sie auf einen Chat: Text wird eingefügt und die Prüfung startet."
+    "message": "Chat wählen (zuerst anmelden — siehe Hilfe unten), dann Chat öffnen tippen."
   },
   "guideOpening": {
     "message": "Text bereit — Chat wird geöffnet…"
   },
-  "guideOpenedGpt": {
-    "message": "Video-Faktencheck GPT ist offen — Text wird eingefügt und gesendet…"
+  "guideOpenedInject": {
+    "message": "$1$ ist offen — Text wird eingefügt und gesendet…",
+    "placeholders": {
+      "1": {
+        "content": "$1",
+        "example": "Claude (kostenlos)"
+      }
+    }
   },
-  "guideOpenedGemini": {
-    "message": "Gemini ist offen — Text wird eingefügt und gesendet…"
+  "guideOpenedPaste": {
+    "message": "$1$ ist offen — mit Strg+V einfügen und senden.",
+    "placeholders": {
+      "1": {
+        "content": "$1",
+        "example": "Microsoft Copilot (kostenlos)"
+      }
+    }
   },
   "guideInjectOk": {
     "message": "Text eingefügt und gesendet. Die Antwort erscheint im Chat."
@@ -41,11 +53,14 @@
   "guideInjectFailed": {
     "message": "Automatisches Einfügen hat nicht geklappt. Tippen Sie im Chat auf das Feld, Strg+V, und senden."
   },
-  "guideLoginGpt": {
-    "message": "Bitte melden Sie sich in dem offenen Tab bei ChatGPT an. Tippen Sie danach erneut auf Video-Faktencheck GPT öffnen."
-  },
-  "guideLoginGemini": {
-    "message": "Bitte melden Sie sich in dem offenen Tab bei Google an. Tippen Sie danach erneut auf Gemini öffnen."
+  "guideLoginChat": {
+    "message": "Bitte melden Sie sich in dem offenen Tab bei $1$ an. Tippen Sie danach erneut auf Chat öffnen.",
+    "placeholders": {
+      "1": {
+        "content": "$1",
+        "example": "Claude (kostenlos)"
+      }
+    }
   },
   "guideTabOpenFailed": {
     "message": "Der Chat-Tab konnte nicht geöffnet werden. Pop-up-Blocker prüfen und erneut versuchen."
@@ -54,19 +69,19 @@
     "message": "Kopieren hat nicht geklappt — tippen Sie auf Nochmal kopieren."
   },
   "sidepanelHint": {
-    "message": "Kein besonderes Setup. Einfach mit Ihrem normalen ChatGPT- oder Google-Konto."
+    "message": "Zuerst kostenloses Konto anlegen und im gewählten Chat anmelden. Dann hier Chat öffnen."
   },
   "hintAfterCopy": {
-    "message": "Der Chat öffnet sich. Der Text wird dort eingefügt und gesendet."
+    "message": "Der Chat öffnet sich. Der Text wird dort wenn möglich eingefügt."
   },
   "hintInjecting": {
     "message": "Einen Moment — der Text wird im Chat eingefügt und gesendet."
   },
   "hintPasteNow": {
-    "message": "Falls nichts passiert: im Chat-Feld Strg+V und senden."
+    "message": "Im Chat-Feld tippen, Strg+V und senden. Sie müssen bereits angemeldet sein."
   },
   "hintLoginRequired": {
-    "message": "Nach dem Anmelden öffnen Sie den Chat erneut über dieses Fenster. Der Text bleibt in der Zwischenablage."
+    "message": "Melden Sie sich im offenen Tab an (Hilfslinks unten), dann erneut Chat öffnen. Der Text bleibt in der Zwischenablage."
   },
   "hintTabOpenFailed": {
     "message": "Erlauben Sie Pop-ups für diese Erweiterung, oder öffnen Sie den Chat selbst und fügen Sie mit Strg+V ein."
@@ -77,11 +92,23 @@
   "handoffWorking": {
     "message": "Chat und Text werden vorbereitet…"
   },
-  "handoffOpenedGpt": {
-    "message": "Video-Faktencheck GPT ist offen — Einfügen und Senden läuft…"
+  "handoffOpenedInject": {
+    "message": "$1$ ist offen — Einfügen und Senden läuft…",
+    "placeholders": {
+      "1": {
+        "content": "$1",
+        "example": "Claude (kostenlos)"
+      }
+    }
   },
-  "handoffOpenedGemini": {
-    "message": "Gemini ist offen — Einfügen und Senden läuft…"
+  "handoffOpenedPaste": {
+    "message": "$1$ ist offen — mit Strg+V einfügen und senden (Text ist in der Zwischenablage).",
+    "placeholders": {
+      "1": {
+        "content": "$1",
+        "example": "Microsoft Copilot (kostenlos)"
+      }
+    }
   },
   "handoffInjectOk": {
     "message": "Fertig: Text eingefügt und gesendet."
@@ -89,17 +116,20 @@
   "handoffInjectFailed": {
     "message": "Einfügen fehlgeschlagen — bitte Strg+V im Chat und senden (Text ist in der Zwischenablage)."
   },
-  "handoffLoginGpt": {
-    "message": "Zuerst bei ChatGPT anmelden, dann Video-Faktencheck GPT erneut öffnen."
-  },
-  "handoffLoginGemini": {
-    "message": "Zuerst bei Google anmelden, dann Gemini erneut öffnen."
+  "handoffLoginChat": {
+    "message": "Zuerst bei $1$ anmelden, dann erneut Chat öffnen tippen.",
+    "placeholders": {
+      "1": {
+        "content": "$1",
+        "example": "Claude (kostenlos)"
+      }
+    }
   },
   "handoffTabOpenFailed": {
     "message": "Chat-Tab wurde nicht geöffnet — Pop-up-Blocker prüfen und erneut versuchen (Text ist in der Zwischenablage)."
   },
   "copyOk": {
-    "message": "Kopiert. Tippen Sie auf einen Chat zum Öffnen, oder fügen Sie selbst ein."
+    "message": "Kopiert. Chat wählen und öffnen, oder selbst einfügen."
   },
   "copyAgainOk": {
     "message": "Erneut kopiert. Im Chat einfügen (Strg+V)."
@@ -119,11 +149,8 @@
   "readAnswerSources": {
     "message": "Prüfen Sie die genannten Quellen und Hinweise, was noch unsicher ist."
   },
-  "contextOpenGpt": {
-    "message": "Mit Video-Faktencheck GPT öffnen"
-  },
-  "contextOpenGemini": {
-    "message": "Mit Gemini öffnen (kostenlos)"
+  "contextOpenDefault": {
+    "message": "Mit gespeichertem Chat öffnen"
   },
   "contextCopyOnly": {
     "message": "Nur Link / Transkript kopieren"
@@ -215,11 +242,26 @@
   "platformUnknown": {
     "message": "Unbekannt"
   },
-  "btnOpenGpt": {
-    "message": "Video-Faktencheck GPT öffnen"
+  "btnOpenChat": {
+    "message": "Chat öffnen"
   },
-  "btnOpenGemini": {
-    "message": "Gemini öffnen (kostenlos)"
+  "labelChatTarget": {
+    "message": "Welcher Chat"
+  },
+  "loginHelpHeading": {
+    "message": "Vor dem Start — kostenloses Konto & Anmeldung"
+  },
+  "loginHelpIntro": {
+    "message": "Diese Erweiterung legt keine Konten an. Sie brauchen ein kostenloses Konto beim gewählten Chat und müssen angemeldet sein, bevor der Faktencheck läuft. Öffnen Sie einen Link zum Registrieren oder Anmelden:"
+  },
+  "loginHelpInjectNote": {
+    "message": "Einfügen und Senden möglich, wenn Sie angemeldet sind"
+  },
+  "loginHelpPasteNote": {
+    "message": "mit Strg+V einfügen (automatisches Einfügen noch nicht verfügbar)"
+  },
+  "loginHelpPaste": {
+    "message": "DeepSeek: nach Chat öffnen ins Nachrichtenfeld tippen, Strg+V, dann senden. ChatGPT, Gemini, Claude und Microsoft Copilot: wir versuchen automatisch einzufügen — trotzdem zuerst anmelden."
   },
   "btnOptions": {
     "message": "Einstellungen"

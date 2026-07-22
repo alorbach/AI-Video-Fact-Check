@@ -4,7 +4,7 @@
 **Parent:** [`../MULTILEVEL-IMPLEMENTATION-PLAN.md`](../MULTILEVEL-IMPLEMENTATION-PLAN.md)  
 **Estimate:** ~1 week  
 **Depends on:** [L6](L6-multi-model.md)  
-**Unlocks:** [L8](L8-store-release.md)
+**Unlocks:** [L8](L8-chat-picker.md)
 
 ## Goal
 

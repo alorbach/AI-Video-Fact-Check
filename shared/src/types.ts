@@ -3,7 +3,12 @@
 export type Locale = "de" | "en";
 
 /** Free consumer chat websites only — not developer APIs. */
-export type ChatTargetId = "chatgpt_video_faktencheck" | "gemini_web";
+export type ChatTargetId =
+  | "chatgpt_video_faktencheck"
+  | "gemini_web"
+  | "claude_web"
+  | "copilot_web"
+  | "deepseek_web";
 
 export type PlatformId =
   | "youtube"
@@ -35,9 +40,13 @@ export interface ChatTarget {
   labelDe: string;
   labelEn: string;
   openUrl: string;
+  /** Free account / sign-in page for help links (senior-friendly). */
+  loginUrl: string;
   freeForEndUsers: true;
   /** When true, clipboard includes the full master prompt (locale-matched). */
   needsEmbeddedMasterPrompt: boolean;
+  /** When true, extension attempts MAIN-world insert+send on the chat host. */
+  supportsInject: boolean;
 }
 
 export const CHAT_TARGETS: Record<ChatTargetId, ChatTarget> = {
@@ -47,18 +56,67 @@ export const CHAT_TARGETS: Record<ChatTargetId, ChatTarget> = {
     labelEn: "Video Fact-Check GPT",
     openUrl:
       "https://chatgpt.com/g/g-6a5e1494f814819181208da5d30ab4ae-video-faktencheck",
+    loginUrl: "https://chatgpt.com/auth/login",
     freeForEndUsers: true,
     needsEmbeddedMasterPrompt: false,
+    supportsInject: true,
   },
   gemini_web: {
     id: "gemini_web",
     labelDe: "Gemini (kostenlos)",
     labelEn: "Gemini (free)",
     openUrl: "https://gemini.google.com/",
+    loginUrl: "https://accounts.google.com/",
     freeForEndUsers: true,
     needsEmbeddedMasterPrompt: true,
+    supportsInject: true,
+  },
+  claude_web: {
+    id: "claude_web",
+    labelDe: "Claude (kostenlos)",
+    labelEn: "Claude (free)",
+    openUrl: "https://claude.ai/new",
+    loginUrl: "https://claude.ai/login",
+    freeForEndUsers: true,
+    needsEmbeddedMasterPrompt: true,
+    supportsInject: true,
+  },
+  copilot_web: {
+    id: "copilot_web",
+    labelDe: "Microsoft Copilot (kostenlos)",
+    labelEn: "Microsoft Copilot (free)",
+    openUrl: "https://copilot.microsoft.com/",
+    loginUrl: "https://login.live.com/",
+    freeForEndUsers: true,
+    needsEmbeddedMasterPrompt: true,
+    supportsInject: true,
+  },
+  deepseek_web: {
+    id: "deepseek_web",
+    labelDe: "DeepSeek (kostenlos)",
+    labelEn: "DeepSeek (free)",
+    openUrl: "https://chat.deepseek.com/",
+    loginUrl: "https://chat.deepseek.com/sign_in",
+    freeForEndUsers: true,
+    needsEmbeddedMasterPrompt: true,
+    supportsInject: false,
   },
 };
+
+/**
+ * Paths where a chat handoff already sent a message — do not inject again.
+ * ChatGPT: /c/… · Claude: /chat/… · some ChatGPT shells: /app/…
+ */
+export function isPostSendChatPath(pathname: string): boolean {
+  const p = pathname.toLowerCase();
+  return (
+    p.includes("/c/") ||
+    p.startsWith("/c/") ||
+    p.includes("/chat/") ||
+    p.startsWith("/chat/") ||
+    p.includes("/app/")
+  );
+}
 
 /** Result of in-page capture (L2+). */
 export interface CaptureResult {
@@ -101,7 +159,7 @@ export type ExtensionMessage =
     }
   | { type: "SET_MANUAL_TRANSCRIPT"; transcript: string; locale: Locale };
 
-/** Session payload for ChatGPT/Gemini insert+send (see chatInject.ts). */
+/** Session payload for inject-supported chat insert+send (see chatInject.ts). */
 export interface PendingChatHandoff {
   text: string;
   target: ChatTargetId;

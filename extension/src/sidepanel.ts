@@ -23,6 +23,8 @@ type GuidePhase =
   /** Handoff in progress — copy succeeded, chat tab is opening. */
   | "copied"
   | "opened"
+  /** Clipboard-only target: tab open, user must paste. */
+  | "paste_needed"
   | "inject_ok"
   | "inject_failed"
   | "login_required"
@@ -40,6 +42,12 @@ let selectedChat: ChatTargetId = DEFAULT_CHAT;
 let lastClickedChat: ChatTargetId = DEFAULT_CHAT;
 let guidePhase: GuidePhase = "idle";
 let handoffBusy = false;
+/** True after defaultChat / fontSize loaded from sync storage. */
+let prefsReady = false;
+let prefsReadyResolve: (() => void) | null = null;
+const prefsReadyPromise = new Promise<void>((resolve) => {
+  prefsReadyResolve = resolve;
+});
 /** Suppress duplicate START_HANDOFF deliveries that arrive after a run finishes. */
 let handoffCooldownUntil = 0;
 /** Current UI handoff — results for this key update the guide. */
@@ -94,6 +102,15 @@ function applyFontSize(size: FontSizePref): void {
     size === "large" ? "large" : "normal";
 }
 
+function chatLabel(id: ChatTargetId): string {
+  const chat = CHAT_TARGETS[id] ?? CHAT_TARGETS[DEFAULT_CHAT];
+  return uiLocale() === "de" ? chat.labelDe : chat.labelEn;
+}
+
+function msgWithChat(key: string, id: ChatTargetId): string {
+  return chrome.i18n.getMessage(key, chatLabel(id)) || t(key);
+}
+
 function setGuidePhase(phase: GuidePhase): void {
   guidePhase = phase;
   const status = document.getElementById("guideStatus");
@@ -106,6 +123,7 @@ function setGuidePhase(phase: GuidePhase): void {
     "is-current",
     phase === "ready" ||
       phase === "opened" ||
+      phase === "paste_needed" ||
       phase === "inject_ok" ||
       phase === "inject_failed" ||
       phase === "login_required" ||
@@ -122,6 +140,7 @@ function setGuidePhase(phase: GuidePhase): void {
     copyAgain.hidden =
       phase !== "clipboard_failed" &&
       phase !== "opened" &&
+      phase !== "paste_needed" &&
       phase !== "inject_failed" &&
       phase !== "login_required" &&
       phase !== "tab_open_failed" &&
@@ -138,11 +157,12 @@ function setGuidePhase(phase: GuidePhase): void {
       hint.textContent = t("hintAfterCopy");
       break;
     case "opened":
-      status.textContent =
-        selectedChat === "gemini_web"
-          ? t("guideOpenedGemini")
-          : t("guideOpenedGpt");
+      status.textContent = msgWithChat("guideOpenedInject", selectedChat);
       hint.textContent = t("hintInjecting");
+      break;
+    case "paste_needed":
+      status.textContent = msgWithChat("guideOpenedPaste", selectedChat);
+      hint.textContent = t("hintPasteNow");
       break;
     case "inject_ok":
       status.textContent = t("guideInjectOk");
@@ -153,10 +173,7 @@ function setGuidePhase(phase: GuidePhase): void {
       hint.textContent = t("hintPasteNow");
       break;
     case "login_required":
-      status.textContent =
-        selectedChat === "gemini_web"
-          ? t("guideLoginGemini")
-          : t("guideLoginGpt");
+      status.textContent = msgWithChat("guideLoginChat", selectedChat);
       hint.textContent = t("hintLoginRequired");
       break;
     case "tab_open_failed":
@@ -214,26 +231,70 @@ function renderCapture(): void {
   detailsEl.textContent = lines.join("\n");
 }
 
+function fillChatSelect(select: HTMLSelectElement, selected: ChatTargetId): void {
+  const locale = uiLocale();
+  select.replaceChildren();
+  for (const id of Object.keys(CHAT_TARGETS) as ChatTargetId[]) {
+    const chat = CHAT_TARGETS[id];
+    const opt = document.createElement("option");
+    opt.value = id;
+    opt.textContent = locale === "de" ? chat.labelDe : chat.labelEn;
+    select.append(opt);
+  }
+  select.value = selected in CHAT_TARGETS ? selected : DEFAULT_CHAT;
+}
+
 function applyDefaultChat(defaultChat: string): void {
   const id = (
     defaultChat in CHAT_TARGETS ? defaultChat : DEFAULT_CHAT
   ) as ChatTargetId;
   selectedChat = id;
   lastClickedChat = id;
-  const actions = document.querySelector(".step-actions");
-  const gptBtn = document.getElementById("btnOpenGpt");
-  const geminiBtn = document.getElementById("btnOpenGemini");
-  if (!actions || !gptBtn || !geminiBtn) return;
-
-  gptBtn.classList.toggle("primary", id === "chatgpt_video_faktencheck");
-  geminiBtn.classList.toggle("primary", id === "gemini_web");
-
-  // Put the user's default chat first.
-  if (id === "gemini_web") {
-    actions.append(geminiBtn, gptBtn);
+  const select = document.getElementById("chatTarget") as HTMLSelectElement | null;
+  if (!select) return;
+  if (select.options.length === 0) {
+    fillChatSelect(select, id);
   } else {
-    actions.append(gptBtn, geminiBtn);
+    select.value = id;
   }
+}
+
+function setOpenChatEnabled(enabled: boolean): void {
+  const btn = document.getElementById("btnOpenChat") as HTMLButtonElement | null;
+  if (btn) btn.disabled = !enabled;
+}
+
+async function ensurePrefsReady(): Promise<void> {
+  if (prefsReady) return;
+  await prefsReadyPromise;
+}
+
+function fillLoginHelp(): void {
+  const list = document.getElementById("loginHelpList");
+  if (!list) return;
+  list.replaceChildren();
+  const locale = uiLocale();
+  for (const id of Object.keys(CHAT_TARGETS) as ChatTargetId[]) {
+    const chat = CHAT_TARGETS[id];
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.href = chat.loginUrl;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    a.textContent = locale === "de" ? chat.labelDe : chat.labelEn;
+    li.append(a);
+    const note = document.createElement("span");
+    note.textContent = chat.supportsInject
+      ? ` — ${t("loginHelpInjectNote")}`
+      : ` — ${t("loginHelpPasteNote")}`;
+    li.append(note);
+    list.append(li);
+  }
+}
+
+function persistDefaultChat(id: ChatTargetId): void {
+  applyDefaultChat(id);
+  void chrome.storage.sync.set({ defaultChat: id });
 }
 
 function applyCapture(
@@ -355,6 +416,7 @@ async function handoffToChat(
   target: ChatTargetId,
   opts?: { force?: boolean },
 ): Promise<void> {
+  await ensurePrefsReady();
   if (handoffBusy) return;
   // Ignore SW retry deliveries; button clicks pass force: true.
   if (!opts?.force && Date.now() < handoffCooldownUntil) return;
@@ -395,9 +457,30 @@ async function handoffToChat(
     }
     const tabId = tab.id;
     const at = Date.now();
+    selectedChat = target;
+    persistDefaultChat(target);
+
+    const supportsInject = CHAT_TARGETS[target]?.supportsInject ?? false;
+    if (!supportsInject) {
+      // Open + clipboard only — no pending inject / content script.
+      // Drop prior inject sessions so a late CHAT_INJECT_RESULT cannot
+      // revert combobox / defaultChat / Copy-again target.
+      activeHandoff = null;
+      openHandoffs.clear();
+      setGuidePhase("paste_needed");
+      setMsg(
+        "handoffMsg",
+        msgWithChat("handoffOpenedPaste", target),
+        "ok",
+      );
+      handoffCooldownUntil = Date.now() + 2500;
+      return;
+    }
+
     const session = { tabId, at, target };
     activeHandoff = session;
     openHandoffs.set(handoffKey(tabId, at), session);
+
     // Per-tab pending map — a second handoff must not erase the first tab’s payload.
     const stored = await chrome.storage.session.get([
       PENDING_CHAT_HANDOFFS_KEY,
@@ -418,9 +501,9 @@ async function handoffToChat(
     // Clear legacy single-entry key so it cannot override the map.
     await chrome.storage.session.remove(PENDING_CHAT_HANDOFF_KEY);
     void (async () => {
-      // One delayed kick — onUpdated + content probe cover the rest.
-      // Two early kicks raced Custom GPT load and double-claimed after restore.
-      await new Promise((r) => setTimeout(r, 2200));
+      // Delayed kick — Custom GPT / Claude need the shell after tab create.
+      // onUpdated + content probe cover earlier/later windows.
+      await new Promise((r) => setTimeout(r, 3800));
       try {
         await chrome.runtime.sendMessage({
           type: "TRIGGER_CHAT_INJECT",
@@ -430,13 +513,10 @@ async function handoffToChat(
         /* service worker wake */
       }
     })();
-    selectedChat = target;
     setGuidePhase("opened");
     setMsg(
       "handoffMsg",
-      target === "gemini_web"
-        ? t("handoffOpenedGemini")
-        : t("handoffOpenedGpt"),
+      msgWithChat("handoffOpenedInject", target),
       "ok",
     );
     handoffCooldownUntil = Date.now() + 2500;
@@ -462,6 +542,8 @@ async function copyAgain(): Promise<void> {
       setGuidePhase("ready");
     } else if (guidePhase === "login_required") {
       setGuidePhase("login_required");
+    } else if (guidePhase === "paste_needed") {
+      setGuidePhase("paste_needed");
     } else {
       setGuidePhase("opened");
     }
@@ -567,9 +649,18 @@ function initCopy(): void {
   setText("manualHelp", t("manualHelp"));
   setText("manualLabel", t("manualLabel"));
   setText("btnSaveManual", t("btnSaveManual"));
-  setText("btnOpenGpt", t("btnOpenGpt"));
-  setText("btnOpenGemini", t("btnOpenGemini"));
+  setText("btnOpenChat", t("btnOpenChat"));
+  setText("labelChatTarget", t("labelChatTarget"));
   setText("btnCopyAgain", t("btnCopyAgain"));
+  setText("loginHelpHeading", t("loginHelpHeading"));
+  setText("loginHelpIntro", t("loginHelpIntro"));
+  setText("loginHelpPaste", t("loginHelpPaste"));
+  fillLoginHelp();
+  setOpenChatEnabled(false);
+  const chatSelect = document.getElementById(
+    "chatTarget",
+  ) as HTMLSelectElement | null;
+  if (chatSelect) fillChatSelect(chatSelect, selectedChat);
   setText("btnOptions", t("btnOptions"));
   setText("creditsLabel", t("creditsLabel"));
   setText("captureStatus", t("captureIdle"));
@@ -588,12 +679,37 @@ document.getElementById("btnSaveManual")?.addEventListener("click", () => {
   void applyManualTranscript();
 });
 
-document.getElementById("btnOpenGpt")?.addEventListener("click", () => {
-  void handoffToChat("chatgpt_video_faktencheck", { force: true });
+document.getElementById("btnOpenChat")?.addEventListener("click", () => {
+  void (async () => {
+    await ensurePrefsReady();
+    const select = document.getElementById(
+      "chatTarget",
+    ) as HTMLSelectElement | null;
+    const fromSelect =
+      select?.value && select.value in CHAT_TARGETS
+        ? (select.value as ChatTargetId)
+        : selectedChat;
+    selectedChat = fromSelect;
+    void handoffToChat(fromSelect, { force: true });
+  })();
 });
 
-document.getElementById("btnOpenGemini")?.addEventListener("click", () => {
-  void handoffToChat("gemini_web", { force: true });
+function syncChatSelectFromDom(): void {
+  const select = document.getElementById(
+    "chatTarget",
+  ) as HTMLSelectElement | null;
+  const value = select?.value;
+  if (value && value in CHAT_TARGETS) {
+    persistDefaultChat(value as ChatTargetId);
+  }
+}
+
+document.getElementById("chatTarget")?.addEventListener("change", () => {
+  syncChatSelectFromDom();
+});
+// Keyboard navigation updates value before blur/change on some platforms.
+document.getElementById("chatTarget")?.addEventListener("input", () => {
+  syncChatSelectFromDom();
 });
 
 document.getElementById("btnCopyAgain")?.addEventListener("click", () => {
@@ -648,10 +764,10 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage) => {
       message.at === activeHandoff.at;
 
     if (message.ok) {
-      // Persist default chat for this handoff even if the UI moved on.
-      applyDefaultChat(session.target);
-      void chrome.storage.sync.set({ defaultChat: session.target });
+      // Only the active handoff may update defaultChat / combobox — a
+      // superseded tab completing later must not revert the user's choice.
       if (isActive) {
+        persistDefaultChat(session.target);
         setGuidePhase("inject_ok");
         setMsg("handoffMsg", t("handoffInjectOk"), "ok");
       }
@@ -660,12 +776,11 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage) => {
 
     if (isActive) {
       if (message.reason === "login-required") {
+        selectedChat = session.target;
         setGuidePhase("login_required");
         setMsg(
           "handoffMsg",
-          session.target === "gemini_web"
-            ? t("handoffLoginGemini")
-            : t("handoffLoginGpt"),
+          msgWithChat("handoffLoginChat", session.target),
           "error",
         );
       } else {
@@ -689,5 +804,8 @@ void chrome.storage.sync
         : DEFAULT_CHAT;
     applyDefaultChat(chat);
     applyFontSize(fontSize === "large" ? "large" : "normal");
+    prefsReady = true;
+    prefsReadyResolve?.();
+    setOpenChatEnabled(true);
   });
 void initCaptureState();

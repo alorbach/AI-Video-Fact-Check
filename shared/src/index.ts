@@ -15,6 +15,7 @@ export {
   CHAT_TARGETS,
   PENDING_CHAT_HANDOFF_KEY,
   PENDING_CHAT_HANDOFFS_KEY,
+  isPostSendChatPath,
 } from "./types.js";
 export {
   detectPlatform,

@@ -22,7 +22,7 @@ Replace any URL that goes private or 404s — keep the table filled.
 2. Platform name shown (de/en)
 3. Link looks stable (canonical when possible)
 4. Captions / post text included when the page exposes them; otherwise “No — chat can still use the link”
-5. **Open Video Fact-Check GPT** (or Gemini) → insert/send into the chat; if automation fails, paste from clipboard works
+5. Choose chat in combobox → **Open chat** → insert/send (GPT/Gemini/Claude) or paste from clipboard (Copilot/DeepSeek); if automation fails, paste works
 
 **Detection pass (2026-07-21):** YouTube, Shorts, TikTok, X, Facebook, Instagram — all recognized in Side Panel.
 
@@ -32,15 +32,17 @@ Replace any URL that goes private or 404s — keep the table filled.
 - Link: `https://www.youtube.com/watch?v=iEa1a9Hip8E`  
 - Text: **Ja — Beitragstext enthalten** (video description) and/or captions if timedtext/engagement panel works in your session
 
-## Profile / login checklist (L7)
+## Profile / login checklist (L7–L8)
 
-Use a second Chrome profile (or Incognito with the unpacked extension loaded) so ChatGPT / Gemini are **logged out**.
+Use a second Chrome profile (or Incognito with the unpacked extension loaded) so chats are **logged out**.
 
 | Step | Expect |
 |---|---|
-| Scan a test URL above, then **Open Video Fact-Check GPT** | Chat tab opens; Side Panel shows **sign-in** guidance (not a silent failure) |
-| Sign in in that tab, then open GPT again from the panel | Insert/send (or paste fallback) works |
-| Repeat with **Open Gemini** while logged out of Google | Same: clear sign-in message, then success after login |
+| Scan a test URL, pick GPT in combobox, **Open chat** | Chat tab opens; Side Panel shows **sign-in** guidance if logged out |
+| Sign in, then open again | Insert/send (or paste fallback) works |
+| Repeat with Gemini / Claude while logged out | Same: clear sign-in message, then success after login |
+| Open Copilot or DeepSeek | Tab opens; clipboard has text; guide asks to paste |
+| Change combobox → reopen Options | `defaultChat` matches; context menu uses that default |
 | Block pop-ups / force tab create to fail (if reproducible) | Distinct “could not open chat tab” message; clipboard still has text |
 | Deny clipboard (site permission) then open chat | “Copy again” recovery — no silent fail |
 | Settings → enable “Remember last video…”, scan, restart Chrome | Last package restored in Side Panel; turn off clears storage |

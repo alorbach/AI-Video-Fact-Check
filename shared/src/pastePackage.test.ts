@@ -93,6 +93,20 @@ describe("PastePackage", () => {
     assert.doesNotMatch(text, /Please run a clear fact-check/);
   });
 
+  it("embeds German master prompt for Claude, Copilot, and DeepSeek", () => {
+    const pkg = buildPastePackage({
+      videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      locale: "de",
+      transcript: "Kurztext",
+    });
+    for (const target of ["claude_web", "copilot_web", "deepseek_web"] as const) {
+      const text = formatPastePackageText(pkg, target);
+      assert.match(text, /Sachliche Bewertung/);
+      assert.match(text, /Kurztext/);
+      assert.doesNotMatch(text, /verständlichen Faktencheck/);
+    }
+  });
+
   it("switches master prompt language with locale for Gemini", () => {
     const base = {
       videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",

@@ -1,27 +1,32 @@
 # Spec — Chat handoff & expected analysis
 
-Analysis runs **only** in the user’s open chat:
+Analysis runs **only** in the user’s open chat. Free consumer web targets (no developer LLM API keys):
 
 - Primary: https://chatgpt.com/g/g-6a5e1494f814819181208da5d30ab4ae-video-faktencheck  
-- Secondary (free): https://gemini.google.com/
+- Also: https://gemini.google.com/ · https://claude.ai/new · https://copilot.microsoft.com/ · https://chat.deepseek.com/
 
-No backend fact-check API. No developer LLM API keys.
+No backend fact-check API.
 
 ## Handoff protocol
 
 ```text
 Extension
   → build PastePackage (URL + optional transcript + short ask / master prompt)
-  → clipboard backup + chrome.storage.session pending handoff
+  → clipboard backup + chrome.storage.session pending handoff (when inject supported)
   → chrome.tabs.create({ url: chatTarget })
-  → content script on ChatGPT/Gemini: insert text into composer + send
+  → content script on inject hosts: insert text into composer + send
   → Side Panel reports success or “please paste manually” fallback
 ```
 
 ### Chat targets
 
 ```typescript
-type ChatTargetId = "chatgpt_video_faktencheck" | "gemini_web";
+type ChatTargetId =
+  | "chatgpt_video_faktencheck"
+  | "gemini_web"
+  | "claude_web"
+  | "copilot_web"
+  | "deepseek_web";
 
 interface ChatTarget {
   id: ChatTargetId;
@@ -32,15 +37,20 @@ interface ChatTarget {
   freeForEndUsers: true;
   /** When true, clipboard includes the full master prompt (locale-matched). */
   needsEmbeddedMasterPrompt: boolean;
+  /** When true, extension attempts MAIN-world insert+send on the chat host. */
+  supportsInject: boolean;
 }
 ```
 
-| id | openUrl |
-|---|---|
-| `chatgpt_video_faktencheck` | `https://chatgpt.com/g/g-6a5e1494f814819181208da5d30ab4ae-video-faktencheck` |
-| `gemini_web` | `https://gemini.google.com/` |
+| id | openUrl | supportsInject |
+|---|---|---|
+| `chatgpt_video_faktencheck` | Custom GPT URL | yes |
+| `gemini_web` | `https://gemini.google.com/` | yes |
+| `claude_web` | `https://claude.ai/new` | yes |
+| `copilot_web` | `https://copilot.microsoft.com/` | yes |
+| `deepseek_web` | `https://chat.deepseek.com/` | no (clipboard) |
 
-Default target: Custom GPT. Gemini is an explicit second button/menu item.
+Default target: Custom GPT. Side Panel **combobox** + Options `defaultChat` select the engine. Context menu opens the stored default.
 
 ### Paste package fields
 
@@ -57,11 +67,11 @@ interface PastePackage {
 Rendered as plain text (see [`PRODUCT.md`](PRODUCT.md)).
 
 - **Custom GPT:** short ask (score 1–10, plain summary, claims, sources, uncertainties) — the Custom GPT already has the full behavior configured.
-- **Gemini (and any `needsEmbeddedMasterPrompt` target):** prepend the full locale-matched master prompt (`shared/src/masterPrompt.ts`: DE or EN from UI language), then `---`, then URL + transcript. No second short ask line.
+- **Any `needsEmbeddedMasterPrompt` target:** prepend the full locale-matched master prompt (`shared/src/masterPrompt.ts`: DE or EN from UI language), then `---`, then URL + transcript. No second short ask line.
 
 ## What we ask the chat to produce
 
-(For Gemini instructions and for Side Panel “what you should see” help.)
+(For embedded master prompt and for Side Panel “what you should see” help.)
 
 1. Overall score **1–10**
 2. Short plain summary
@@ -100,7 +110,7 @@ Traffic-light helper in Side Panel (for reading the chat answer):
 Not a second analysis engine. It is a **guide**:
 
 1. Status of capture (URL / captions found?)  
-2. Big button: Open chat (insert + send)  
+2. Combobox: choose free chat + big **Open chat** button  
 3. Status: inserting / sent / or manual fallback  
 4. Optional: “copy again” if automation failed  
 5. Short “how to read the answer” tip  
@@ -131,4 +141,4 @@ type ExtensionMessage =
 
 - `POST` to OpenAI / Anthropic / Gemini **APIs**
 - Own job queue for LLM scoring
-- Scraping ChatGPT/Gemini DOM for automatic result import
+- Scraping chat DOM for automatic result import

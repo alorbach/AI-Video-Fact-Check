@@ -4,7 +4,7 @@
 **Author / Credits:** [Andre Lorbach](https://github.com/alorbach/)  
 **Repo:** https://github.com/alorbach/AI-Video-Fact-Check  
 **Primary chat:** [Video Faktencheck GPT](https://chatgpt.com/g/g-6a5e1494f814819181208da5d30ab4ae-video-faktencheck)  
-**Secondary (free):** [Google Gemini web](https://gemini.google.com/)  
+**Also free:** [Gemini](https://gemini.google.com/), [Claude](https://claude.ai/new), [Microsoft Copilot](https://copilot.microsoft.com/), [DeepSeek](https://chat.deepseek.com/)  
 **Specs:** [`PRODUCT.md`](PRODUCT.md) · [`SPEC-TRANSCRIPT.md`](SPEC-TRANSCRIPT.md) · [`SPEC-FACT-CHECK.md`](SPEC-FACT-CHECK.md)
 
 This file is the **overall roadmap and status board**. Level detail: [`levels/`](levels/).
@@ -30,11 +30,12 @@ This file is the **overall roadmap and status board**. Level detail: [`levels/`]
 | L5 | Required platforms (YT, TikTok, X, FB, IG) | **done** | [`levels/L5-platforms.md`](levels/L5-platforms.md) |
 | L6 | Free Gemini (+ more free chats) | **done** | [`levels/L6-multi-model.md`](levels/L6-multi-model.md) |
 | L7 | Handoff hardening | **done** | [`levels/L7-hardening.md`](levels/L7-hardening.md) |
-| L8 | Chrome Web Store | todo | [`levels/L8-store-release.md`](levels/L8-store-release.md) |
+| L8 | Chat picker & more free chats | **done** | [`levels/L8-chat-picker.md`](levels/L8-chat-picker.md) |
+| L9 | Chrome Web Store | todo | [`levels/L9-store-release.md`](levels/L9-store-release.md) |
 
-**Current level:** L8 — Chrome Web Store  
+**Current level:** L9 — Chrome Web Store  
 **Last updated:** 2026-07-22  
-**Next action:** Start L8 — privacy form, store assets, publish checklist.
+**Next action:** Start L9 — privacy form, store assets, publish checklist.
 
 Status values: `todo` · `in_progress` · `done` · `blocked`
 
@@ -51,7 +52,8 @@ L4  Guide UX + a11y      Large steps, de/en, senior-friendly
 L5  Platforms            YouTube, TikTok, X, Facebook, Instagram (required)
 L6  Free Gemini (+…)     gemini.google.com handoff (no API keys)
 L7  Handoff hardening    Insert/send reliability, clipboard fallback, errors
-L8  Store release        Privacy, assets, publish
+L8  Chat picker          Combobox + Claude / Copilot / DeepSeek
+L9  Store release        Privacy, assets, publish
 ```
 
 ---
@@ -61,19 +63,18 @@ L8  Store release        Privacy, assets, publish
 ```text
 [Chrome Extension MV3]
   detect video → captions/URL → PastePackage
-  open chat tab + insert/send (clipboard backup if insert fails)
-  Side Panel = step-by-step guide (de/en)
+  open chosen chat tab + insert/send when supported (clipboard backup)
+  Side Panel = step-by-step guide (de/en) + AI combobox
            │
            ▼
 [User’s free chat — no our server]
-  1) ChatGPT Custom GPT (primary)
-  2) Gemini web (secondary, free)
+  Custom GPT (primary) · Gemini · Claude · Copilot · DeepSeek
 ```
 
 | Do | Don’t |
 |---|---|
-| Open Custom GPT / Gemini in the user’s browser | Own LLM/STT backend for analysis |
-| Insert/send into the open chat; clipboard as fallback (maintain selectors) | API keys (OpenAI/Anthropic/Gemini API) |
+| Open free consumer chats in the user’s browser | Own LLM/STT backend for analysis |
+| Insert/send when supported; clipboard as fallback | API keys (OpenAI/Anthropic/Gemini API) |
 | In-browser captions when possible | Scrape chat answers back into the extension |
 | Free end-user chat products only | Paid developer APIs |
 
@@ -108,9 +109,11 @@ Sources: [Store requirements 2026](https://extensionbooster.net/blog/chrome-web-
 
 ### 0.3 “Multi-model” = multiple free chat websites
 
-Not adapter SDKs. A small list of `ChatTarget`s that open free web UIs. Primary = Custom GPT; L6 adds Gemini web. Further free chats only if usable without API keys.
+Not adapter SDKs. A small list of `ChatTarget`s that open free web UIs. Primary = Custom GPT. L6 added Gemini. L8 adds Claude (insert+send), Copilot and DeepSeek (open + clipboard), via Side Panel combobox + Options `defaultChat`. Further free chats only if usable without API keys.
 
-### 0.4 Multi-agent coding
+---
+
+## 0.4 Multi-agent coding
 
 | File | Role |
 |---|---|
@@ -129,14 +132,14 @@ Not adapter SDKs. A small list of `ChatTarget`s that open free web UIs. Primary 
 
 ### B. Privacy
 
-Clipboard / insert-send + user-chosen chat only. Document ChatGPT/Gemini as destinations in the store privacy form. Credits → https://github.com/alorbach/
+Clipboard / insert-send + user-chosen chat only. Document chat destinations in the store privacy form. Credits → https://github.com/alorbach/
 
 ### C. Testing
 
 | Layer | What |
 |---|---|
 | Unit | detectors, paste-package builder (`shared/` tests) |
-| Manual | YouTube, TikTok, X, Facebook, Instagram → Custom GPT/Gemini insert+send (paste if automation fails) |
+| Manual | Required platforms → chosen chat insert+send or paste (see L8 checklist) |
 | Store | permissions + privacy disclosure |
 
 ### D. Calendar (solo, rough)
@@ -148,6 +151,7 @@ Clipboard / insert-send + user-chosen chat only. Document ChatGPT/Gemini as dest
 | 2 | L4 |
 | 3–4 | L5–L6 |
 | 5 | L7–L8 |
+| 6 | L9 |
 
 ---
 
@@ -163,5 +167,5 @@ See [`PRODUCT.md`](PRODUCT.md) MVP checklist (L2–L4 primarily).
 - OpenAI / Anthropic / Gemini **API** integrations  
 - API-key settings screens  
 - Monetization / accounts for our product  
-- Scraping ChatGPT/Gemini answers back into the extension  
+- Scraping chat answers back into the extension  
 - Cursor-only rules without `AGENTS.md`

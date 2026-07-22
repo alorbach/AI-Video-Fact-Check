@@ -2,10 +2,12 @@
 
 Chrome extension that helps everyday users — especially older adults — check video claims in plain language.
 
-It does **not** use developer APIs. It prepares the video link (and captions when available), copies them, and opens a chat the user already knows:
+It does **not** use developer APIs. It prepares the video link (and captions when available), copies them, and opens a free chat the user already knows:
 
 1. **Primary:** [Video Faktencheck (ChatGPT Custom GPT)](https://chatgpt.com/g/g-6a5e1494f814819181208da5d30ab4ae-video-faktencheck)  
-2. **Secondary (free):** [Google Gemini](https://gemini.google.com/)
+2. Also free: [Gemini](https://gemini.google.com/), [Claude](https://claude.ai/new), [Microsoft Copilot](https://copilot.microsoft.com/), [DeepSeek](https://chat.deepseek.com/)
+
+Pick the engine in the Side Panel combobox (saved in Settings).
 
 **Author:** [Andre Lorbach](https://github.com/alorbach/)  
 **Repository:** https://github.com/alorbach/AI-Video-Fact-Check  
@@ -14,7 +16,7 @@ It does **not** use developer APIs. It prepares the video link (and captions whe
 
 | Document | Purpose |
 |---|---|
-| [`docs/MULTILEVEL-IMPLEMENTATION-PLAN.md`](docs/MULTILEVEL-IMPLEMENTATION-PLAN.md) | Status board L0–L8 |
+| [`docs/MULTILEVEL-IMPLEMENTATION-PLAN.md`](docs/MULTILEVEL-IMPLEMENTATION-PLAN.md) | Status board L0–L9 |
 | [`docs/levels/`](docs/levels/) | Per-level tasks |
 | [`docs/PRODUCT.md`](docs/PRODUCT.md) | Product goals & handoff UX |
 | [`docs/SPEC-TRANSCRIPT.md`](docs/SPEC-TRANSCRIPT.md) | Captions / URL in the browser |
@@ -26,7 +28,7 @@ YouTube · TikTok · X · Facebook · Instagram
 
 ## Status
 
-**Level 7 — Handoff hardening** (done). L0–L7 complete: platforms, Custom GPT + Gemini insert/send, clipboard fallback, login/tab-open recovery; next is L8 store release.
+**Level 8 — Chat picker & more free chats** (done). L0–L8 complete; next is L9 store release.
 
 ## Local development
 
@@ -37,7 +39,7 @@ cd extension && npm run build
 
 Chrome → `chrome://extensions` → Developer mode → **Load unpacked** → `extension/dist`.
 
-No server required — uses your normal ChatGPT or Google login.
+No server required — uses your normal free chat logins.
 
 ## Credits
 

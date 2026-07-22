@@ -145,6 +145,22 @@ body {
   gap: 0.65rem;
 }
 
+.field-label {
+  font-weight: 600;
+  margin: 0;
+}
+
+.chat-select {
+  width: 100%;
+  min-height: 44px;
+  font-size: inherit;
+  padding: 0.55rem 0.75rem;
+  border: 2px solid var(--border, #c5c5c5);
+  border-radius: 8px;
+  background: #fff;
+  color: inherit;
+}
+
 .step-btn {
   margin-top: 0.65rem;
 }
@@ -167,6 +183,16 @@ body {
 
 .tip-list li:last-child {
   margin-bottom: 0;
+}
+
+.help-links a {
+  color: var(--primary);
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.hint-card .muted {
+  margin-top: 0.75rem;
 }
 
 .hint-card p {
@@ -293,11 +319,14 @@ select:focus-visible {
 
 @media (min-width: 420px) {
   .step-actions {
-    flex-direction: row;
-    flex-wrap: wrap;
+    flex-direction: column;
   }
 
   .step-actions .btn {
-    flex: 1 1 12rem;
+    width: 100%;
+  }
+
+  .chat-select {
+    width: 100%;
   }
 }

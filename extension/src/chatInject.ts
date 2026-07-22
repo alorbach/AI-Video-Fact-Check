@@ -1,7 +1,9 @@
 /**
- * Lightweight probe on ChatGPT/Gemini pages: ask the service worker to run
- * MAIN-world insert+send when the composer appears.
+ * Lightweight probe on ChatGPT / Gemini / Claude / Copilot pages: ask the
+ * service worker to run MAIN-world insert+send when the composer appears.
  */
+
+import { isPostSendChatPath } from "@ai-video-fact-check/shared";
 
 function hostOk(): boolean {
   const h = location.hostname.toLowerCase();
@@ -9,40 +11,88 @@ function hostOk(): boolean {
     h === "chatgpt.com" ||
     h.endsWith(".chatgpt.com") ||
     h === "gemini.google.com" ||
-    h.endsWith(".gemini.google.com")
+    h.endsWith(".gemini.google.com") ||
+    h === "claude.ai" ||
+    h.endsWith(".claude.ai") ||
+    h === "copilot.microsoft.com" ||
+    h.endsWith(".copilot.microsoft.com")
+  );
+}
+
+function composerPresent(): boolean {
+  return Boolean(
+    document.querySelector("#prompt-textarea") ||
+      document.querySelector('[data-testid="prompt-textarea"]') ||
+      document.querySelector('div.ql-editor[contenteditable="true"]') ||
+      document.querySelector('div[contenteditable="true"][role="textbox"]') ||
+      document.querySelector("div.ProseMirror[contenteditable='true']") ||
+      document.querySelector('fieldset div[contenteditable="true"]') ||
+      document.querySelector('[data-testid="chat-input"]') ||
+      document.querySelector('div[contenteditable="true"].ProseMirror') ||
+      document.querySelector("textarea#userInput") ||
+      document.querySelector('textarea[data-testid="composer-input"]') ||
+      document.querySelector('[data-testid="composer-input"]') ||
+      document.querySelector('textarea[placeholder*="Message Copilot"]') ||
+      document.querySelector('textarea[placeholder*="Message"]') ||
+      document.querySelector('textarea[placeholder*="Nachricht"]') ||
+      document.querySelector('[aria-label*="Message Copilot"]') ||
+      document.querySelector('textarea:not([aria-hidden="true"])'),
   );
 }
 
 let lastRequestAt = 0;
 
-function requestInject(): void {
+function requestInject(force = false): void {
   if (!hostOk()) return;
   // Do not re-inject on conversation pages after a send navigated here.
-  if (location.pathname.includes("/c/")) return;
+  // Copilot often stays on / — probe still runs; MAIN-world DONE lock prevents double send.
+  if (isPostSendChatPath(location.pathname)) return;
   // Debounce MutationObserver storms (composer mount fires many mutations).
   const now = Date.now();
-  if (now - lastRequestAt < 1200) return;
+  if (!force && now - lastRequestAt < 1200) return;
   lastRequestAt = now;
   void chrome.runtime.sendMessage({ type: "TRIGGER_CHAT_INJECT" });
 }
 
-requestInject();
-setTimeout(requestInject, 2500);
-setTimeout(requestInject, 5500);
+// Do not kick immediately — chat shells often mount the composer after idle.
+// Wait for a visible composer, then ask the SW; keep late polls as backup.
+function kickWhenComposerReady(): void {
+  if (isPostSendChatPath(location.pathname)) return;
+  if (composerPresent()) {
+    requestInject(true);
+    return;
+  }
+  // Poll briefly so we do not claim pending while the shell is still empty.
+  let n = 0;
+  const id = setInterval(() => {
+    n += 1;
+    if (isPostSendChatPath(location.pathname)) {
+      clearInterval(id);
+      return;
+    }
+    if (composerPresent()) {
+      clearInterval(id);
+      requestInject(true);
+      return;
+    }
+    if (n >= 40) clearInterval(id); // ~20s
+  }, 500);
+}
+
+kickWhenComposerReady();
+setTimeout(() => requestInject(true), 4000);
+setTimeout(() => requestInject(true), 8000);
+setTimeout(() => requestInject(true), 14000);
+setTimeout(() => requestInject(true), 22000);
 
 const mo = new MutationObserver(() => {
-  if (location.pathname.includes("/c/")) {
+  if (isPostSendChatPath(location.pathname)) {
     mo.disconnect();
     return;
   }
-  if (
-    document.querySelector("#prompt-textarea") ||
-    document.querySelector('[data-testid="prompt-textarea"]') ||
-    document.querySelector('div.ql-editor[contenteditable="true"]') ||
-    document.querySelector('div[contenteditable="true"][role="textbox"]')
-  ) {
+  if (composerPresent()) {
     requestInject();
   }
 });
 mo.observe(document.documentElement, { childList: true, subtree: true });
-setTimeout(() => mo.disconnect(), 20000);
+setTimeout(() => mo.disconnect(), 60000);

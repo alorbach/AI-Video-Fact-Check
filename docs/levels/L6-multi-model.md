@@ -19,7 +19,9 @@ Still **no API keys**, no Gemini Developer API.
 2. [x] Menu/button: “Mit Gemini öffnen (kostenlos)” / “Open in Gemini (free)”
 3. [x] Gemini paste package: full locale-matched master prompt + URL/transcript (Custom GPT keeps short ask)
 4. [x] Options: remember last chosen chat (persists `defaultChat` on successful handoff)
-5. [x] Only add further targets if they are free consumer web chats (no paid APIs) — none added beyond Gemini
+5. [x] Only add further targets if they are free consumer web chats (no paid APIs) — none added beyond Gemini in L6
+
+**Follow-up:** [L8](L8-chat-picker.md) replaces dual buttons with a combobox and adds Claude / Copilot / DeepSeek.
 
 ## Exit criteria
 

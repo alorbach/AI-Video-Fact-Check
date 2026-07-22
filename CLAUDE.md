@@ -8,4 +8,4 @@ Claude Code entrypoint. Shared project rules live in AGENTS.md.
 
 - Prefer one multilevel **Level** per session.
 - Read `docs/levels/` for the current level; sync status with `docs/MULTILEVEL-IMPLEMENTATION-PLAN.md`.
-- No LLM/STT API keys; analysis = open Custom GPT / free Gemini web; may insert+send prepared text (no answer scraping).
+- No LLM/STT API keys; analysis = open free consumer chats (Custom GPT, Gemini, Claude, Copilot, DeepSeek); may insert+send when supported (no answer scraping).

@@ -7,7 +7,7 @@ Canonical instructions for **all** coding agents. Keep lean; details in `docs/`.
 Chrome MV3 extension that helps everyday users (esp. older adults) fact-check videos by preparing a URL/transcript and opening a **free user chat**. Languages: **German** and **English**. Credits: [Andre Lorbach](https://github.com/alorbach/). Repo: https://github.com/alorbach/AI-Video-Fact-Check
 
 **Primary:** https://chatgpt.com/g/g-6a5e1494f814819181208da5d30ab4ae-video-faktencheck  
-**Secondary (free web):** https://gemini.google.com/
+**Also free:** Gemini, Claude, Microsoft Copilot, DeepSeek (Side Panel combobox / Settings)
 
 ## Read first
 
@@ -27,14 +27,14 @@ docs/        Plans and specs
 ## Non-negotiables
 
 - Manifest **V3**; no remote code; **no API keys** anywhere.
-- Analysis **only** via opening free consumer chats (Custom GPT, Gemini web).
+- Analysis **only** via opening free consumer chats (Custom GPT, Gemini, Claude, Copilot, DeepSeek).
 - **Do not** build an LLM/STT backend, OpenAI/Anthropic/Gemini API clients, or key settings UI.
-- Handoff may **insert + send** the prepared text into ChatGPT/Gemini (maintain selectors when UIs change). Still **no** scraping of chat answers.
-- Clipboard remains a fallback if insert/send fails.
-- UI: senior-friendly, plain language, Side Panel as step guide; de + en.
+- Handoff may **insert + send** into inject-supported chats (maintain selectors when UIs change). Still **no** scraping of chat answers.
+- Clipboard remains a fallback if insert/send fails (required path for DeepSeek until inject exists).
+- UI: senior-friendly, plain language, Side Panel as step guide + chat combobox; de + en.
 - Required platforms: **YouTube, TikTok, X, Facebook, Instagram** (see `docs/SPEC-TRANSCRIPT.md`).
 - No DRM/captcha bypass; no social cookie forwarding.
-- Minimal permissions; declare ChatGPT/Gemini hosts for insert/send; social hosts for captions.
+- Minimal permissions; declare inject hosts (ChatGPT/Gemini/Claude/Copilot) for insert/send; social hosts for captions.
 
 ## Commands
 

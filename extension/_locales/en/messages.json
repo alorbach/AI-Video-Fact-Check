@@ -3,7 +3,7 @@
     "message": "Video Fact-Check"
   },
   "extDescription": {
-    "message": "Prepare a video link and open ChatGPT Video Fact-Check or free Gemini — no setup needed."
+    "message": "Prepare a video link and open a free chat (Video Fact-Check GPT, Gemini, Claude, Copilot, or DeepSeek) — no setup needed."
   },
   "actionTitle": {
     "message": "Check this video"
@@ -21,19 +21,31 @@
     "message": "Open chat"
   },
   "guideIdle": {
-    "message": "Scan a video page first — then tap a chat below."
+    "message": "Scan a video page first — then choose a chat and open it."
   },
   "guideReady": {
-    "message": "Tap a chat: we insert the text and start the check."
+    "message": "Choose a chat (sign in first — see help below), then tap Open chat."
   },
   "guideOpening": {
     "message": "Text ready — opening the chat…"
   },
-  "guideOpenedGpt": {
-    "message": "Video Fact-Check GPT is open — inserting and sending…"
+  "guideOpenedInject": {
+    "message": "$1$ is open — inserting and sending…",
+    "placeholders": {
+      "1": {
+        "content": "$1",
+        "example": "Claude (free)"
+      }
+    }
   },
-  "guideOpenedGemini": {
-    "message": "Gemini is open — inserting and sending…"
+  "guideOpenedPaste": {
+    "message": "$1$ is open — paste with Ctrl+V, then send.",
+    "placeholders": {
+      "1": {
+        "content": "$1",
+        "example": "Microsoft Copilot (free)"
+      }
+    }
   },
   "guideInjectOk": {
     "message": "Text inserted and sent. The answer appears in the chat."
@@ -41,11 +53,14 @@
   "guideInjectFailed": {
     "message": "Automatic insert failed. Click the chat box, press Ctrl+V, then send."
   },
-  "guideLoginGpt": {
-    "message": "Please sign in to ChatGPT in the open tab, then tap Open Video Fact-Check GPT again."
-  },
-  "guideLoginGemini": {
-    "message": "Please sign in to Google in the open tab, then tap Open Gemini again."
+  "guideLoginChat": {
+    "message": "Please sign in to $1$ in the open tab, then tap Open chat again.",
+    "placeholders": {
+      "1": {
+        "content": "$1",
+        "example": "Claude (free)"
+      }
+    }
   },
   "guideTabOpenFailed": {
     "message": "Could not open the chat tab. Check pop-up blockers, then try again."
@@ -54,19 +69,19 @@
     "message": "Copy failed — tap Copy again."
   },
   "sidepanelHint": {
-    "message": "No special setup. Use your normal ChatGPT or Google login."
+    "message": "First create a free account and sign in to your chosen chat. Then use Open chat here."
   },
   "hintAfterCopy": {
-    "message": "The chat opens. We insert the text there and send it."
+    "message": "The chat opens. We insert the text there when possible."
   },
   "hintInjecting": {
     "message": "One moment — inserting and sending the text in the chat."
   },
   "hintPasteNow": {
-    "message": "If nothing happens: Ctrl+V in the chat box, then send."
+    "message": "Click the chat box, press Ctrl+V, then send. You must already be signed in."
   },
   "hintLoginRequired": {
-    "message": "After you sign in, open the chat again from this panel. The text stays on the clipboard."
+    "message": "Sign in in the open tab (use the help links below if needed), then Open chat again. The text stays on the clipboard."
   },
   "hintTabOpenFailed": {
     "message": "Allow pop-ups for this extension, or open the chat yourself and paste (Ctrl+V)."
@@ -77,11 +92,23 @@
   "handoffWorking": {
     "message": "Preparing chat and text…"
   },
-  "handoffOpenedGpt": {
-    "message": "Video Fact-Check GPT is open — inserting and sending…"
+  "handoffOpenedInject": {
+    "message": "$1$ is open — inserting and sending…",
+    "placeholders": {
+      "1": {
+        "content": "$1",
+        "example": "Claude (free)"
+      }
+    }
   },
-  "handoffOpenedGemini": {
-    "message": "Gemini is open — inserting and sending…"
+  "handoffOpenedPaste": {
+    "message": "$1$ is open — paste with Ctrl+V, then send (text is on the clipboard).",
+    "placeholders": {
+      "1": {
+        "content": "$1",
+        "example": "Microsoft Copilot (free)"
+      }
+    }
   },
   "handoffInjectOk": {
     "message": "Done: text inserted and sent."
@@ -89,17 +116,20 @@
   "handoffInjectFailed": {
     "message": "Insert failed — please Ctrl+V in the chat and send (text is on the clipboard)."
   },
-  "handoffLoginGpt": {
-    "message": "Sign in to ChatGPT first, then open Video Fact-Check GPT again."
-  },
-  "handoffLoginGemini": {
-    "message": "Sign in with Google first, then open Gemini again."
+  "handoffLoginChat": {
+    "message": "Sign in to $1$ first, then tap Open chat again.",
+    "placeholders": {
+      "1": {
+        "content": "$1",
+        "example": "Claude (free)"
+      }
+    }
   },
   "handoffTabOpenFailed": {
     "message": "Chat tab did not open — check pop-up blockers and try again (text is on the clipboard)."
   },
   "copyOk": {
-    "message": "Copied. Tap a chat to open, or paste yourself."
+    "message": "Copied. Choose a chat and open it, or paste yourself."
   },
   "copyAgainOk": {
     "message": "Copied again. Paste in the chat (Ctrl+V)."
@@ -119,11 +149,8 @@
   "readAnswerSources": {
     "message": "Check the listed sources and any notes about what is still uncertain."
   },
-  "contextOpenGpt": {
-    "message": "Open with Video Fact-Check GPT"
-  },
-  "contextOpenGemini": {
-    "message": "Open with Gemini (free)"
+  "contextOpenDefault": {
+    "message": "Open with saved chat"
   },
   "contextCopyOnly": {
     "message": "Copy link / transcript only"
@@ -215,11 +242,26 @@
   "platformUnknown": {
     "message": "Unknown"
   },
-  "btnOpenGpt": {
-    "message": "Open Video Fact-Check GPT"
+  "btnOpenChat": {
+    "message": "Open chat"
   },
-  "btnOpenGemini": {
-    "message": "Open Gemini (free)"
+  "labelChatTarget": {
+    "message": "Which chat"
+  },
+  "loginHelpHeading": {
+    "message": "Before you start — free account & sign-in"
+  },
+  "loginHelpIntro": {
+    "message": "This extension does not create accounts. You need a free account with the chat you choose, and you must be signed in before the fact-check can run. Open a link below to register or sign in:"
+  },
+  "loginHelpInjectNote": {
+    "message": "we can insert and send when you are signed in"
+  },
+  "loginHelpPasteNote": {
+    "message": "paste with Ctrl+V (auto-insert not available yet)"
+  },
+  "loginHelpPaste": {
+    "message": "DeepSeek: after Open chat, click the message box, press Ctrl+V, then send. ChatGPT, Gemini, Claude, and Microsoft Copilot: we try to insert and send automatically — still sign in first."
   },
   "btnOptions": {
     "message": "Settings"

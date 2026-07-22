@@ -27,7 +27,11 @@
     "*://*.instagram.com/*",
     "*://chatgpt.com/*",
     "*://*.chatgpt.com/*",
-    "*://gemini.google.com/*"
+    "*://gemini.google.com/*",
+    "*://claude.ai/*",
+    "*://*.claude.ai/*",
+    "*://copilot.microsoft.com/*",
+    "*://*.copilot.microsoft.com/*"
   ],
   "background": {
     "service_worker": "background.js",
@@ -68,7 +72,11 @@
       "matches": [
         "*://chatgpt.com/*",
         "*://*.chatgpt.com/*",
-        "*://gemini.google.com/*"
+        "*://gemini.google.com/*",
+        "*://claude.ai/*",
+        "*://*.claude.ai/*",
+        "*://copilot.microsoft.com/*",
+        "*://*.copilot.microsoft.com/*"
       ],
       "js": ["chatInject.js"],
       "run_at": "document_idle"

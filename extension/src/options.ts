@@ -23,6 +23,22 @@ function uiLang(): string {
     : "en";
 }
 
+function fillDefaultChatSelect(
+  select: HTMLSelectElement,
+  selected: string,
+): void {
+  const de = uiLang() === "de";
+  select.replaceChildren();
+  for (const id of Object.keys(CHAT_TARGETS) as ChatTargetId[]) {
+    const chat = CHAT_TARGETS[id];
+    const opt = document.createElement("option");
+    opt.value = id;
+    opt.textContent = de ? chat.labelDe : chat.labelEn;
+    select.append(opt);
+  }
+  select.value = selected in CHAT_TARGETS ? selected : "chatgpt_video_faktencheck";
+}
+
 async function load(): Promise<void> {
   document.documentElement.lang = uiLang();
 
@@ -34,8 +50,6 @@ async function load(): Promise<void> {
   const fontSizeHelp = document.getElementById("fontSizeHelp");
   const labelRememberPackage = document.getElementById("labelRememberPackage");
   const rememberPackageHelp = document.getElementById("rememberPackageHelp");
-  const optGpt = document.getElementById("optGpt");
-  const optGemini = document.getElementById("optGemini");
   const optFontNormal = document.getElementById("optFontNormal");
   const optFontLarge = document.getElementById("optFontLarge");
   const btnSave = document.getElementById("btnSave");
@@ -58,8 +72,6 @@ async function load(): Promise<void> {
   if (rememberPackageHelp) {
     rememberPackageHelp.textContent = t("rememberPackageHelp");
   }
-  if (optGpt) optGpt.textContent = t("btnOpenGpt");
-  if (optGemini) optGemini.textContent = t("btnOpenGemini");
   if (optFontNormal) optFontNormal.textContent = t("fontSizeNormal");
   if (optFontLarge) optFontLarge.textContent = t("fontSizeLarge");
   if (btnSave) btnSave.textContent = t("btnSave");
@@ -73,8 +85,11 @@ async function load(): Promise<void> {
     [LOCAL_KEYS.rememberLastPackage]: false,
   });
 
-  if (chatSelect && defaultChat in CHAT_TARGETS) {
-    chatSelect.value = defaultChat as string;
+  if (chatSelect) {
+    fillDefaultChatSelect(
+      chatSelect,
+      typeof defaultChat === "string" ? defaultChat : "chatgpt_video_faktencheck",
+    );
   }
   const size: FontSizePref = fontSize === "large" ? "large" : "normal";
   if (fontSelect) fontSelect.value = size;

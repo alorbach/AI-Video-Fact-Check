@@ -7,7 +7,9 @@ import {
   buildPastePackage,
   canonicalizeVideoUrl,
   captureToPastePackage,
+  CHAT_TARGETS,
   detectPlatform,
+  isPostSendChatPath,
   PENDING_CHAT_HANDOFF_KEY,
   PENDING_CHAT_HANDOFFS_KEY,
   sameVideoUrl,
@@ -61,7 +63,11 @@ function isChatHandoffUrl(url: string): boolean {
       host === "chatgpt.com" ||
       host.endsWith(".chatgpt.com") ||
       host === "gemini.google.com" ||
-      host.endsWith(".gemini.google.com")
+      host.endsWith(".gemini.google.com") ||
+      host === "claude.ai" ||
+      host.endsWith(".claude.ai") ||
+      host === "copilot.microsoft.com" ||
+      host.endsWith(".copilot.microsoft.com")
     );
   } catch {
     return false;
@@ -175,7 +181,8 @@ async function claimPendingForTab(
     const key = tabKey(tabId);
     const pending = map[key];
     if (!pending?.text) return null;
-    if (Date.now() - pending.at > 120_000) {
+    // Cover long GPT/Claude composer waits + backoff retries (see MAX_INJECT_ATTEMPTS).
+    if (Date.now() - pending.at > PENDING_HANDOFF_TTL_MS) {
       delete map[key];
       await writePendingMap(map);
       await emitChatInjectResult(false, pending);
@@ -194,6 +201,23 @@ async function claimPendingForTab(
 }
 
 /** Insert+send in the page MAIN world (required for ProseMirror / Quill). */
+const MAX_INJECT_ATTEMPTS = 8;
+/** Max age of a pending handoff — must exceed worst-case wait+retry window. */
+const PENDING_HANDOFF_TTL_MS = 300_000;
+
+/** Backoff after no-editor / fill-failed — Custom GPT shell often needs several seconds. */
+function injectRetryDelayMs(attempt: number): number {
+  // attempt is 1-based after a failure: 2s, 3s, 4.5s, 6s, …
+  return Math.min(10_000, 1500 + attempt * 1500);
+}
+
+function scheduleInjectRetry(tabId: number, attempt: number): void {
+  const delay = injectRetryDelayMs(attempt);
+  setTimeout(() => {
+    void triggerChatInject(tabId);
+  }, delay);
+}
+
 async function triggerChatInject(tabId: number): Promise<void> {
   const pending = await claimPendingForTab(tabId);
   if (!pending) return;
@@ -217,25 +241,36 @@ async function triggerChatInject(tabId: number): Promise<void> {
     // later kick can finish after that peer sets DONE / clears the lock — but do
     // not emit here (the peer owns the terminal CHAT_INJECT_RESULT).
     if (result?.reason === "already-attempted") {
-      await restorePending(pending);
+      const attempts = (pending.attempts ?? 0) + 1;
+      if (attempts < MAX_INJECT_ATTEMPTS) {
+        await restorePending({ ...pending, attempts });
+        scheduleInjectRetry(tabId, attempts);
+        return;
+      }
+      // Cap: do not restore (peer may still succeed). Delay failure so a peer
+      // success can update the Side Panel first; late failure is ignored if
+      // the handoff session is already closed.
+      setTimeout(() => {
+        void emitChatInjectResult(false, pending, "already-attempted");
+      }, 22_000);
       return;
     }
 
-    // Login wall is terminal — do not burn ~80s retrying a composer that will not appear.
+    // Login wall is terminal — do not burn retries on a composer that will not appear.
     if (result?.reason === "login-required") {
       await emitChatInjectResult(false, pending, "login-required");
       return;
     }
 
-    // Retryable before send — restore for timed kicks; do not fail the UI yet.
+    // Retryable before send — restore + schedule delayed kick (page may still be hydrating).
     if (
       result?.reason === "no-editor" ||
       result?.reason === "fill-failed"
     ) {
       const attempts = (pending.attempts ?? 0) + 1;
-      const maxAttempts = 4;
-      if (attempts < maxAttempts) {
+      if (attempts < MAX_INJECT_ATTEMPTS) {
         await restorePending({ ...pending, attempts });
+        scheduleInjectRetry(tabId, attempts);
         return;
       }
     }
@@ -250,8 +285,7 @@ async function triggerChatInject(tabId: number): Promise<void> {
       try {
         const tab = await chrome.tabs.get(tabId);
         const path = tab.url ? new URL(tab.url).pathname : "";
-        const onConversation =
-          path.includes("/c/") || path.includes("/app/");
+        const onConversation = isPostSendChatPath(path);
         // Conversation URL: inject is done for this tab (onUpdated skips /c/).
         // Without composer confirmation, report failure — clipboard remains.
         if (onConversation) {
@@ -260,8 +294,9 @@ async function triggerChatInject(tabId: number): Promise<void> {
         }
         // Still on landing page — allow another inject attempt.
         const attempts = (pending.attempts ?? 0) + 1;
-        if (attempts < 4) {
+        if (attempts < MAX_INJECT_ATTEMPTS) {
           await restorePending({ ...pending, attempts });
+          scheduleInjectRetry(tabId, attempts);
           return;
         }
       } catch {
@@ -272,8 +307,9 @@ async function triggerChatInject(tabId: number): Promise<void> {
     }
     // Transient scripting failure — restore for a later tab-complete retry.
     const attempts = (pending.attempts ?? 0) + 1;
-    if (attempts < 4) {
+    if (attempts < MAX_INJECT_ATTEMPTS) {
       await restorePending({ ...pending, attempts });
+      scheduleInjectRetry(tabId, attempts);
       return;
     }
     await emitChatInjectResult(false, pending);
@@ -284,11 +320,11 @@ chrome.tabs.onUpdated.addListener((tabId, info, tab) => {
   if (info.status !== "complete" || !tab.url || !isChatHandoffUrl(tab.url)) {
     return;
   }
-  // Skip conversation URLs after a handoff already navigated (/c/...) —
+  // Skip conversation URLs after a handoff already navigated (/c/…, /chat/…) —
   // those reloads must not inject again.
   try {
     const path = new URL(tab.url).pathname;
-    if (path.startsWith("/c/") || path.includes("/c/")) {
+    if (isPostSendChatPath(path)) {
       return;
     }
   } catch {
@@ -297,19 +333,30 @@ chrome.tabs.onUpdated.addListener((tabId, info, tab) => {
   void (async () => {
     const map = await readPendingMap();
     const pending = map[tabKey(tabId)];
-    // Ignore unrelated ChatGPT/Gemini tabs that finish loading.
+    // Ignore unrelated chat tabs that finish loading.
     if (!pending?.text) return;
-    // Wait for Custom GPT shell / composer — first click often raced the empty landing.
-    await new Promise((r) => setTimeout(r, 1800));
+    // Custom GPT / Claude shells hydrate after "complete" — wait longer before first kick.
+    await new Promise((r) => setTimeout(r, 3200));
     if (!(await tabStillOpen(tabId))) return;
     await triggerChatInject(tabId);
-    await new Promise((r) => setTimeout(r, 4000));
+    await new Promise((r) => setTimeout(r, 5500));
     if (!(await tabStillOpen(tabId))) return;
     // Skip if chat already left the composer landing page.
     try {
       const t = await chrome.tabs.get(tabId);
       const path = t.url ? new URL(t.url).pathname : "";
-      if (path.startsWith("/c/") || path.includes("/c/")) return;
+      if (isPostSendChatPath(path)) return;
+    } catch {
+      return;
+    }
+    await triggerChatInject(tabId);
+    // Third late kick — slow networks / Custom GPT suggestion grid.
+    await new Promise((r) => setTimeout(r, 8000));
+    if (!(await tabStillOpen(tabId))) return;
+    try {
+      const t = await chrome.tabs.get(tabId);
+      const path = t.url ? new URL(t.url).pathname : "";
+      if (isPostSendChatPath(path)) return;
     } catch {
       return;
     }
@@ -326,19 +373,11 @@ chrome.runtime.onInstalled.addListener(() => {
       contexts: ["page", "video", "link"],
     });
     chrome.contextMenus.create({
-      id: "check-video-gpt",
+      id: "check-video-open",
       parentId: "check-video",
       title:
-        chrome.i18n.getMessage("contextOpenGpt") ||
-        "Open with Video Fact-Check GPT",
-      contexts: ["page", "video", "link"],
-    });
-    chrome.contextMenus.create({
-      id: "check-video-gemini",
-      parentId: "check-video",
-      title:
-        chrome.i18n.getMessage("contextOpenGemini") ||
-        "Open with Gemini (free)",
+        chrome.i18n.getMessage("contextOpenDefault") ||
+        "Open with saved chat",
       contexts: ["page", "video", "link"],
     });
     chrome.contextMenus.create({
@@ -854,12 +893,18 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   const linkUrl =
     typeof info.linkUrl === "string" && info.linkUrl ? info.linkUrl : undefined;
 
-  if (info.menuItemId === "check-video-gpt" || info.menuItemId === "check-video") {
-    await openSidePanelAndHandoff(tab, "chatgpt_video_faktencheck", linkUrl);
-    return;
-  }
-  if (info.menuItemId === "check-video-gemini") {
-    await openSidePanelAndHandoff(tab, "gemini_web", linkUrl);
+  if (
+    info.menuItemId === "check-video-open" ||
+    info.menuItemId === "check-video"
+  ) {
+    const { defaultChat } = await chrome.storage.sync.get({
+      defaultChat: "chatgpt_video_faktencheck" satisfies ChatTargetId,
+    });
+    const target =
+      typeof defaultChat === "string" && defaultChat in CHAT_TARGETS
+        ? (defaultChat as ChatTargetId)
+        : ("chatgpt_video_faktencheck" satisfies ChatTargetId);
+    await openSidePanelAndHandoff(tab, target, linkUrl);
     return;
   }
   if (info.menuItemId === "check-video-copy") {
