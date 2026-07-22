@@ -1,0 +1,62 @@
+extension/src/background.ts
+  s_765132be7ee406::t_43440dae04af3d 1162,1165
+  s_765132be7ee406::t_8aa7a508b73700 1492-1500
+  s_765132be7ee406::t_5f22895119856b 62-64
+  s_765132be7ee406::t_d88fa960897db0 887-1056
+  s_765132be7ee406::t_288c526a889c16 12,15,38-43
+  s_765132be7ee406::t_21779ac9e21373 1075-1077
+docs/CHROME-WEB-STORE.md
+  s_765132be7ee406::t_fed7d9c3aa5b6f 24
+  s_765132be7ee406::t_a667f6034031a7 56
+  s_765132be7ee406::t_607368dc30bd2b 38-39
+extension/src/workOverlay.ts
+  s_765132be7ee406::t_aa0e7374d31602 21-25
+  s_765132be7ee406::t_e24070580a74d5 46
+shared/src/index.ts
+  s_765132be7ee406::t_08900060b08932 86-93
+  s_6edb2630329930::t_6a0b7f7bde34b9 85
+docs/test-urls.md
+  s_765132be7ee406::t_11c6e051f7ef1c 24,29-35
+  s_765132be7ee406::t_44452fd1e1d5b6 36-37
+shared/src/types.ts
+  s_765132be7ee406::t_b17076313e5291 138-143
+  s_765132be7ee406::t_40c815564491ce 28-31
+docs/SPEC-TRANSCRIPT.md
+  s_765132be7ee406::t_b67bdb9d6912a9 106,108
+  s_765132be7ee406::t_e253a6bc940457 33,52-66
+  s_765132be7ee406::t_d476a087f5135d 67
+extension/package.json
+  s_765132be7ee406::t_3171dac8d494a2 3
+shared/package.json
+  s_765132be7ee406::t_6ce1a1c1bacd01 17
+extension/manifest.json
+  s_765132be7ee406::t_c7fa89877cd566 36-40
+  s_765132be7ee406::t_cffe93ffbbbf91 5
+docs/MULTILEVEL-IMPLEMENTATION-PLAN.md
+  s_765132be7ee406::t_aa2f4f9602944c 36,40
+  s_765132be7ee406::t_c14431007552f6 60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "12a1bd8459cc3acbe34f24699bc3dee6ede9d7f5",
+  "prompts": {},
+  "sessions": {
+    "s_6edb2630329930": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f862a-5f5d-7593-b7ac-71efe79bb574",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Andre Lorbach <alorbach@adiscon.com>"
+    },
+    "s_765132be7ee406": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "a0310c23-a746-4da5-8708-b83389f3d960",
+        "model": "grok-4.5"
+      },
+      "human_author": "Andre Lorbach <alorbach@adiscon.com>"
+    }
+  }
+}
