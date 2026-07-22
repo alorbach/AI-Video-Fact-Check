@@ -12,7 +12,7 @@ Make the handoff understandable for older / non-technical users. Still only Cust
 
 ## Tasks
 
-1. [x] Numbered steps with large buttons (Copy / Open chat / Copy again)
+1. [x] Large primary actions (Open GPT / Open Gemini) + Copy again
 2. [x] Font-size preference (normal / large)
 3. [x] Keyboard navigation + focus rings
 4. [x] Error copy in plain language (“Could not copy — tap Copy again”)
@@ -27,7 +27,7 @@ Make the handoff understandable for older / non-technical users. Still only Cust
 
 ## Notes
 
-- Side Panel guide: three numbered step cards with Copy → Open chat → Copy again.
+- Side Panel guide: Open Video Fact-Check GPT / Open Gemini + Copy again (clipboard fallback).
 - Options: default chat + text size (`chrome.storage.sync.fontSize`).
 - Skip link + `:focus-visible` on buttons, inputs, selects, and links.
 - Tip card explains score 1–10, traffic-light bands, and sources (de/en).

@@ -37,7 +37,7 @@ Ladder: captions → post text → page URL → manual transcript.
 ## Exit criteria
 
 - [x] **All five** required platforms green on [`../test-urls.md`](../test-urls.md) — **detection verified 2026-07-21** (YT, Shorts, TikTok, X, FB, IG)  
-- [x] Each ends in clipboard PastePackage + Custom GPT open _(shared handoff path)_  
+- [x] Each ends in PastePackage handoff (insert/send + clipboard backup) to Custom GPT / Gemini _(shared handoff path)_  
 - [x] Side Panel names the detected platform in de/en  
 
 ## Implementation notes (2026-07-21)

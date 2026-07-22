@@ -22,7 +22,7 @@ Replace any URL that goes private or 404s — keep the table filled.
 2. Platform name shown (de/en)
 3. Link looks stable (canonical when possible)
 4. Captions / post text included when the page exposes them; otherwise “No — chat can still use the link”
-5. **Open Video Fact-Check GPT** → clipboard PastePackage → paste works
+5. **Open Video Fact-Check GPT** (or Gemini) → insert/send into the chat; if automation fails, paste from clipboard works
 
 **Detection pass (2026-07-21):** YouTube, Shorts, TikTok, X, Facebook, Instagram — all recognized in Side Panel.
 

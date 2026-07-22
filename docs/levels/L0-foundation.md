@@ -1,6 +1,6 @@
 # Level 0 — Foundation
 
-**Status:** `done` (optional: first commit + GitHub remote)  
+**Status:** `done`  
 **Parent:** [`../MULTILEVEL-IMPLEMENTATION-PLAN.md`](../MULTILEVEL-IMPLEMENTATION-PLAN.md)  
 **Unlocks:** [L1](L1-local-skeleton.md)
 
@@ -15,7 +15,7 @@ Repo, agent rules, and product docs exist for the **chat-handoff** product (no a
 - [x] `README.md`, `AGENTS.md`, `CLAUDE.md`, `.gitignore`
 - [x] `extension/`, `shared/`, `docs/`
 - [x] Local `git init` + staged files
-- [ ] Optional: first commit + remote
+- [x] First commit + GitHub remote (`https://github.com/alorbach/AI-Video-Fact-Check`)
 
 ## Exit criteria
 

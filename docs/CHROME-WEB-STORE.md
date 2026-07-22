@@ -48,4 +48,4 @@ Declared under `host_permissions` for the five required platforms:
 ## Assets
 
 - Icons: `extension/icons/`  
-- Screenshots: large Side Panel steps (Copy → Open → Paste)
+- Screenshots: large Side Panel steps (Scan → Open GPT/Gemini → insert/send or paste fallback)

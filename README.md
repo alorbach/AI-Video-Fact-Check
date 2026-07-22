@@ -26,7 +26,7 @@ YouTube · TikTok · X · Facebook · Instagram
 
 ## Status
 
-**Level 4 — Guide UX + a11y** (next). L2–L3 done: capture + Custom GPT clipboard handoff; no analysis backend.
+**Level 7 — Handoff hardening** (in progress). L0–L6 done: platforms, Custom GPT + Gemini insert/send, clipboard fallback; no analysis backend.
 
 ## Local development
 

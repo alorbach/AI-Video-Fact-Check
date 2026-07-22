@@ -2,7 +2,7 @@
 
 **Product:** Chrome extension that prepares a video URL/transcript and opens a **free user chat** for the fact-check.  
 **Author / Credits:** [Andre Lorbach](https://github.com/alorbach/)  
-**Repo (planned):** https://github.com/alorbach/AI-Video-Fact-Check  
+**Repo:** https://github.com/alorbach/AI-Video-Fact-Check  
 **Primary chat:** [Video Faktencheck GPT](https://chatgpt.com/g/g-6a5e1494f814819181208da5d30ab4ae-video-faktencheck)  
 **Secondary (free):** [Google Gemini web](https://gemini.google.com/)  
 **Specs:** [`PRODUCT.md`](PRODUCT.md) · [`SPEC-TRANSCRIPT.md`](SPEC-TRANSCRIPT.md) · [`SPEC-FACT-CHECK.md`](SPEC-FACT-CHECK.md)
@@ -29,12 +29,12 @@ This file is the **overall roadmap and status board**. Level detail: [`levels/`]
 | L4 | Guide UX + a11y | **done** | [`levels/L4-mode-b-polish.md`](levels/L4-mode-b-polish.md) |
 | L5 | Required platforms (YT, TikTok, X, FB, IG) | **done** | [`levels/L5-platforms.md`](levels/L5-platforms.md) |
 | L6 | Free Gemini (+ more free chats) | **done** | [`levels/L6-multi-model.md`](levels/L6-multi-model.md) |
-| L7 | Handoff hardening | todo | [`levels/L7-hardening.md`](levels/L7-hardening.md) |
+| L7 | Handoff hardening | **in_progress** | [`levels/L7-hardening.md`](levels/L7-hardening.md) |
 | L8 | Chrome Web Store | todo | [`levels/L8-store-release.md`](levels/L8-store-release.md) |
 
 **Current level:** L7 — Handoff hardening  
-**Last updated:** 2026-07-21  
-**Next action:** Start L7 — clipboard reliability, errors, options polish.
+**Last updated:** 2026-07-22  
+**Next action:** Finish remaining L7 — login-wall / tab-open copy, profile checklist, optional persist package.
 
 Status values: `todo` · `in_progress` · `done` · `blocked`
 
@@ -50,7 +50,7 @@ L3  Custom GPT handoff   Clipboard + open Video-Faktencheck GPT
 L4  Guide UX + a11y      Large steps, de/en, senior-friendly
 L5  Platforms            YouTube, TikTok, X, Facebook, Instagram (required)
 L6  Free Gemini (+…)     gemini.google.com handoff (no API keys)
-L7  Handoff hardening    Clipboard reliability, errors, options
+L7  Handoff hardening    Insert/send reliability, clipboard fallback, errors
 L8  Store release        Privacy, assets, publish
 ```
 
@@ -61,7 +61,7 @@ L8  Store release        Privacy, assets, publish
 ```text
 [Chrome Extension MV3]
   detect video → captions/URL → PastePackage
-  clipboard + open chat tab
+  open chat tab + insert/send (clipboard backup if insert fails)
   Side Panel = step-by-step guide (de/en)
            │
            ▼
@@ -73,7 +73,7 @@ L8  Store release        Privacy, assets, publish
 | Do | Don’t |
 |---|---|
 | Open Custom GPT / Gemini in the user’s browser | Own LLM/STT backend for analysis |
-| Clipboard + insert/send into the open chat (maintain selectors) | API keys (OpenAI/Anthropic/Gemini API) |
+| Insert/send into the open chat; clipboard as fallback (maintain selectors) | API keys (OpenAI/Anthropic/Gemini API) |
 | In-browser captions when possible | Scrape chat answers back into the extension |
 | Free end-user chat products only | Paid developer APIs |
 
@@ -102,7 +102,7 @@ Sources: [Store requirements 2026](https://extensionbooster.net/blog/chrome-web-
 |---|---|
 | Large type | ≥ 18px; zoom 200% |
 | Big targets | ≥ 44×44 px; labeled buttons |
-| One job at a time | “Copy → Open chat → Paste” |
+| One job at a time | “Scan → Open chat → read answer” |
 | Plain language | No “API”, “Backend”, “Token” |
 | Persistent help | User dismisses messages |
 
@@ -129,14 +129,14 @@ Not adapter SDKs. A small list of `ChatTarget`s that open free web UIs. Primary 
 
 ### B. Privacy
 
-Clipboard + user-chosen chat only. Document ChatGPT/Gemini as destinations in the store privacy form. Credits → https://github.com/alorbach/
+Clipboard / insert-send + user-chosen chat only. Document ChatGPT/Gemini as destinations in the store privacy form. Credits → https://github.com/alorbach/
 
 ### C. Testing
 
 | Layer | What |
 |---|---|
-| Unit | detectors, paste-package builder |
-| Manual | YouTube, TikTok, X, Facebook, Instagram → Custom GPT paste works |
+| Unit | detectors, paste-package builder (`shared/` tests) |
+| Manual | YouTube, TikTok, X, Facebook, Instagram → Custom GPT/Gemini insert+send (paste if automation fails) |
 | Store | permissions + privacy disclosure |
 
 ### D. Calendar (solo, rough)

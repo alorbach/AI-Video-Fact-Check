@@ -48,7 +48,7 @@ Default target: Custom GPT. Gemini is an explicit second button/menu item.
 interface PastePackage {
   videoUrl: string;
   transcript?: string;
-  transcriptSource?: "captions" | "track" | "manual" | "none";
+  transcriptSource?: "captions" | "track" | "post" | "manual" | "none";
   locale: "de" | "en";
   platform?: string;
 }
@@ -107,14 +107,18 @@ Not a second analysis engine. It is a **guide**:
 
 ## Extension messages (target)
 
+Source of truth: [`shared/src/types.ts`](../shared/src/types.ts) (`ExtensionMessage`). Includes capture, handoff, clipboard, and inject result messages, e.g.:
+
 ```typescript
 type ExtensionMessage =
-  | { type: "ANALYZE_PAGE"; tabId: number; target: ChatTargetId }
-  | { type: "VIDEO_DETECTED"; platform: string; url: string }
-  | { type: "PACKAGE_READY"; package: PastePackage }
+  | { type: "CAPTURE_ACTIVE_TAB"; force?: boolean }
+  | { type: "CAPTURE_RESULT"; result: CaptureResult; package: PastePackage }
+  | { type: "START_HANDOFF"; target: ChatTargetId }
   | { type: "CLIPBOARD_OK" }
   | { type: "CHAT_OPENED"; target: ChatTargetId }
-  | { type: "HANDOFF_FAILED"; error: string };
+  | { type: "CHAT_INJECT_RESULT"; ok: boolean; tabId: number; at: number }
+  | { type: "HANDOFF_FAILED"; error: string }
+  | /* … see shared/src/types.ts */;
 ```
 
 ## Explicitly out of scope
