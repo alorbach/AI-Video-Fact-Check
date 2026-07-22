@@ -1,0 +1,117 @@
+extension/_locales/de/messages.json
+  s_f8cfaafaf8635b::t_887ba30079a7cb 6
+  s_f8cfaafaf8635b::t_0a866d4500459d 132,152-153
+  s_f8cfaafaf8635b::t_bc5c32b2cb8660 245-246,248-249
+  s_f8cfaafaf8635b::t_0aa71d1b0148f2 24,27,32-39,41-48,56-63,72,75,81,95-102,104-111,119-126
+shared/src/pastePackage.test.ts
+  s_f8cfaafaf8635b::t_49430e039d2cb3 96-109
+docs/PRODUCT.md
+  s_f8cfaafaf8635b::t_7e72d1cb65f397 14,16,18-24,28,54-55,59,66,69,71-73,75,94,100,105-106,113,119,137,139
+docs/levels/L6-multi-model.md
+  s_f8cfaafaf8635b::t_614f076ba121b2 22-24
+extension/_locales/en/messages.json
+  s_f8cfaafaf8635b::t_87930fd664984d 245-246,248-249
+  s_f8cfaafaf8635b::t_f57f704f68ff81 24,27,32-39,41-48,56-63,72,75,81,95-102,104-111,119-126
+  s_f8cfaafaf8635b::t_5d64ca1c8ac505 132,152-153
+  s_f8cfaafaf8635b::t_0cde9ce9a5a656 6
+shared/package.json
+  s_f8cfaafaf8635b::t_5fe248c17ef552 17
+extension/src/sidepanel.ts
+  s_f8cfaafaf8635b::t_46ff6af265dfd9 99-107,120,137,154,157-160,170
+  s_f8cfaafaf8635b::t_560b2dc03b01a9 501-502
+  s_f8cfaafaf8635b::t_674ecc6d527978 608-609,611-614
+  s_f8cfaafaf8635b::t_116ccc0d12c56f 420-434,439,475
+  s_f8cfaafaf8635b::t_f06b8cfefbe60b 435
+  s_f8cfaafaf8635b::t_5b5baec0f84595 26-27
+  s_f8cfaafaf8635b::t_26609f844ae11c 633-634,637-641
+  s_f8cfaafaf8635b::t_a8b0f518051512 697,707,711
+  s_f8cfaafaf8635b::t_5b82d9ae342a54 228-240,247-250,252,256-259
+  s_f8cfaafaf8635b::t_161500914c1470 460-462
+  s_f8cfaafaf8635b::t_3b61bd6f75f245 260
+docs/CHROME-WEB-STORE.md
+  s_f8cfaafaf8635b::t_ed85a9ee3bdebc 3,9-10,23-24,37,41-42,46-47,49,54
+extension/src/options.ts
+  s_f8cfaafaf8635b::t_698c36645d80c0 26-41,88-92
+extension/manifest.json
+  s_f8cfaafaf8635b::t_11c976d2ec465f 30-32
+  s_f8cfaafaf8635b::t_33f728bf36105e 73-75
+docs/levels/L7-hardening.md
+  s_f8cfaafaf8635b::t_26f878788c6909 7
+CLAUDE.md
+  s_f8cfaafaf8635b::t_701bd5ee359354 11
+shared/src/types.ts
+  s_f8cfaafaf8635b::t_762e5a6544da71 6-11
+  s_f8cfaafaf8635b::t_f6c3e71e1684bb 140
+  s_f8cfaafaf8635b::t_051e5f12ad7b50 46-47,59,68-95
+extension/src/chatInject.ts
+  s_f8cfaafaf8635b::t_4d89fe3aa8b683 2-3,12-14
+  s_f8cfaafaf8635b::t_18e0d28a6898af 18-27,33,39,44-68,75,80
+  s_6edb2630329930::t_58c602ab0b6fc8 15-17
+extension/sidepanel.html
+  s_f8cfaafaf8635b::t_bcbc1da56a8501 39-41
+docs/levels/L9-store-release.md
+  s_f8cfaafaf8635b::t_982607fc0c25b7 1,6,11,15,17-19,25
+extension/src/background.ts
+  s_f8cfaafaf8635b::t_0e610def8aa323 10
+  s_f8cfaafaf8635b::t_00c28372924329 361,364-365
+  s_f8cfaafaf8635b::t_71383b419b03ca 65-67
+  s_f8cfaafaf8635b::t_ecebabed085988 200-214,239,249,255,257,282,284,295,297,321,323-324,327,338-340
+  s_f8cfaafaf8635b::t_62ed1d69048413 881-892
+  s_6edb2630329930::t_1674b86a534008 341-348
+README.md
+  s_f8cfaafaf8635b::t_8db7f7a446f815 31
+  s_f8cfaafaf8635b::t_178ea6f6104519 5,8-10,19,42
+docs/levels/L8-chat-picker.md
+  s_f8cfaafaf8635b::t_b884f396c189f2 3,18-24,28-32
+  s_f8cfaafaf8635b::t_bed92cbd6b1092 1-2,4-17,25-27,33-44
+AGENTS.md
+  s_f8cfaafaf8635b::t_9b6f022640fcce 10,30,32-34,37
+.cursor/rules/project.mdc
+  s_f8cfaafaf8635b::t_9f2922f7602b87 2,8,10
+docs/test-urls.md
+  s_f8cfaafaf8635b::t_916567c71cee6f 35,37,41-45
+  s_f8cfaafaf8635b::t_207f1e920c613a 25
+extension/sidepanel.css
+  s_f8cfaafaf8635b::t_7a7a13c9514867 312,316-320
+  s_f8cfaafaf8635b::t_ec2b04884bdc55 148-163
+shared/src/chatTargets.test.ts
+  s_f8cfaafaf8635b::t_9971b688fc993d 1-42
+extension/src/chatInjectMain.ts
+  s_f8cfaafaf8635b::t_f32d20feb0f313 32-33,52-71
+  s_f8cfaafaf8635b::t_883d992572f3a6 107,112-114,119
+  s_f8cfaafaf8635b::t_7ff6d432dbc0e6 335
+  s_f8cfaafaf8635b::t_9d713a42a04660 324,327
+  s_f8cfaafaf8635b::t_25f69053c60b05 94-95
+  s_f8cfaafaf8635b::t_1b0f3378a3b515 209-212,215
+docs/SPEC-FACT-CHECK.md
+  s_f8cfaafaf8635b::t_8f1a83e8f74d24 3,6,8,15,17,24-29,40-41,45-51,53,70,74,113,144
+docs/MULTILEVEL-IMPLEMENTATION-PLAN.md
+  s_f8cfaafaf8635b::t_82ea04a1d95307 7,34,55-56,66-67,71,76-77,112,114-116,135,142,154,170
+  s_f8cfaafaf8635b::t_a1ffaf9b99bd67 33,36,38
+extension/options.html
+  s_f8cfaafaf8635b::t_da7fce76ebc16b 68
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "88784ae033408750dfb8846b7275dbb695e1d1c4",
+  "prompts": {},
+  "sessions": {
+    "s_6edb2630329930": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f862a-5f5d-7593-b7ac-71efe79bb574",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Andre Lorbach <alorbach@adiscon.com>"
+    },
+    "s_f8cfaafaf8635b": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "0242066e-15dc-43aa-89a0-53ad7c23f762",
+        "model": "grok-4.5"
+      },
+      "human_author": "Andre Lorbach <alorbach@adiscon.com>"
+    }
+  }
+}
