@@ -1,0 +1,213 @@
+extension/src/chatInjectMain.ts
+  s_f8cfaafaf8635b::t_e3ef31b7ca9cd9 18,21
+  s_f8cfaafaf8635b::t_f47f7008447b8c 34-39,91,93-97,106-109,113-121
+  s_f8cfaafaf8635b::t_f32d20feb0f313 33,73-90,122
+  s_f8cfaafaf8635b::t_f4bd88a10d415b 365-367
+  s_f8cfaafaf8635b::t_25f69053c60b05 149
+  s_f8cfaafaf8635b::t_b40c6ee2730928 434
+  s_f8cfaafaf8635b::t_e916e904f0d5d1 390,396,399-400,415
+  s_f8cfaafaf8635b::t_e3439c3b9d945a 436-447,458-461
+  s_f8cfaafaf8635b::t_e0621057cb6806 421-422,427-428
+  s_b0d21b08067915::t_9667157b665cd6 40,239-240
+  s_f8cfaafaf8635b::t_984baf7e75e899 41-54,98-105,110-112,123-127,147,154,160-238,244-247,249-251,258,278-281,293-294,301-302,309,318-319
+  s_f8cfaafaf8635b::t_883d992572f3a6 263-265,272
+  s_f8cfaafaf8635b::t_1b0f3378a3b515 368,371
+  s_f8cfaafaf8635b::t_4488a3be18d817 92
+  s_f8cfaafaf8635b::t_c51572bda28209 242-243,248,252-257
+  s_f8cfaafaf8635b::t_984e1d8146b1b2 266-267,273-274
+AGENTS.md
+  s_f8cfaafaf8635b::t_9b6f022640fcce 10,30,32,34
+  s_f8cfaafaf8635b::t_5ae981349436f2 33,37
+extension/src/options.ts
+  s_f8cfaafaf8635b::t_698c36645d80c0 26-41,88-92
+extension/_locales/en/messages.json
+  s_f8cfaafaf8635b::t_e89a91da6ab6b1 72,81,84
+  s_f8cfaafaf8635b::t_f57f704f68ff81 24,32-39,41-48,56-63,75,95-102,104-111,119-126
+  s_f8cfaafaf8635b::t_8cc09fd42fad02 264
+  s_10ef36f1dbd4a1::t_b784298b85a96c 247
+  s_f8cfaafaf8635b::t_23d127c2759774 27
+  s_f8cfaafaf8635b::t_87930fd664984d 245-246,248-249
+  s_f8cfaafaf8635b::t_0f92ea1bb06939 250-261,263
+  s_f8cfaafaf8635b::t_0cde9ce9a5a656 6
+  s_f8cfaafaf8635b::t_5d64ca1c8ac505 132,152-153
+shared/src/index.ts
+  s_f8cfaafaf8635b::t_4c20568b8eff56 18
+docs/test-urls.md
+  s_f8cfaafaf8635b::t_916567c71cee6f 35,37,41-45
+  s_f8cfaafaf8635b::t_207f1e920c613a 25
+docs/levels/L6-multi-model.md
+  s_f8cfaafaf8635b::t_614f076ba121b2 22-24
+docs/PRODUCT.md
+  s_f8cfaafaf8635b::t_2518831ac82f20 21
+  s_f8cfaafaf8635b::t_ac5e673bc4946d 73
+  s_f8cfaafaf8635b::t_7e72d1cb65f397 14,16,18-20,22-24,28,54-55,59,66,69,71-72,75,94,100,105-106,113,119,137,139
+extension/sidepanel.css
+  s_f8cfaafaf8635b::t_ec2b04884bdc55 148-163
+  s_f8cfaafaf8635b::t_dad199c7cad5fc 188-197
+  s_f8cfaafaf8635b::t_7a7a13c9514867 322,326-330
+extension/_locales/de/messages.json
+  s_f8cfaafaf8635b::t_887ba30079a7cb 6
+  s_f8cfaafaf8635b::t_7fd6854b0b2afa 264
+  s_10ef36f1dbd4a1::t_0e09cd7353f6a0 247
+  s_f8cfaafaf8635b::t_bc5c32b2cb8660 245-246,248-249
+  s_f8cfaafaf8635b::t_0aa71d1b0148f2 24,32-39,41-48,56-63,75,95-102,104-111,119-126
+  s_f8cfaafaf8635b::t_a52e213aaa72ee 27
+  s_f8cfaafaf8635b::t_a360972381fda6 250-261,263
+  s_f8cfaafaf8635b::t_e0ba782610c2d3 72,81,84
+  s_f8cfaafaf8635b::t_0a866d4500459d 132,152-153
+docs/levels/L8-chat-picker.md
+  s_f8cfaafaf8635b::t_ad771c83cf8596 21
+  s_f8cfaafaf8635b::t_a08f06cbde2015 29-30,32
+  s_f8cfaafaf8635b::t_e40ea5a60a140e 42-43
+  s_f8cfaafaf8635b::t_b884f396c189f2 3,18-20,22-24,28,31
+  s_f8cfaafaf8635b::t_c736cc65650e50 14
+  s_f8cfaafaf8635b::t_bed92cbd6b1092 1-2,4-13,15-17,25-27,33-41,44-45
+.cursor/rules/project.mdc
+  s_f8cfaafaf8635b::t_9f2922f7602b87 2,8,10
+CLAUDE.md
+  s_f8cfaafaf8635b::t_701bd5ee359354 11
+docs/levels/L9-store-release.md
+  s_f8cfaafaf8635b::t_982607fc0c25b7 1,6,11,15,17-19,25
+docs/CHROME-WEB-STORE.md
+  s_f8cfaafaf8635b::t_ed85a9ee3bdebc 3,9-10,23-24,37,43,47-48,50,55
+  s_f8cfaafaf8635b::t_1d1fca1a315a40 38,42
+extension/src/chatInject.ts
+  s_f8cfaafaf8635b::t_fb8515f4c2999d 34-35,37-39
+  s_f8cfaafaf8635b::t_b018be4b10e5f2 6-7,49,60,69-72,89
+  s_f8cfaafaf8635b::t_18e0d28a6898af 22-30,45,52,58-59,61-68,73-86,93,98
+  s_f8cfaafaf8635b::t_4d32b03cdeca2e 2-3,16-18,31-33,36,48,57
+  s_6edb2630329930::t_58c602ab0b6fc8 19-21
+  s_f8cfaafaf8635b::t_4d89fe3aa8b683 14-15
+extension/src/sidepanel.ts
+  s_f8cfaafaf8635b::t_a55943d9b38f41 807-809
+  s_ade21bde696617::t_dbcb1d1c325bff 257
+  s_f8cfaafaf8635b::t_5dce3ce9e6489f 262-265,267-291
+  s_f8cfaafaf8635b::t_2e8cae6d07ae31 466-467,469
+  s_f8cfaafaf8635b::t_854135a0baa524 685-693
+  s_f8cfaafaf8635b::t_560b2dc03b01a9 545-546
+  s_f8cfaafaf8635b::t_69fe0df603a1d4 45-50
+  s_f8cfaafaf8635b::t_e8095f68010e8b 683-684,694
+  s_f8cfaafaf8635b::t_116ccc0d12c56f 460-465,470-478,483,519
+  s_f8cfaafaf8635b::t_46ff6af265dfd9 105-113,126,143,160,163-166,176
+  s_f8cfaafaf8635b::t_6d8d3e275f7ad4 419
+  s_f8cfaafaf8635b::t_161500914c1470 504-506
+  s_f8cfaafaf8635b::t_f06b8cfefbe60b 479
+  s_f8cfaafaf8635b::t_5b5baec0f84595 26-27
+  s_f8cfaafaf8635b::t_21d10392a763c5 468
+  s_f8cfaafaf8635b::t_5b82d9ae342a54 234-246,253-256,258,260,295-298
+  s_f8cfaafaf8635b::t_26609f844ae11c 259,682,703-704
+  s_f8cfaafaf8635b::t_3b61bd6f75f245 299
+  s_f8cfaafaf8635b::t_674ecc6d527978 652-653,660-663
+  s_f8cfaafaf8635b::t_cf64f4ad0d440f 655-659
+  s_f8cfaafaf8635b::t_51441e5b8142cc 767-768,770
+  s_f8cfaafaf8635b::t_810dbc53b4894a 697-702,705-712
+  s_f8cfaafaf8635b::t_a8b0f518051512 779,783
+shared/src/types.ts
+  s_f8cfaafaf8635b::t_35b47a4026e98f 92
+  s_f8cfaafaf8635b::t_762e5a6544da71 6-11
+  s_f8cfaafaf8635b::t_ebf003d375f7c2 43-44,59,69,79,89,99,106-119
+  s_42e162f0645e31::t_4578e434261639 120
+  s_f8cfaafaf8635b::t_f6c3e71e1684bb 162
+  s_f8cfaafaf8635b::t_051e5f12ad7b50 48-49,62,72-78,80-88,90-91,93-98,100-102
+extension/sidepanel.html
+  s_f8cfaafaf8635b::t_59fae0c067fcf4 48-54
+  s_f8cfaafaf8635b::t_bcbc1da56a8501 39-41
+docs/MULTILEVEL-IMPLEMENTATION-PLAN.md
+  s_f8cfaafaf8635b::t_82ea04a1d95307 7,34,55-56,66-67,71,76-77,112,114-116,135,142,154,170
+  s_f8cfaafaf8635b::t_a1ffaf9b99bd67 33,36,38
+shared/src/chatTargets.test.ts
+  s_f8cfaafaf8635b::t_9971b688fc993d 1-2,8-21,23-25,27-29,31-34,40-47,58-59
+  s_f8cfaafaf8635b::t_ef09d188b75a44 22,26
+  s_f8cfaafaf8635b::t_4c1dcc9b00db8c 3-7,30,35-39,48-57
+shared/src/pastePackage.test.ts
+  s_f8cfaafaf8635b::t_49430e039d2cb3 96-109
+extension/manifest.json
+  s_f8cfaafaf8635b::t_eae269623484f8 32-34
+  s_f8cfaafaf8635b::t_8bfd861d3a0ed8 77-79
+  s_f8cfaafaf8635b::t_11c976d2ec465f 30-31
+  s_f8cfaafaf8635b::t_33f728bf36105e 75-76
+docs/SPEC-FACT-CHECK.md
+  s_f8cfaafaf8635b::t_27cbb002cf15b7 50
+  s_f8cfaafaf8635b::t_8f1a83e8f74d24 3,6,8,15,17,24-29,40-41,45-49,51,53,70,74,113,144
+extension/options.html
+  s_f8cfaafaf8635b::t_da7fce76ebc16b 68
+shared/package.json
+  s_f8cfaafaf8635b::t_5fe248c17ef552 17
+docs/levels/L7-hardening.md
+  s_f8cfaafaf8635b::t_26f878788c6909 7
+extension/src/background.ts
+  s_f8cfaafaf8635b::t_7746a11233b3fb 250-255
+  s_f8cfaafaf8635b::t_ba87085047709b 248
+  s_6edb2630329930::t_1674b86a534008 356-358
+  s_b0d21b08067915::t_253eac05e32233 352
+  s_f8cfaafaf8635b::t_00c28372924329 376,379-380
+  s_f8cfaafaf8635b::t_557c039b590ecf 184-185,205-206,244-247,249,259
+  s_f8cfaafaf8635b::t_0e610def8aa323 10
+  s_f8cfaafaf8635b::t_c330feddf4c4af 323,327,348,359
+  s_b0d21b08067915::t_f8c5508be75652 349-351
+  s_f8cfaafaf8635b::t_ef61b21ea57d0c 68-70
+  s_f8cfaafaf8635b::t_ecebabed085988 204,207-220,265,271,273,297,299,310,312,336,338-339,342,353-355
+  s_f8cfaafaf8635b::t_98914511606ed0 288
+  s_f8cfaafaf8635b::t_71383b419b03ca 66-67
+  s_f8cfaafaf8635b::t_f80e494da0294e 12
+  s_f8cfaafaf8635b::t_62ed1d69048413 896-907
+README.md
+  s_f8cfaafaf8635b::t_178ea6f6104519 5,8-10,19,42
+  s_f8cfaafaf8635b::t_8db7f7a446f815 31
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "0f14daa9ff1df5ebe53d4a16ae78c49c317651ef",
+  "prompts": {},
+  "sessions": {
+    "s_10ef36f1dbd4a1": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "62611d74-6793-4945-9659-3aa8a1ab4025",
+        "model": "grok-4.5"
+      },
+      "human_author": "Andre Lorbach <alorbach@adiscon.com>"
+    },
+    "s_42e162f0645e31": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "2c8fd63f-8bcb-49df-ae92-f55f365f219f",
+        "model": "cursor-grok-4.5-high-fast"
+      },
+      "human_author": "Andre Lorbach <alorbach@adiscon.com>"
+    },
+    "s_6edb2630329930": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f862a-5f5d-7593-b7ac-71efe79bb574",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Andre Lorbach <alorbach@adiscon.com>"
+    },
+    "s_ade21bde696617": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "660d6888-7a08-4692-b5ca-1a83dbbaf908",
+        "model": "grok-4.5"
+      },
+      "human_author": null
+    },
+    "s_b0d21b08067915": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "0bd791ca-3453-450e-a28e-31f5f24de797",
+        "model": "grok-4.5"
+      },
+      "human_author": null
+    },
+    "s_f8cfaafaf8635b": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "0242066e-15dc-43aa-89a0-53ad7c23f762",
+        "model": "grok-4.5"
+      },
+      "human_author": null
+    }
+  }
+}
