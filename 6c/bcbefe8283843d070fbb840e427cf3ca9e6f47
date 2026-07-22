@@ -1,0 +1,93 @@
+extension/scripts/build.mjs
+  s_fb422af4e32057::t_3cc66d6bc0952e 19-31
+  s_fb422af4e32057::t_7feacf66477035 34,72
+docs/SPEC-TRANSCRIPT.md
+  s_fb422af4e32057::t_7827ad6c1d6ffb 30-41,46,79
+shared/src/types.ts
+  s_fb422af4e32057::t_1aca9f62e4f61d 28-29
+shared/src/transcribeYoutube.ts
+  s_fb422af4e32057::t_1b79f7766cf773 1-97
+docs/PRODUCT.md
+  s_fb422af4e32057::t_7f36c28034a702 127
+shared/src/youtube.test.ts
+  s_fb422af4e32057::t_bb5c03c335f66d 6,8,46-50,54-61
+  s_fb422af4e32057::t_f0893016d80753 45,51-53
+  s_fb422af4e32057::t_bcc6c8cfe2e38e 7
+  s_6edb2630329930::t_8de8f8b3d2ae90 62
+shared/src/index.ts
+  s_fb422af4e32057::t_0ade1eb044ff8c 74-81
+  s_fb422af4e32057::t_4118f4650b421b 33
+  s_fb422af4e32057::t_cad155a84de98b 32,34
+  s_6edb2630329930::t_d716904f8ec835 73
+shared/package.json
+  s_fb422af4e32057::t_ebb9f86f6b53e1 17
+shared/src/pastePackage.test.ts
+  s_fb422af4e32057::t_1948ecd8c0a334 110-111,113-127
+extension/src/background.ts
+  s_fb422af4e32057::t_ca267100dcb1cd 956-959
+  s_fb422af4e32057::t_fd02b23bd39617 577-632,651-653
+  s_fb422af4e32057::t_130de2b0f92dd1 723-728
+  s_fb422af4e32057::t_b1760f0fed6766 933,936-937,939-940,953,955,960-961
+  s_fb422af4e32057::t_23f81c7d77510b 393,396-418
+  s_fb422af4e32057::t_e943c0da29c2fa 934-935,938,941-952,954
+  s_fb422af4e32057::t_b5d0d678b0901e 975
+  s_fb422af4e32057::t_4a318010d6d6b5 12
+extension/_locales/de/messages.json
+  s_fb422af4e32057::t_23bbb881c18f46 200-205
+extension/src/youtubeCaptions.ts
+  s_fb422af4e32057::t_6b10a6afafccf1 352-355,378,380-384,388-391,394,398-400,404-408,437,439-441,445-449,452-456
+  s_fb422af4e32057::t_a20190ead60068 3,5
+  s_fb422af4e32057::t_1913571c408d6c 538
+  s_fb422af4e32057::t_c11118c4d8a7f3 385-387
+  s_fb422af4e32057::t_c99f08d1189613 536-537,539-545
+  s_fb422af4e32057::t_340bc931ec0d4d 4
+  s_fb422af4e32057::t_37667627eef5be 356-377,379,392-393,395-397,401-403,409-436,438,442-444,450-451
+docs/SPEC-FACT-CHECK.md
+  s_fb422af4e32057::t_485b8d2c1964b8 61
+shared/src/youtube.ts
+  s_fb422af4e32057::t_30001576bcd616 122-137,139-145,169-182
+  s_fb422af4e32057::t_213463e1d8040d 138,146-168
+shared/src/transcribeYoutube.test.ts
+  s_fb422af4e32057::t_e5e8f521245f21 1-114
+extension/_locales/en/messages.json
+  s_fb422af4e32057::t_abaaf8bb3e6687 200-205
+extension/manifest.json
+  s_fb422af4e32057::t_37592874c42603 5
+  s_fb422af4e32057::t_edf6f987348428 34-36
+  s_fb422af4e32057::t_ea2ea46a065775 39
+docs/levels/L9-store-release.md
+  s_fb422af4e32057::t_aa6941bf310023 15
+docs/CHROME-WEB-STORE.md
+  s_fb422af4e32057::t_310bfdbdfa0253 23,36,52
+shared/src/pastePackage.ts
+  s_fb422af4e32057::t_40c47727450998 90-92,95-97
+extension/src/sidepanel.ts
+  s_6edb2630329930::t_ff979ffc9230b0 235
+  s_fb422af4e32057::t_92fafd97e20f88 219-220,233-234
+extension/package.json
+  s_fb422af4e32057::t_ec09a87156dbef 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "6cbcbefe8283843d070fbb840e427cf3ca9e6f47",
+  "prompts": {},
+  "sessions": {
+    "s_6edb2630329930": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f862a-5f5d-7593-b7ac-71efe79bb574",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Andre Lorbach <alorbach@adiscon.com>"
+    },
+    "s_fb422af4e32057": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "f191aa03-fcf4-4d59-9774-8f45dec7a547",
+        "model": "grok-4.5"
+      },
+      "human_author": null
+    }
+  }
+}
