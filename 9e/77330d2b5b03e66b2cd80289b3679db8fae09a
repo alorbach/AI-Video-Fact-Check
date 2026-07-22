@@ -1,0 +1,61 @@
+shared/src/masterPrompt.ts
+  s_87e7ac705b9b04::t_83fdb40fd6ef96 14-19,21-27,29,31
+  s_87e7ac705b9b04::t_f74ba93235047b 64
+  s_87e7ac705b9b04::t_c7aef64ffd7fdc 33
+  s_87e7ac705b9b04::t_1a59d8b1d9d87f 45-50,52-58,60,62
+docs/PRODUCT.md
+  s_87e7ac705b9b04::t_dd5c47a7598b93 121
+docs/test-urls.md
+  s_87e7ac705b9b04::t_e426631379fa6a 35-47
+extension/src/chatInjectMain.ts
+  s_87e7ac705b9b04::t_b7ab38bff2b50d 193-194,196-201
+shared/src/types.ts
+  s_87e7ac705b9b04::t_54e43d1d7e6258 86-93
+extension/src/options.ts
+  s_87e7ac705b9b04::t_87a284c2bda5a6 5-10,35-36,45-47,55-60,72-74,82-84,94-96,100-101,103-112
+README.md
+  s_87e7ac705b9b04::t_3dcf1c38fc06f6 29
+extension/src/sidepanel.ts
+  s_87e7ac705b9b04::t_75f430ef5a340b 459-468
+  s_87e7ac705b9b04::t_0d123a77f52c5e 383-390,392-393
+  s_87e7ac705b9b04::t_3698615a736179 663-675
+  s_87e7ac705b9b04::t_5ed9eb679cc8b6 110-112,116-119,126-127,155-165
+  s_87e7ac705b9b04::t_e2b4a948789f20 28-29
+docs/levels/L7-hardening.md
+  s_87e7ac705b9b04::t_07ea66bc350d5a 3,17-18,20-22,28,30,34
+docs/MULTILEVEL-IMPLEMENTATION-PLAN.md
+  s_87e7ac705b9b04::t_d2957ee33a4adf 32,35,37
+extension/src/background.ts
+  s_87e7ac705b9b04::t_c3982658f29189 238
+  s_87e7ac705b9b04::t_8eae18a69ff061 74,82
+  s_87e7ac705b9b04::t_0ba0392b463a24 358-363,372-380,391-420
+shared/src/pastePackage.test.ts
+  s_87e7ac705b9b04::t_fbc5e0f7514f0e 73,88
+docs/SPEC-FACT-CHECK.md
+  s_87e7ac705b9b04::t_5170e2212ff872 119-125
+extension/options.html
+  s_87e7ac705b9b04::t_be0f5fe9dcdc9f 83-90
+  s_87e7ac705b9b04::t_b4f1a61595e5dd 36-49
+extension/_locales/de/messages.json
+  s_87e7ac705b9b04::t_2962ad19ca8add 44-52,68-73,92-99
+  s_87e7ac705b9b04::t_c38fd502452306 100,234,251-256
+extension/_locales/en/messages.json
+  s_87e7ac705b9b04::t_dc160c88a0acdf 100,234,251-256
+  s_87e7ac705b9b04::t_97a1efdc6c115e 44-52,68-73,92-99
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "9e77330d2b5b03e66b2cd80289b3679db8fae09a",
+  "prompts": {},
+  "sessions": {
+    "s_87e7ac705b9b04": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "b4eda435-f139-4994-b854-4d0043e529cf",
+        "model": "grok-4.5"
+      },
+      "human_author": "Andre Lorbach <alorbach@adiscon.com>"
+    }
+  }
+}
