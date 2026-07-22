@@ -1,0 +1,71 @@
+shared/src/socialTranscriptHelpers.ts
+  s_765132be7ee406::t_7abc2940cb3a4a 1-74
+docs/MULTILEVEL-IMPLEMENTATION-PLAN.md
+  s_765132be7ee406::t_aa2f4f9602944c 36,40
+  s_765132be7ee406::t_c14431007552f6 60
+docs/levels/L11-external-transcript-helpers.md
+  s_765132be7ee406::t_38c65dcd744915 1-39
+docs/CHROME-WEB-STORE.md
+  s_765132be7ee406::t_607368dc30bd2b 38-39
+  s_765132be7ee406::t_fed7d9c3aa5b6f 24
+  s_765132be7ee406::t_a667f6034031a7 56
+extension/package.json
+  s_765132be7ee406::t_3171dac8d494a2 3
+extension/src/background.ts
+  s_765132be7ee406::t_5f22895119856b 62-64
+  s_765132be7ee406::t_8aa7a508b73700 1492-1500
+  s_765132be7ee406::t_21779ac9e21373 1075-1077
+  s_765132be7ee406::t_43440dae04af3d 1162,1165
+  s_765132be7ee406::t_d88fa960897db0 887-1056
+  s_765132be7ee406::t_288c526a889c16 12,15,38-43
+extension/src/transcriptHelperMain.ts
+  s_765132be7ee406::t_0bc850261e791e 1-68,74,76-82,87-241
+  s_765132be7ee406::t_bd8415bb563903 69-73,75,83-86
+docs/test-urls.md
+  s_765132be7ee406::t_11c6e051f7ef1c 24,29-35
+  s_765132be7ee406::t_44452fd1e1d5b6 36-37
+shared/src/types.ts
+  s_765132be7ee406::t_b17076313e5291 138-143
+  s_765132be7ee406::t_40c815564491ce 28-31
+shared/src/socialTranscriptHelpers.test.ts
+  s_765132be7ee406::t_a022528df0f19f 1-51
+shared/src/index.ts
+  s_6edb2630329930::t_6a0b7f7bde34b9 85
+  s_765132be7ee406::t_08900060b08932 86-93
+docs/SPEC-TRANSCRIPT.md
+  s_765132be7ee406::t_b67bdb9d6912a9 106,108
+  s_765132be7ee406::t_e253a6bc940457 33,52-66
+  s_765132be7ee406::t_d476a087f5135d 67
+extension/src/workOverlay.ts
+  s_765132be7ee406::t_e24070580a74d5 46
+  s_765132be7ee406::t_aa0e7374d31602 21-25
+extension/manifest.json
+  s_765132be7ee406::t_cffe93ffbbbf91 5
+  s_765132be7ee406::t_c7fa89877cd566 36-40
+shared/package.json
+  s_765132be7ee406::t_6ce1a1c1bacd01 17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "04d97607989f63c7e00d6e6b15a64bf452ba2dd2",
+  "prompts": {},
+  "sessions": {
+    "s_6edb2630329930": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f862a-5f5d-7593-b7ac-71efe79bb574",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Andre Lorbach <alorbach@adiscon.com>"
+    },
+    "s_765132be7ee406": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "a0310c23-a746-4da5-8708-b83389f3d960",
+        "model": "grok-4.5"
+      },
+      "human_author": "Andre Lorbach <alorbach@adiscon.com>"
+    }
+  }
+}
