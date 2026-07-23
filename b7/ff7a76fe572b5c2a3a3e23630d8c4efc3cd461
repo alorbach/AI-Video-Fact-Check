@@ -1,0 +1,67 @@
+AGENTS.md
+  s_8263f333a4ddff::t_15e1bc0a06755f 38
+extension/src/background.ts
+  s_8263f333a4ddff::t_1bf5054d9fe246 1296
+  s_8263f333a4ddff::t_da66232c508875 1382-1383
+  s_8263f333a4ddff::t_54808efba13e1a 1027-1182,1187-1193,1197,1268-1272,1278-1282,1284-1286,1291-1295,1297-1310,1312-1336,1338-1360,1366,1377-1381,1384-1395
+  s_8263f333a4ddff::t_92ea5d180e7f04 1183-1186
+  s_8263f333a4ddff::t_c389c14f31575c 25-26,49-56
+extension/src/options.ts
+  s_8263f333a4ddff::t_ff8adb59657676 55-60,73-74
+  s_8263f333a4ddff::t_9eff27df5a76e4 75,158-160,166,168-173
+  s_8263f333a4ddff::t_54cfa2c57b599f 95-104,110-120,140-142
+docs/CHROME-WEB-STORE.md
+  s_8263f333a4ddff::t_aa246ea967d95b 59-60
+  s_8263f333a4ddff::t_92ba6fd5d6b37f 25
+  s_8263f333a4ddff::t_e82e7735a7fa5d 41-42
+extension/manifest.json
+  s_8263f333a4ddff::t_5594af3ab972d0 40-43
+shared/src/index.ts
+  s_8263f333a4ddff::t_4038a1420509cd 87,92
+docs/MULTILEVEL-IMPLEMENTATION-PLAN.md
+  s_8263f333a4ddff::t_25f3fba5817036 39-40
+  s_8263f333a4ddff::t_801d9de94fccc7 61
+extension/src/turboScribeHelperMain.ts
+  s_8263f333a4ddff::t_e4ae8fc6d87bd4 1-284,287,289,296-313,326-328,330-352,356-369,371-373,376-395
+  s_8263f333a4ddff::t_089bda0a10e352 285-286,288,290-295,314-325,329,353-355,375
+  s_8263f333a4ddff::t_6697f7ad38a5a1 370,374
+extension/_locales/en/messages.json
+  s_8263f333a4ddff::t_99a72c4dce6805 311-316
+docs/SPEC-TRANSCRIPT.md
+  s_8263f333a4ddff::t_4299e5548fcb52 34,38-45
+  s_8263f333a4ddff::t_c7836029035978 46
+  s_8263f333a4ddff::t_65246af3f4b4f6 78-79
+extension/_locales/de/messages.json
+  s_8263f333a4ddff::t_faa82f78f92276 311-316
+docs/test-urls.md
+  s_8263f333a4ddff::t_fb6f289de23ede 35-36,39
+docs/levels/L11-external-transcript-helpers.md
+  s_8263f333a4ddff::t_231a469efa4f96 17,28,36,42
+docs/PRODUCT.md
+  s_8263f333a4ddff::t_5c1806f60b24ad 132,135
+shared/src/socialTranscriptHelpers.test.ts
+  s_8263f333a4ddff::t_7e284d0e00d62f 10-11,47-49,53-64
+  s_8263f333a4ddff::t_d1fdd9ae3a97d7 65-66
+shared/src/socialTranscriptHelpers.ts
+  s_8263f333a4ddff::t_eacecfa1320f32 99-101
+  s_8263f333a4ddff::t_2d68b3df323890 2,4-6,45-57,79-85,97-98
+  s_8263f333a4ddff::t_14177133620a29 86
+extension/options.html
+  s_8263f333a4ddff::t_bba168095b9399 96-103
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "b7ff7a76fe572b5c2a3a3e23630d8c4efc3cd461",
+  "prompts": {},
+  "sessions": {
+    "s_8263f333a4ddff": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "658e6790-a257-46f6-a8fc-bccdb4f95df5",
+        "model": "grok-4.5"
+      },
+      "human_author": null
+    }
+  }
+}
