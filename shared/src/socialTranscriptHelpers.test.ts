@@ -7,6 +7,8 @@ import {
   isUsableSocialHelperTranscript,
   SOCIAL_TRANSCRIPT_HELPERS,
   socialHelperPlatform,
+  TURBOSCRIBE_FACEBOOK,
+  turboScribeLanguageLabel,
 } from "./socialTranscriptHelpers.js";
 
 describe("social transcript helpers", () => {
@@ -42,7 +44,24 @@ describe("social transcript helpers", () => {
     assert.ok(
       isSocialTranscriptHelperUrl("https://www.facebooktotranscript.com/"),
     );
+    assert.ok(
+      isSocialTranscriptHelperUrl("https://turboscribe.ai/downloader/facebook"),
+    );
     assert.equal(isSocialTranscriptHelperUrl("https://chatgpt.com/"), false);
+  });
+
+  it("exposes TurboScribe Facebook backup config", () => {
+    assert.equal(
+      TURBOSCRIBE_FACEBOOK.downloaderUrl,
+      "https://turboscribe.ai/downloader/facebook",
+    );
+    assert.equal(
+      TURBOSCRIBE_FACEBOOK.transcribeUrl,
+      "https://turboscribe.ai/u/transcribe-youtube-video",
+    );
+    assert.ok(TURBOSCRIBE_FACEBOOK.maxMp4Bytes > 1_000_000);
+    assert.equal(turboScribeLanguageLabel("en"), "English");
+    assert.equal(turboScribeLanguageLabel("de"), "German");
   });
 
   it("picks Facebook language labels from locale", () => {

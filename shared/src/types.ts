@@ -143,7 +143,12 @@ export type WorkOverlayPhase =
   | "waiting";
 
 export type ExtensionMessage =
-  | { type: "CAPTURE_ACTIVE_TAB"; force?: boolean }
+  | {
+      type: "CAPTURE_ACTIVE_TAB";
+      force?: boolean;
+      /** Open chat: allow remaining helpers (e.g. TurboScribe). Passive sync must not. */
+      allowPendingHelpers?: boolean;
+    }
   | { type: "CAPTURE_PAGE"; skipTranscript?: boolean }
   | { type: "CAPTURE_RESULT"; result: CaptureResult; package: PastePackage }
   | { type: "PACKAGE_READY"; package: PastePackage }

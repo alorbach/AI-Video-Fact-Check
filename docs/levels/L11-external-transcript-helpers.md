@@ -14,6 +14,7 @@ When TikTok or Facebook Scan leaves **no** local transcript (`transcriptSource: 
 |---|---|
 | TikTok | https://tiktoktranscript.io/ |
 | Facebook | https://facebooktotranscript.com/ |
+| Facebook (optional backup) | TurboScribe downloader → free transcribe UI (`enableTurboScribeFacebook`, default **off**) |
 
 ## Tasks
 
@@ -24,6 +25,7 @@ When TikTok or Facebook Scan leaves **no** local transcript (`transcriptSource: 
 - [x] Manifest host permissions for both helpers
 - [x] SPEC + store privacy notes
 - [x] Unit tests for helper config; manual checklist on [`../test-urls.md`](../test-urls.md)
+- [x] Optional TurboScribe Facebook backup (Settings default off; mp4 resolve → upload → read)
 
 ## Exit criteria
 
@@ -31,9 +33,11 @@ When TikTok or Facebook Scan leaves **no** local transcript (`transcriptSource: 
 - [x] Helper tab closed after success, error, timeout, or Cancel
 - [x] No API keys; YouTube TranscribeYouTube path unchanged
 - [x] `enableTranscript` off skips helper enrichment
+- [x] `enableTurboScribeFacebook` off (default) skips TurboScribe backup; on runs after facebooktotranscript soft-fail
 
 ## Notes
 
 - tiktoktranscript.io = **native TikTok captions** only (not Whisper).  
 - facebooktotranscript.com Method **Auto** may use AI when Extract finds nothing.  
+- TurboScribe backup needs the user’s free TurboScribe sign-in (3/day); soft-fails on login wall / errors / oversized files.  
 - Helper UIs change — maintain selectors like chat inject.

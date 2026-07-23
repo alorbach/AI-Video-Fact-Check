@@ -37,7 +37,10 @@
     "*://tiktoktranscript.io/*",
     "*://*.tiktoktranscript.io/*",
     "*://facebooktotranscript.com/*",
-    "*://*.facebooktotranscript.com/*"
+    "*://*.facebooktotranscript.com/*",
+    "*://turboscribe.ai/*",
+    "*://*.turboscribe.ai/*",
+    "*://*.fbcdn.net/*"
   ],
   "background": {
     "service_worker": "background.js"

@@ -52,6 +52,18 @@ async function load(): Promise<void> {
   const rememberPackageHelp = document.getElementById("rememberPackageHelp");
   const labelEnableTranscript = document.getElementById("labelEnableTranscript");
   const enableTranscriptHelp = document.getElementById("enableTranscriptHelp");
+  const labelEnableFacebookToTranscript = document.getElementById(
+    "labelEnableFacebookToTranscript",
+  );
+  const enableFacebookToTranscriptHelp = document.getElementById(
+    "enableFacebookToTranscriptHelp",
+  );
+  const labelEnableTurboScribeFacebook = document.getElementById(
+    "labelEnableTurboScribeFacebook",
+  );
+  const enableTurboScribeFacebookHelp = document.getElementById(
+    "enableTurboScribeFacebookHelp",
+  );
   const optFontNormal = document.getElementById("optFontNormal");
   const optFontLarge = document.getElementById("optFontLarge");
   const btnSave = document.getElementById("btnSave");
@@ -63,6 +75,12 @@ async function load(): Promise<void> {
   ) as HTMLInputElement | null;
   const transcriptBox = document.getElementById(
     "enableTranscript",
+  ) as HTMLInputElement | null;
+  const facebookHelperBox = document.getElementById(
+    "enableFacebookToTranscript",
+  ) as HTMLInputElement | null;
+  const turboScribeBox = document.getElementById(
+    "enableTurboScribeFacebook",
   ) as HTMLInputElement | null;
 
   if (skipLink) skipLink.textContent = t("skipToContent");
@@ -83,17 +101,44 @@ async function load(): Promise<void> {
   if (enableTranscriptHelp) {
     enableTranscriptHelp.textContent = t("enableTranscriptHelp");
   }
+  if (labelEnableFacebookToTranscript) {
+    labelEnableFacebookToTranscript.textContent = t(
+      "labelEnableFacebookToTranscript",
+    );
+  }
+  if (enableFacebookToTranscriptHelp) {
+    enableFacebookToTranscriptHelp.textContent = t(
+      "enableFacebookToTranscriptHelp",
+    );
+  }
+  if (labelEnableTurboScribeFacebook) {
+    labelEnableTurboScribeFacebook.textContent = t(
+      "labelEnableTurboScribeFacebook",
+    );
+  }
+  if (enableTurboScribeFacebookHelp) {
+    enableTurboScribeFacebookHelp.textContent = t(
+      "enableTurboScribeFacebookHelp",
+    );
+  }
   if (optFontNormal) optFontNormal.textContent = t("fontSizeNormal");
   if (optFontLarge) optFontLarge.textContent = t("fontSizeLarge");
   if (btnSave) btnSave.textContent = t("btnSave");
   if (creditsLabel) creditsLabel.textContent = t("creditsLabel");
 
-  const { defaultChat, fontSize, enableTranscript } =
-    await chrome.storage.sync.get({
-      defaultChat: "chatgpt_video_faktencheck" satisfies ChatTargetId,
-      fontSize: "normal" satisfies FontSizePref,
-      enableTranscript: true,
-    });
+  const {
+    defaultChat,
+    fontSize,
+    enableTranscript,
+    enableFacebookToTranscript,
+    enableTurboScribeFacebook,
+  } = await chrome.storage.sync.get({
+    defaultChat: "chatgpt_video_faktencheck" satisfies ChatTargetId,
+    fontSize: "normal" satisfies FontSizePref,
+    enableTranscript: true,
+    enableFacebookToTranscript: true,
+    enableTurboScribeFacebook: false,
+  });
   const local = await chrome.storage.local.get({
     [LOCAL_KEYS.rememberLastPackage]: false,
   });
@@ -113,6 +158,12 @@ async function load(): Promise<void> {
   if (transcriptBox) {
     transcriptBox.checked = enableTranscript !== false;
   }
+  if (facebookHelperBox) {
+    facebookHelperBox.checked = enableFacebookToTranscript !== false;
+  }
+  if (turboScribeBox) {
+    turboScribeBox.checked = enableTurboScribeFacebook === true;
+  }
 
   fontSelect?.addEventListener("change", () => {
     applyFontSize(fontSelect.value === "large" ? "large" : "normal");
@@ -128,13 +179,29 @@ document.getElementById("btnSave")?.addEventListener("click", async () => {
   const transcriptBox = document.getElementById(
     "enableTranscript",
   ) as HTMLInputElement | null;
+  const facebookHelperBox = document.getElementById(
+    "enableFacebookToTranscript",
+  ) as HTMLInputElement | null;
+  const turboScribeBox = document.getElementById(
+    "enableTurboScribeFacebook",
+  ) as HTMLInputElement | null;
   const defaultChat = chatSelect.value;
   const fontSize: FontSizePref =
     fontSelect.value === "large" ? "large" : "normal";
   const rememberLastPackage = Boolean(rememberBox?.checked);
   const enableTranscript = transcriptBox ? Boolean(transcriptBox.checked) : true;
+  const enableFacebookToTranscript = facebookHelperBox
+    ? Boolean(facebookHelperBox.checked)
+    : true;
+  const enableTurboScribeFacebook = Boolean(turboScribeBox?.checked);
 
-  await chrome.storage.sync.set({ defaultChat, fontSize, enableTranscript });
+  await chrome.storage.sync.set({
+    defaultChat,
+    fontSize,
+    enableTranscript,
+    enableFacebookToTranscript,
+    enableTurboScribeFacebook,
+  });
   await chrome.storage.local.set({
     [LOCAL_KEYS.rememberLastPackage]: rememberLastPackage,
   });

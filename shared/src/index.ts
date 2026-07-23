@@ -84,10 +84,12 @@ export {
 } from "./transcribeYoutube.js";
 export {
   SOCIAL_TRANSCRIPT_HELPERS,
+  TURBOSCRIBE_FACEBOOK,
   socialHelperPlatform,
   helperForPlatform,
   isSocialTranscriptHelperUrl,
   facebookHelperLanguageLabel,
+  turboScribeLanguageLabel,
   isUsableSocialHelperTranscript,
   type SocialTranscriptHelperId,
   type SocialTranscriptHelper,

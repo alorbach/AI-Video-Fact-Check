@@ -32,9 +32,11 @@ Replace any URL that goes private or 404s — keep the table filled.
 |---|---|---|
 | TikTok | Local `transcriptSource` is `none` | Helper tab opens → native captions if available → tab closes; else URL-only |
 | Facebook | Local `transcriptSource` is `none` | Helper tab opens (Auto) → transcript or error → tab closes; else URL-only |
+| Facebook + TurboScribe backup | Settings → enable “Facebook backup: TurboScribe”, signed in to TurboScribe, primary helper fails | Second helper path resolves public mp4 → transcribe → external transcript or soft URL-only |
+| Facebook + TurboScribe backup off (default) | Primary helper fails | No TurboScribe tab; URL-only |
 | Cancel mid-helper | Press Cancel on overlay | Helper tab closes; Scan stops |
 
-**Spike note (2026-07-22):** tiktoktranscript.io returned “Service not configured. No Lambda regions available.”; facebooktotranscript.com returned an unexpected-format error on the sample URL. Soft-fail path (URL-only) must still work — re-check helpers when they recover.
+**Spike note (2026-07-22):** tiktoktranscript.io returned “Service not configured. No Lambda regions available.”; facebooktotranscript.com returned an unexpected-format error on the sample URL. Soft-fail path (URL-only) must still work — re-check helpers when they recover. TurboScribe backup (2026-07-23): guest/logged-out soft-fail; logged-in path is opt-in only.
 ### YouTube expected on `iEa1a9Hip8E`
 
 - Platform: YouTube  

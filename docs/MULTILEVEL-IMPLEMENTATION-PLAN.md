@@ -36,8 +36,8 @@ This file is the **overall roadmap and status board**. Level detail: [`levels/`]
 | L11 | External transcript helpers (TikTok / Facebook) | **done** | [`levels/L11-external-transcript-helpers.md`](levels/L11-external-transcript-helpers.md) |
 
 **Current level:** L9 — Chrome Web Store  
-**Last updated:** 2026-07-22  
-**Next action:** Start L9 — privacy form, store assets, publish checklist (include L11 helper hosts in privacy disclosure).
+**Last updated:** 2026-07-23  
+**Next action:** Start L9 — privacy form, store assets, publish checklist (include L11 helper hosts + optional TurboScribe/fbcdn in privacy disclosure).
 
 Status values: `todo` · `in_progress` · `done` · `blocked`
 
@@ -58,6 +58,7 @@ L8  Chat picker          Combobox + Claude / Copilot / DeepSeek
 L9  Store release        Privacy, assets, publish
 L10 Overlay / multiprompt Work overlay + cancel; long-text multiprompt; transcript toggle
 L11 External helpers     TikTok/Facebook free transcript sites (open→read→close)
+                         + optional TurboScribe Facebook backup (Settings, default off)
 ```
 
 ---

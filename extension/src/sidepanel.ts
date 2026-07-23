@@ -425,8 +425,13 @@ async function flushManualTranscriptIfNeeded(): Promise<void> {
  * keep stored package on chat/restricted tabs (after handoff).
  * Then include any unsaved manual transcript from the textarea.
  */
-async function ensurePackage(): Promise<PastePackage | null> {
-  await requestCapture({ force: false });
+async function ensurePackage(opts?: {
+  allowPendingHelpers?: boolean;
+}): Promise<PastePackage | null> {
+  await requestCapture({
+    force: false,
+    allowPendingHelpers: opts?.allowPendingHelpers === true,
+  });
   await flushManualTranscriptIfNeeded();
   return lastPackage;
 }
@@ -486,7 +491,7 @@ async function handoffToChat(
   lastClickedChat = target;
   try {
     setMsg("handoffMsg", t("handoffWorking"));
-    const rawPkg = await ensurePackage();
+    const rawPkg = await ensurePackage({ allowPendingHelpers: true });
     if (!rawPkg?.videoUrl) {
       setMsg("handoffMsg", t("captureFailed"), "error");
       setGuidePhase("idle");
@@ -688,13 +693,17 @@ async function copyPackageOnlyShort(): Promise<void> {
   }
 }
 
-async function requestCapture(opts?: { force?: boolean }): Promise<void> {
+async function requestCapture(opts?: {
+  force?: boolean;
+  allowPendingHelpers?: boolean;
+}): Promise<void> {
   const force = opts?.force === true;
   setText("captureStatus", t("captureWorking"));
   try {
     const response = (await chrome.runtime.sendMessage({
       type: "CAPTURE_ACTIVE_TAB",
       force,
+      allowPendingHelpers: opts?.allowPendingHelpers === true,
     } satisfies ExtensionMessage)) as ExtensionMessage;
 
     if (response.type === "HANDOFF_FAILED") {

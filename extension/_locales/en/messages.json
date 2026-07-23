@@ -308,6 +308,18 @@
   "enableTranscriptHelp": {
     "message": "When off, only the video link is prepared. You can still paste a transcript yourself in the side panel."
   },
+  "labelEnableFacebookToTranscript": {
+    "message": "Facebook helper: facebooktotranscript.com"
+  },
+  "enableFacebookToTranscriptHelp": {
+    "message": "When Facebook has no transcript on the page, briefly open facebooktotranscript.com to fetch one (no sign-in). On by default."
+  },
+  "labelEnableTurboScribeFacebook": {
+    "message": "Facebook backup: TurboScribe (optional)"
+  },
+  "enableTurboScribeFacebookHelp": {
+    "message": "If Facebook still has no transcript after the helpers above, try TurboScribe. Requires a free TurboScribe sign-in in Chrome (up to 3 free transcripts per day). May briefly fetch the public video file. Off by default."
+  },
   "transcriptOffHint": {
     "message": "Automatic transcript is off (Settings)."
   },

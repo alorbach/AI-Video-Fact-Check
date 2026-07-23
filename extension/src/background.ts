@@ -22,6 +22,8 @@ import {
   pendingHandoffMessages,
   resplitAfterTooLong,
   sameVideoUrl,
+  TURBOSCRIBE_FACEBOOK,
+  turboScribeLanguageLabel,
   withManualTranscript,
   WORK_CANCELLED_KEY,
   type CaptureResult,
@@ -44,6 +46,15 @@ import {
   type SocialHelperPollResult,
   type SocialHelperSiteId,
 } from "./transcriptHelperMain.js";
+import {
+  pollTurboScribeFacebookDownloader,
+  pollTurboScribeTranscribe,
+  clickTurboScribeTranscribeButton,
+  submitTurboScribeFacebookDownloader,
+  submitTurboScribeTranscribe,
+  type TurboScribePollResult,
+  type TurboScribeResolvePollResult,
+} from "./turboScribeHelperMain.js";
 
 const STORAGE_KEYS = {
   lastCapture: "lastCapture",
@@ -870,6 +881,23 @@ async function wasSocialHelperTried(videoUrl: string): Promise<boolean> {
   return typeof map[key] === "number";
 }
 
+function turboScribeTriedKey(videoUrl: string): string | null {
+  const key = socialHelperTriedKey(videoUrl);
+  return key ? `${key}:turboscribe` : null;
+}
+
+async function wasTurboScribeTried(videoUrl: string): Promise<boolean> {
+  const key = turboScribeTriedKey(videoUrl);
+  if (!key) return false;
+  const data = await chrome.storage.session.get({
+    [STORAGE_KEYS.socialHelperTried]: {},
+  });
+  const map =
+    (data[STORAGE_KEYS.socialHelperTried] as Record<string, number> | null) ??
+    {};
+  return typeof map[key] === "number";
+}
+
 async function markSocialHelperTried(videoUrl: string): Promise<void> {
   const key = socialHelperTriedKey(videoUrl);
   if (!key) return;
@@ -887,8 +915,26 @@ async function markSocialHelperTried(videoUrl: string): Promise<void> {
   });
 }
 
+async function markTurboScribeTried(videoUrl: string): Promise<void> {
+  const key = turboScribeTriedKey(videoUrl);
+  if (!key) return;
+  const data = await chrome.storage.session.get({
+    [STORAGE_KEYS.socialHelperTried]: {},
+  });
+  const map = {
+    ...((data[STORAGE_KEYS.socialHelperTried] as
+      | Record<string, number>
+      | null) ?? {}),
+    [key]: Date.now(),
+  };
+  await chrome.storage.session.set({
+    [STORAGE_KEYS.socialHelperTried]: map,
+  });
+}
+
 async function clearSocialHelperTried(videoUrl: string): Promise<void> {
   const key = socialHelperTriedKey(videoUrl);
+  const turboKey = turboScribeTriedKey(videoUrl);
   if (!key) return;
   const data = await chrome.storage.session.get({
     [STORAGE_KEYS.socialHelperTried]: {},
@@ -898,8 +944,16 @@ async function clearSocialHelperTried(videoUrl: string): Promise<void> {
       | Record<string, number>
       | null) ?? {}),
   };
-  if (!(key in map)) return;
-  delete map[key];
+  let changed = false;
+  if (key in map) {
+    delete map[key];
+    changed = true;
+  }
+  if (turboKey && turboKey in map) {
+    delete map[turboKey];
+    changed = true;
+  }
+  if (!changed) return;
   await chrome.storage.session.set({
     [STORAGE_KEYS.socialHelperTried]: map,
   });
@@ -1014,9 +1068,357 @@ async function closeHelperTab(tabId: number | null): Promise<void> {
   }
 }
 
+async function isTurboScribeFacebookEnabled(): Promise<boolean> {
+  const { enableTurboScribeFacebook } = await chrome.storage.sync.get({
+    enableTurboScribeFacebook: false,
+  });
+  return enableTurboScribeFacebook === true;
+}
+
+async function isFacebookToTranscriptEnabled(): Promise<boolean> {
+  const { enableFacebookToTranscript } = await chrome.storage.sync.get({
+    enableFacebookToTranscript: true,
+  });
+  return enableFacebookToTranscript !== false;
+}
+
+/**
+ * True when Open chat should reuse a URL-only package (no more helper work left).
+ * Accounts for facebooktotranscript / TurboScribe toggles and per-helper tried flags.
+ */
+async function socialHelperWorkExhausted(
+  videoUrl: string,
+  platform: PlatformId,
+): Promise<boolean> {
+  if (platform === "tiktok") {
+    return wasSocialHelperTried(videoUrl);
+  }
+  if (platform !== "facebook") return true;
+
+  const primaryEnabled = await isFacebookToTranscriptEnabled();
+  const turboEnabled = await isTurboScribeFacebookEnabled();
+  const primaryDone =
+    !primaryEnabled || (await wasSocialHelperTried(videoUrl));
+  const turboDone = !turboEnabled || (await wasTurboScribeTried(videoUrl));
+  return primaryDone && turboDone;
+}
+
+function withExternalTranscript(
+  result: CaptureResult,
+  pkg: PastePackage,
+  platform: "tiktok" | "facebook",
+  text: string,
+): { result: CaptureResult; package: PastePackage } {
+  const nextResult: CaptureResult = {
+    ...result,
+    platform,
+    transcript: text,
+    transcriptSource: "external",
+  };
+  const nextPkg = buildPastePackage({
+    videoUrl: pkg.videoUrl,
+    locale: pkg.locale,
+    platform,
+    transcript: text,
+    transcriptSource: "external",
+  });
+  return { result: nextResult, package: nextPkg };
+}
+
+/**
+ * Fetch public fbcdn mp4 in the service worker (host_permissions).
+ * Page-world fetch from turboscribe.ai gets Facebook 403 "Bad URL hash".
+ */
+async function fetchTurboScribeMp4Base64(
+  mp4Url: string,
+  maxBytes: number,
+): Promise<{ ok: true; base64: string } | { ok: false; reason: string }> {
+  const isAllowedFbcdnMp4 = (raw: string): boolean => {
+    try {
+      const u = new URL(raw);
+      if (u.protocol !== "https:") return false;
+      const host = u.hostname.toLowerCase();
+      if (!host.endsWith(".fbcdn.net") && host !== "fbcdn.net") return false;
+      return /\.mp4(?:\?|$)/i.test(`${u.pathname}${u.search}`);
+    } catch {
+      return false;
+    }
+  };
+
+  if (!isAllowedFbcdnMp4(mp4Url)) {
+    return { ok: false, reason: "bad-mp4-host" };
+  }
+
+  let resp: Response;
+  try {
+    // manual: reject cross-host redirects off fbcdn.
+    resp = await fetch(mp4Url, {
+      credentials: "omit",
+      redirect: "manual",
+    });
+  } catch {
+    return { ok: false, reason: "fetch-failed" };
+  }
+
+  // Follow a single same-host redirect if needed.
+  if (resp.status >= 300 && resp.status < 400) {
+    const loc = resp.headers.get("Location");
+    if (!loc || !isAllowedFbcdnMp4(new URL(loc, mp4Url).href)) {
+      return { ok: false, reason: "bad-mp4-redirect" };
+    }
+    try {
+      resp = await fetch(new URL(loc, mp4Url).href, {
+        credentials: "omit",
+        redirect: "manual",
+      });
+    } catch {
+      return { ok: false, reason: "fetch-failed" };
+    }
+    if (resp.status >= 300 && resp.status < 400) {
+      return { ok: false, reason: "bad-mp4-redirect" };
+    }
+  }
+
+  if (!resp.ok) {
+    return { ok: false, reason: `fetch-http-${resp.status}` };
+  }
+  if (resp.url && !isAllowedFbcdnMp4(resp.url)) {
+    return { ok: false, reason: "bad-mp4-host" };
+  }
+  const lenHeader = resp.headers.get("content-length");
+  if (lenHeader && Number(lenHeader) > maxBytes) {
+    return { ok: false, reason: "file-too-large" };
+  }
+  const buf = await resp.arrayBuffer();
+  if (buf.byteLength > maxBytes) {
+    return { ok: false, reason: "file-too-large" };
+  }
+  if (buf.byteLength < 1000) {
+    return { ok: false, reason: "file-too-small" };
+  }
+  const bytes = new Uint8Array(buf);
+  let binary = "";
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    const slice = bytes.subarray(i, i + chunk);
+    binary += String.fromCharCode.apply(null, Array.from(slice));
+  }
+  return { ok: true, base64: btoa(binary) };
+}
+
+/**
+ * Optional Facebook backup: TurboScribe downloader → public mp4 → transcribe UI.
+ * Soft-fails on login wall, daily cap, errors, or oversized files.
+ * Login soft-fail does NOT mark tried — Open chat can retry after sign-in.
+ */
+async function maybeEnrichWithTurboScribeFacebook(
+  result: CaptureResult,
+  pkg: PastePackage,
+  opts: { cancelSince: number; videoTabId: number },
+): Promise<{ result: CaptureResult; package: PastePackage }> {
+  if (!(await isTurboScribeFacebookEnabled())) {
+    return { result, package: pkg };
+  }
+  if (await isWorkCancelled(opts.cancelSince)) {
+    throw new Error("cancelled");
+  }
+
+  await showWorkOverlay(opts.videoTabId, "helper");
+
+  let helperTabId: number | null = null;
+  /**
+   * Mark tried only after Transcribe was actually submitted.
+   * Downloader / CDN / fetch / form-hydration failures stay retryable.
+   * Login soft-fail during poll clears this so Chat öffnen can retry after sign-in.
+   */
+  let shouldMarkTried = false;
+  const turboDeadline = Date.now() + TURBOSCRIBE_FACEBOOK.totalBudgetMs;
+  const turboRemaining = (): number =>
+    Math.max(0, turboDeadline - Date.now());
+  try {
+    const tab = await chrome.tabs.create({
+      url: TURBOSCRIBE_FACEBOOK.downloaderUrl,
+      active: false,
+    });
+    if (tab.id == null) return { result, package: pkg };
+    helperTabId = tab.id;
+    activeHelperTabIds.add(tab.id);
+
+    await waitTabComplete(
+      tab.id,
+      Math.min(45_000, TURBOSCRIBE_FACEBOOK.resolveTimeoutMs, turboRemaining()),
+    );
+    // i18n client redirect (/de/…) needs a beat after complete.
+    await new Promise((r) => setTimeout(r, 1400));
+
+    if (await isWorkCancelled(opts.cancelSince)) {
+      throw new Error("cancelled");
+    }
+    if (turboRemaining() < 5_000) return { result, package: pkg };
+
+    const submitDl = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      world: "MAIN",
+      func: submitTurboScribeFacebookDownloader,
+      args: [pkg.videoUrl],
+    });
+    if (!submitDl[0]?.result?.ok) {
+      return { result, package: pkg };
+    }
+
+    let mp4Url: string | null = null;
+    const resolveDeadline = Math.min(
+      Date.now() + TURBOSCRIBE_FACEBOOK.resolveTimeoutMs,
+      turboDeadline,
+    );
+    while (Date.now() < resolveDeadline) {
+      if (await isWorkCancelled(opts.cancelSince)) {
+        throw new Error("cancelled");
+      }
+      const pollDl = await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        world: "MAIN",
+        func: pollTurboScribeFacebookDownloader,
+        args: [TURBOSCRIBE_FACEBOOK.resolveTimeoutMs],
+      });
+      const last = pollDl[0]?.result as
+        | TurboScribeResolvePollResult
+        | undefined;
+      if (last?.status === "ok" && last.mp4Url) {
+        mp4Url = last.mp4Url;
+        break;
+      }
+      if (last?.status === "error" || last?.status === "idle") {
+        return { result, package: pkg };
+      }
+      await new Promise((r) => setTimeout(r, 1000));
+    }
+    if (!mp4Url) return { result, package: pkg };
+
+    // Fetch in SW while CDN URL is fresh — page-world fetch gets 403.
+    const fetched = await fetchTurboScribeMp4Base64(
+      mp4Url,
+      TURBOSCRIBE_FACEBOOK.maxMp4Bytes,
+    );
+    if (!fetched.ok) {
+      return { result, package: pkg };
+    }
+    if (turboRemaining() < 15_000) return { result, package: pkg };
+
+    // Navigate same tab to transcribe UI; inject pre-fetched bytes.
+    // Activate tab so timers/clicks aren't background-throttled.
+    await chrome.tabs.update(tab.id, {
+      url: TURBOSCRIBE_FACEBOOK.transcribeUrl,
+      active: true,
+    });
+    await waitTabComplete(
+      tab.id,
+      Math.min(45_000, TURBOSCRIBE_FACEBOOK.resolveTimeoutMs, turboRemaining()),
+    );
+    await new Promise((r) => setTimeout(r, 1400));
+
+    if (await isWorkCancelled(opts.cancelSince)) {
+      throw new Error("cancelled");
+    }
+    if (turboRemaining() < 10_000) return { result, package: pkg };
+
+    const langLabel = turboScribeLanguageLabel(pkg.locale);
+    const fbId = extractFacebookVideoId(pkg.videoUrl) || "video";
+    const safeId = fbId.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 40) || "video";
+    const uploadName = `vf-fb-${safeId}-${Date.now().toString(36)}.mp4`;
+    // MAIN world: React owns the form; isolated clicks can be ignored.
+    const submitTx = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      world: "MAIN",
+      func: submitTurboScribeTranscribe,
+      args: [fetched.base64, langLabel, uploadName],
+    });
+    const submitted = submitTx[0]?.result as
+      | { ok: boolean; reason?: string }
+      | undefined;
+    if (!submitted?.ok) {
+      // login-required / no-file-input / no-transcribe stay retryable —
+      // page may still be hydrating or user may still need to sign in.
+      return { result, package: pkg };
+    }
+    // Only mark after Transcribe was actually submitted.
+    shouldMarkTried = true;
+    const txDeadline = Math.min(
+      Date.now() + TURBOSCRIBE_FACEBOOK.transcribeTimeoutMs,
+      turboDeadline,
+    );
+    let clickRetries = 0;
+    while (Date.now() < txDeadline) {
+      if (await isWorkCancelled(opts.cancelSince)) {
+        throw new Error("cancelled");
+      }
+      const pollTx = await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        world: "MAIN",
+        func: pollTurboScribeTranscribe,
+      });
+      const last = (pollTx[0]?.result as TurboScribePollResult | undefined) ?? {
+        status: "pending" as const,
+      };
+      if (last.status === "ok" && last.text.trim()) {
+        const text = last.text.trim();
+        if (isUsableSocialHelperTranscript(text)) {
+          return withExternalTranscript(result, pkg, "facebook", text);
+        }
+        return { result, package: pkg };
+      }
+      if (last.status === "error" || last.status === "idle") {
+        if (last.status === "error" && last.error === "login-required") {
+          shouldMarkTried = false;
+        }
+        return { result, package: pkg };
+      }
+      // Form still idle on upload page — re-click Transcribe a few times.
+      // Skip once TurboScribe moved to dashboard/transcript (different UI).
+      if (clickRetries < 3) {
+        const onUploadForm = await chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          world: "MAIN",
+          func: () =>
+            /\/u\/transcribe/i.test(location.pathname) &&
+            !/\/dashboard|\/transcript\//i.test(location.pathname),
+        });
+        if (onUploadForm[0]?.result) {
+          const retry = await chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            world: "MAIN",
+            func: clickTurboScribeTranscribeButton,
+          });
+          if (retry[0]?.result?.ok) clickRetries += 1;
+          if (retry[0]?.result?.started) clickRetries = 3;
+        } else {
+          clickRetries = 3; // stop upload-form retries
+        }
+      }
+      await new Promise((r) => setTimeout(r, 1500));
+    }
+
+    return { result, package: pkg };
+  } catch (err) {
+    if (err instanceof Error && err.message === "cancelled") throw err;
+    return { result, package: pkg };
+  } finally {
+    if (helperTabId != null && shouldMarkTried) {
+      // Mark on cancel / real failure so Chat öffnen does not reopen forever.
+      // Login soft-fail leaves this false so sign-in + Open chat can retry.
+      await markTurboScribeTried(pkg.videoUrl);
+    }
+    await closeHelperTab(helperTabId);
+    if (!(await isWorkCancelled(opts.cancelSince))) {
+      await showWorkOverlay(opts.videoTabId, "capture");
+    }
+  }
+}
+
 /**
  * TikTok / Facebook: when local transcript is `none`, open the free helper
  * website, submit the video URL, read the transcript, close the tab.
+ * Facebook may optionally fall through to TurboScribe (Settings, default off).
  * Serialized so overlapping Scans cannot orphan multiple helper tabs.
  */
 let socialHelperChain: Promise<unknown> = Promise.resolve();
@@ -1075,133 +1477,181 @@ async function maybeEnrichWithSocialTranscriptHelperUnlocked(
     return { result, package: pkg };
   }
 
-  // Soft Chat öffnen: do not reopen the helper for a video we already tried.
-  if (opts.skipIfAlreadyTried && (await wasSocialHelperTried(pkg.videoUrl))) {
-    return { result, package: pkg };
+  // Soft Chat öffnen: skip helpers already tried — but still allow TurboScribe
+  // if it was never attempted (e.g. user enabled it or signed in after Scan).
+  const primaryAlreadyTried =
+    opts.skipIfAlreadyTried && (await wasSocialHelperTried(pkg.videoUrl));
+  if (primaryAlreadyTried) {
+    const turboStillNeeded =
+      platform === "facebook" &&
+      (await isTurboScribeFacebookEnabled()) &&
+      !(await wasTurboScribeTried(pkg.videoUrl));
+    if (!turboStillNeeded) {
+      return { result, package: pkg };
+    }
   }
 
   if (await isWorkCancelled(opts.cancelSince)) {
     throw new Error("cancelled");
   }
 
-  await showWorkOverlay(opts.videoTabId, "helper");
+  const runPrimaryHelper =
+    !primaryAlreadyTried &&
+    (platform === "tiktok" ||
+      (platform === "facebook" && (await isFacebookToTranscriptEnabled())));
 
   let helperTabId: number | null = null;
-  try {
-    const tab = await chrome.tabs.create({
-      url: helper.openUrl,
-      active: false,
-    });
-    if (tab.id == null) return { result, package: pkg };
-    helperTabId = tab.id;
-    activeHelperTabIds.add(tab.id);
+  let outcome: { result: CaptureResult; package: PastePackage } = {
+    result,
+    package: pkg,
+  };
 
-    await waitTabComplete(tab.id, helper.timeoutMs);
-    // Next.js hydrate
-    await new Promise((r) => setTimeout(r, 900));
+  if (runPrimaryHelper) {
+    await showWorkOverlay(opts.videoTabId, "helper");
 
+    try {
+      const tab = await chrome.tabs.create({
+        url: helper.openUrl,
+        active: false,
+      });
+      if (tab.id == null) {
+        // Still allow optional TurboScribe backup for Facebook.
+      } else {
+        helperTabId = tab.id;
+        activeHelperTabIds.add(tab.id);
+
+        await waitTabComplete(tab.id, helper.timeoutMs);
+        // Next.js hydrate
+        await new Promise((r) => setTimeout(r, 900));
+
+        if (await isWorkCancelled(opts.cancelSince)) {
+          throw new Error("cancelled");
+        }
+
+        const siteId = helper.id as SocialHelperSiteId;
+        const langLabel = facebookHelperLanguageLabel(pkg.locale);
+        let method: "auto" | "whisper" = "auto";
+        let whisperRetried = false;
+        let helperBudgetMs = helper.timeoutMs;
+        if (
+          platform === "facebook" &&
+          (await isTurboScribeFacebookEnabled())
+        ) {
+          // Leave room for TurboScribe (resolve + transcribe) under MV3's
+          // ~5 min service-worker request budget.
+          helperBudgetMs = Math.min(helper.timeoutMs, 75_000);
+        }
+        let deadline = Date.now() + helperBudgetMs;
+
+        const submitMethod = async (
+          next: "auto" | "whisper",
+        ): Promise<boolean> => {
+          const submitResults = await chrome.scripting.executeScript({
+            target: { tabId: tab.id! },
+            world: "MAIN",
+            func: submitSocialTranscriptHelper,
+            args: [pkg.videoUrl, siteId, langLabel, next],
+          });
+          const submitted = submitResults[0]?.result as
+            | { ok: boolean; reason?: string }
+            | undefined;
+          return Boolean(submitted?.ok);
+        };
+
+        /** One Facebook Whisper/AI retry after Auto empty/junk/idle/error. */
+        const maybeWhisperRetry = async (): Promise<boolean> => {
+          if (helper.id !== "facebooktotranscript" || whisperRetried) {
+            return false;
+          }
+          // TurboScribe backup already covers a long second attempt — skip
+          // Whisper so the combined chain stays under the MV3 SW time budget.
+          if (
+            platform === "facebook" &&
+            (await isTurboScribeFacebookEnabled())
+          ) {
+            whisperRetried = true;
+            return false;
+          }
+          whisperRetried = true;
+          method = "whisper";
+          deadline = Date.now() + helper.timeoutMs;
+          const ok = await submitMethod("whisper");
+          if (!ok) return false;
+          await new Promise((r) => setTimeout(r, 1200));
+          return true;
+        };
+
+        if (await submitMethod(method)) {
+          let last: SocialHelperPollResult = { status: "pending" };
+          while (Date.now() < deadline) {
+            if (await isWorkCancelled(opts.cancelSince)) {
+              throw new Error("cancelled");
+            }
+            const pollResults = await chrome.scripting.executeScript({
+              target: { tabId: tab.id },
+              world: "MAIN",
+              func: pollSocialTranscriptHelper,
+            });
+            last = (pollResults[0]?.result as
+              | SocialHelperPollResult
+              | undefined) ?? { status: "pending" };
+            if (last.status === "ok" && last.text.trim()) {
+              const text = last.text.trim();
+              if (isUsableSocialHelperTranscript(text)) {
+                outcome = withExternalTranscript(
+                  result,
+                  pkg,
+                  helper.platform,
+                  text,
+                );
+                break;
+              }
+              // Junk Auto/Extract captions — Whisper/AI retry on Facebook.
+              if (await maybeWhisperRetry()) continue;
+              break;
+            }
+            if (last.status === "error" || last.status === "idle") {
+              if (await maybeWhisperRetry()) continue;
+              break;
+            }
+            await new Promise((r) => setTimeout(r, 1200));
+          }
+        }
+      }
+    } catch (err) {
+      if (err instanceof Error && err.message === "cancelled") throw err;
+      // Soft-fail primary helper; may still try TurboScribe.
+    } finally {
+      if (helperTabId != null) {
+        // Mark even on cancel/error so Chat öffnen does not immediately reopen.
+        await markSocialHelperTried(pkg.videoUrl);
+      }
+      await closeHelperTab(helperTabId);
+      if (!(await isWorkCancelled(opts.cancelSince))) {
+        await showWorkOverlay(opts.videoTabId, "capture");
+      }
+    }
+  }
+
+  // Optional Facebook TurboScribe backup when primary left us with no transcript.
+  if (
+    platform === "facebook" &&
+    outcome.package.transcriptSource === "none" &&
+    !outcome.package.transcript?.trim() &&
+    (await isTurboScribeFacebookEnabled()) &&
+    !(await wasTurboScribeTried(pkg.videoUrl))
+  ) {
     if (await isWorkCancelled(opts.cancelSince)) {
       throw new Error("cancelled");
     }
-
-    const siteId = helper.id as SocialHelperSiteId;
-    const langLabel = facebookHelperLanguageLabel(pkg.locale);
-    let method: "auto" | "whisper" = "auto";
-    let whisperRetried = false;
-
-    const submitMethod = async (
-      next: "auto" | "whisper",
-    ): Promise<boolean> => {
-      const submitResults = await chrome.scripting.executeScript({
-        target: { tabId: tab.id! },
-        world: "MAIN",
-        func: submitSocialTranscriptHelper,
-        args: [pkg.videoUrl, siteId, langLabel, next],
-      });
-      const submitted = submitResults[0]?.result as
-        | { ok: boolean; reason?: string }
-        | undefined;
-      return Boolean(submitted?.ok);
-    };
-
-    /** One Facebook Whisper/AI retry after Auto empty/junk/idle/error. */
-    const maybeWhisperRetry = async (): Promise<boolean> => {
-      if (helper.id !== "facebooktotranscript" || whisperRetried) {
-        return false;
-      }
-      whisperRetried = true;
-      method = "whisper";
-      deadline = Date.now() + helper.timeoutMs;
-      const ok = await submitMethod("whisper");
-      if (!ok) return false;
-      await new Promise((r) => setTimeout(r, 1200));
-      return true;
-    };
-
-    if (!(await submitMethod(method))) {
-      return { result, package: pkg };
-    }
-
-    let deadline = Date.now() + helper.timeoutMs;
-    let last: SocialHelperPollResult = { status: "pending" };
-    while (Date.now() < deadline) {
-      if (await isWorkCancelled(opts.cancelSince)) {
-        throw new Error("cancelled");
-      }
-      const pollResults = await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        world: "MAIN",
-        func: pollSocialTranscriptHelper,
-      });
-      last = (pollResults[0]?.result as SocialHelperPollResult | undefined) ?? {
-        status: "pending",
-      };
-      if (last.status === "ok" && last.text.trim()) {
-        const text = last.text.trim();
-        if (isUsableSocialHelperTranscript(text)) {
-          const nextResult: CaptureResult = {
-            ...result,
-            platform: helper.platform,
-            transcript: text,
-            transcriptSource: "external",
-          };
-          const nextPkg = buildPastePackage({
-            videoUrl: pkg.videoUrl,
-            locale: pkg.locale,
-            platform: helper.platform,
-            transcript: text,
-            transcriptSource: "external",
-          });
-          return { result: nextResult, package: nextPkg };
-        }
-        // Junk Auto/Extract captions (e.g. "you") — Whisper/AI retry on Facebook.
-        if (await maybeWhisperRetry()) continue;
-        // Still unusable after retry — do not paste stub text into the chat.
-        return { result, package: pkg };
-      }
-      if (last.status === "error" || last.status === "idle") {
-        // Empty Complete / Auto failure — still try Whisper once on Facebook.
-        if (await maybeWhisperRetry()) continue;
-        return { result, package: pkg };
-      }
-      await new Promise((r) => setTimeout(r, 1200));
-    }
-
-    return { result, package: pkg };
-  } catch (err) {
-    if (err instanceof Error && err.message === "cancelled") throw err;
-    return { result, package: pkg };
-  } finally {
-    if (helperTabId != null) {
-      // Mark even on cancel/error so Chat öffnen does not immediately reopen.
-      await markSocialHelperTried(pkg.videoUrl);
-    }
-    await closeHelperTab(helperTabId);
-    // Do not re-show the overlay after Cancel already hid it.
-    if (!(await isWorkCancelled(opts.cancelSince))) {
-      await showWorkOverlay(opts.videoTabId, "capture");
-    }
+    outcome = await maybeEnrichWithTurboScribeFacebook(
+      outcome.result,
+      outcome.package,
+      { cancelSince: opts.cancelSince, videoTabId: opts.videoTabId },
+    );
   }
+
+  return outcome;
 }
 
 /** YouTube TranscribeYouTube + TikTok/Facebook helper-tab enrichment. */
@@ -1468,6 +1918,7 @@ async function pinnedCaptureIfStillValid(
 
 async function captureActiveTab(options?: {
   force?: boolean;
+  allowPendingHelpers?: boolean;
 }): Promise<{
   result: CaptureResult;
   package: PastePackage;
@@ -1479,11 +1930,13 @@ async function captureActiveTab(options?: {
 
 async function captureActiveTabRaw(options?: {
   force?: boolean;
+  allowPendingHelpers?: boolean;
 }): Promise<{
   result: CaptureResult;
   package: PastePackage;
 } | null> {
   const force = options?.force === true;
+  const allowPendingHelpers = options?.allowPendingHelpers === true;
 
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
@@ -1570,11 +2023,25 @@ async function captureActiveTabRaw(options?: {
         tab.url,
       )
     ) {
-      // Reuse cached transcript / prior helper attempt on Chat öffnen.
+      // Reuse cached transcript / prior helper attempt on soft sync.
       if (hasTranscript(stored.package)) {
         return { result: stored.result, package: stored.package };
       }
-      if (await wasSocialHelperTried(stored.package.videoUrl)) {
+      const platform =
+        stored.result.platform === "facebook" ||
+        stored.result.platform === "tiktok"
+          ? stored.result.platform
+          : detectPlatform(stored.package.videoUrl);
+      const exhausted = await socialHelperWorkExhausted(
+        stored.package.videoUrl,
+        platform,
+      );
+      if (exhausted) {
+        return { result: stored.result, package: stored.package };
+      }
+      // Remaining work (e.g. TurboScribe) — only Open chat may continue.
+      // Side Panel init / copy must not auto-open helper tabs.
+      if (!allowPendingHelpers) {
         return { result: stored.result, package: stored.package };
       }
     }
@@ -1756,7 +2223,10 @@ chrome.runtime.onMessage.addListener(
     }
 
     if (message.type === "CAPTURE_ACTIVE_TAB") {
-      void captureActiveTab({ force: message.force === true })
+      void captureActiveTab({
+        force: message.force === true,
+        allowPendingHelpers: message.allowPendingHelpers === true,
+      })
         .then(async (captured) => {
           if (!captured) {
             sendResponse({

@@ -35,6 +35,7 @@ docs/        Plans and specs
 - Required platforms: **YouTube, TikTok, X, Facebook, Instagram** (see `docs/SPEC-TRANSCRIPT.md`).
 - No DRM/captcha bypass; no social cookie forwarding.
 - Minimal permissions; declare inject hosts (ChatGPT/Gemini/Claude/Copilot) for insert/send; social hosts for captions.
+- **Exception (opt-in):** `enableTurboScribeFacebook` (default off) may fetch a public Facebook mp4 via TurboScribe’s downloader and submit it to TurboScribe’s free transcribe UI — still no API keys / no own STT backend.
 
 ## Commands
 

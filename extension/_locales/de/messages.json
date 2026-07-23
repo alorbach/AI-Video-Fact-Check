@@ -308,6 +308,18 @@
   "enableTranscriptHelp": {
     "message": "Wenn aus, wird nur der Video-Link vorbereitet. Sie können im Seitenpanel weiterhin selbst ein Transkript einfügen."
   },
+  "labelEnableFacebookToTranscript": {
+    "message": "Facebook-Helfer: facebooktotranscript.com"
+  },
+  "enableFacebookToTranscriptHelp": {
+    "message": "Wenn Facebook auf der Seite kein Transkript hat, kurz facebooktotranscript.com öffnen und eines holen (ohne Anmeldung). Standardmäßig an."
+  },
+  "labelEnableTurboScribeFacebook": {
+    "message": "Facebook-Backup: TurboScribe (optional)"
+  },
+  "enableTurboScribeFacebookHelp": {
+    "message": "Wenn Facebook danach immer noch kein Transkript hat, TurboScribe versuchen. Benötigt eine kostenlose TurboScribe-Anmeldung in Chrome (bis zu 3 kostenlose Transkripte pro Tag). Kann kurz die öffentliche Videodatei laden. Standardmäßig aus."
+  },
   "transcriptOffHint": {
     "message": "Automatisches Transkript ist aus (Einstellungen)."
   },

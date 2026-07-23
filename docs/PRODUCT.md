@@ -129,9 +129,10 @@ Extension (local) → clipboard → user’s chosen chat tab
 - No DRM / captcha bypass
 - Captions/transcript stay on device until the user pastes into the chat they chose
 - **YouTube only:** if in-page captions are missing, the extension may send the **video URL** (not audio, not cookies) to the free TranscribeYouTube helper to fetch existing captions; the Side Panel labels this clearly
+- **Optional Facebook TurboScribe backup (Settings, default off):** after facebooktotranscript fails, may resolve a public mp4 and submit it to TurboScribe’s free UI (user’s own free TurboScribe account; still no developer API keys / no own STT backend)
 - Optional: remember last video locally (`chrome.storage.local`) with opt-in in Settings
 
-If tab audio is ever recorded for local helper use, show consent first. Prefer **captions + URL** so audio upload is unnecessary.
+Prefer **captions + URL** so media upload is unnecessary for most users. If tab audio is ever recorded for local helper use, show consent first.
 
 ## MVP definition of done
 

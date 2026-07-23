@@ -31,9 +31,16 @@ Optional later: Vimeo, generic HTML5.
 - Skip in-page caption/transcript adapters as far as practical
 - Skip TranscribeYouTube enrichment
 - Skip TikTok/Facebook helper-tab enrichment (tiktoktranscript.io / facebooktotranscript.com)
+- Skip optional TurboScribe Facebook backup
 - Paste package is URL-only (`transcriptSource: "none"`)
 - Manual transcript in the Side Panel still works
 
+### Settings: Facebook helpers
+
+- `chrome.storage.sync.enableFacebookToTranscript` (default `true`) — when Facebook has no local transcript, open facebooktotranscript.com (no sign-in).
+- `chrome.storage.sync.enableTurboScribeFacebook` (default `false`) — optional backup after the primary helper fails or is off; needs TurboScribe sign-in.
+
+Both require `enableTranscript` on. Soft-fail to URL-only when helpers are off or fail.
 **Avoid for MVP:** own STT server, Whisper API keys, yt-dlp backend.  
 Optional later (only if free/local and still no API keys): browser Web Speech API as a weak helper — never required.
 
@@ -64,6 +71,8 @@ When in-page capture leaves `transcriptSource: "none"` (and automatic transcript
 No developer API keys. If the helper fails (no native captions on TikTok, private/login-walled media, site errors), fall back to URL-only + Side Panel manual paste.
 
 **Note:** tiktoktranscript.io extracts **TikTok’s own captions** (not Whisper). facebooktotranscript.com can fall through to AI transcription when Extract finds nothing.
+
+**Optional Facebook backup (Settings, default off):** if facebooktotranscript fails and `enableTurboScribeFacebook` is on, open https://turboscribe.ai/downloader/facebook → resolve a public mp4 → submit to https://turboscribe.ai/u/transcribe-youtube-video → read text → close. Soft-fail otherwise.
 
 ## Stage details
 
