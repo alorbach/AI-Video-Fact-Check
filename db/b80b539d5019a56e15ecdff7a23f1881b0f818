@@ -1,0 +1,64 @@
+extension/_locales/de/messages.json
+  s_8263f333a4ddff::t_faa82f78f92276 311-316
+extension/manifest.json
+  s_8263f333a4ddff::t_5594af3ab972d0 40-43
+shared/src/index.ts
+  s_8263f333a4ddff::t_4038a1420509cd 87,92
+docs/SPEC-TRANSCRIPT.md
+  s_8263f333a4ddff::t_c7836029035978 46
+  s_8263f333a4ddff::t_65246af3f4b4f6 78-79
+  s_8263f333a4ddff::t_4299e5548fcb52 34,38-45
+extension/src/background.ts
+  s_8263f333a4ddff::t_54808efba13e1a 1027-1189,1193,1264-1268,1274-1278,1280-1282,1287-1291,1293-1306,1308-1332,1334-1356,1362,1373-1392
+  s_8263f333a4ddff::t_1bf5054d9fe246 1292
+  s_8263f333a4ddff::t_c389c14f31575c 25-26,49-56
+extension/options.html
+  s_8263f333a4ddff::t_bba168095b9399 96-103
+shared/src/socialTranscriptHelpers.ts
+  s_8263f333a4ddff::t_eacecfa1320f32 99-101
+  s_8263f333a4ddff::t_14177133620a29 86
+  s_8263f333a4ddff::t_2d68b3df323890 2,4-6,45-57,79-85,97-98
+extension/src/options.ts
+  s_8263f333a4ddff::t_ff8adb59657676 55-60,73-74
+  s_8263f333a4ddff::t_9eff27df5a76e4 75,158-160,166,168-173
+  s_8263f333a4ddff::t_54cfa2c57b599f 95-104,110-120,140-142
+docs/levels/L11-external-transcript-helpers.md
+  s_8263f333a4ddff::t_231a469efa4f96 17,28,36,42
+shared/src/socialTranscriptHelpers.test.ts
+  s_8263f333a4ddff::t_d1fdd9ae3a97d7 65-66
+  s_8263f333a4ddff::t_7e284d0e00d62f 10-11,47-49,53-64
+docs/test-urls.md
+  s_8263f333a4ddff::t_fb6f289de23ede 35-36,39
+extension/src/turboScribeHelperMain.ts
+  s_8263f333a4ddff::t_089bda0a10e352 285-286,288,290-295,314-325,329,353-355,371,376
+  s_8263f333a4ddff::t_e4ae8fc6d87bd4 1-284,287,289,296-313,326-328,330-352,356-370,372-375,377-396
+extension/_locales/en/messages.json
+  s_8263f333a4ddff::t_99a72c4dce6805 311-316
+docs/PRODUCT.md
+  s_8263f333a4ddff::t_5c1806f60b24ad 132,135
+AGENTS.md
+  s_8263f333a4ddff::t_15e1bc0a06755f 38
+docs/MULTILEVEL-IMPLEMENTATION-PLAN.md
+  s_8263f333a4ddff::t_25f3fba5817036 39-40
+  s_8263f333a4ddff::t_801d9de94fccc7 61
+docs/CHROME-WEB-STORE.md
+  s_8263f333a4ddff::t_e82e7735a7fa5d 41-42
+  s_8263f333a4ddff::t_aa246ea967d95b 59-60
+  s_8263f333a4ddff::t_92ba6fd5d6b37f 25
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "dbb80b539d5019a56e15ecdff7a23f1881b0f818",
+  "prompts": {},
+  "sessions": {
+    "s_8263f333a4ddff": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "658e6790-a257-46f6-a8fc-bccdb4f95df5",
+        "model": "grok-4.5"
+      },
+      "human_author": null
+    }
+  }
+}
